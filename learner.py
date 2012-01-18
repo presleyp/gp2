@@ -3,8 +3,7 @@ import csv, copy, random, numpy
 #TODO get numpy working with python3
 #TODO figure out how to represent tiers
 #TODO improve change logging
-#TODO implement correspondence and corr-based markedness (and faith, obvi)
-#TODO change input files to have empty changelog - if that creates problems, change generated changelogs to say 'none'
+#TODO change input files to have empty changelog for faithful cands - if that creates problems, change generated changelogs to say 'none'
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0 or 1 for ungrammatical or grammatical, then underlying form
@@ -65,28 +64,19 @@ class Gen:
             # Don't add a mapping if its sr has a segment that isn't in the
             # inventory
             try:
-                print new_mapping
-                #self.feature_dict.get_segments(new_mapping.sr)
+                #print new_mapping
+                self.feature_dict.get_segments(new_mapping.sr)
             except IndexError:
-                #print 'index error at iteration ' + str(i)
                 continue
-            assert new_mapping.feature_dict.notInInventory(new_mapping.sr) == False
             # Don't add a mapping if it's the same as a previously
             # generated one.
-            #print 'kept going at iteration ' + str(i)
             duplicate = False
             for negative in negatives:
                 if new_mapping.sr == negative.sr:
                     duplicate = True
-                    #break
+                    break
             if duplicate == False:
                 negatives.append(new_mapping)
-        print "Num negatives:", len(negatives)
-        for item in negatives:
-            try:
-                print item
-            except IndexError:
-                print 'ERROR ---------', item.ur, item.sr, item.changes
         return negatives
 
     def epenthesize(self, mapping):
@@ -135,7 +125,8 @@ class Gen:
     # in the inventory, but in the future it's may be better to change that.
     def change_feature_value(self, mapping):
         """Map a ur to an sr with the value of a feature of a segment changed."""
-        segment = random.choice(mapping.sr)
+        locus = random.randint(0, len(mapping.sr) - 1)
+        segment = mapping.sr[locus]
         original_segment = copy.deepcopy(segment)
         feature = random.choice(segment.keys()) # wrap in list() for python3
         segment[feature] = '1' if segment[feature] == '0' else '0'
@@ -165,7 +156,7 @@ class Mapping:
         self.grammatical = bool(int(self.grammatical))
         self.ur = [self.feature_dict.get_features(segment) for segment in self.ur]
         self.sr = [self.feature_dict.get_features(segment) for segment in self.sr]
-        self.changes = self.changes.split(';')
+        self.changes = [] if self.changes == 'none' else self.changes.split(';')
 
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))
@@ -185,14 +176,11 @@ class FeatureDict:
                 self.fd[seg] = line
 
     def get_features(self, segment):
-        features = self.fd[segment]
+        features = copy.deepcopy(self.fd[segment])
         return features
 
     def get_segments(self, word):
-        #~ for segment in word:
-            #~ print 'get segs', segment
         segments = [self.get_segment(features) for features in word] # change iteritems to items for python3
-        #print 'segments', segments
         return segments
 
     def get_segment(self, features):
@@ -205,8 +193,8 @@ class FeatureDict:
             #l = [k for k, v in self.fd.iteritems() if v == features]
             #print l
 
-    def notInInventory(self, word):
-        return False in map(lambda x: x in self.fd.values(), word)
+    #def notInInventory(self, word):
+        #return False in map(lambda x: x in self.fd.values(), word)
 
 class Con:
     def __init__(self, feature_dict):
@@ -214,7 +202,6 @@ class Con:
         self.weights = numpy.array([0]) # intercept weight
         key = random.choice(feature_dict.fd.keys()) # list() in python 3
         self.num_features = len(feature_dict.fd[key])
-        self.feature_names = feature_dict.fd[key].keys()
 
     def induce(self, computed_winner):
         """Makes one new markedness and one new faithfulness constraint for each pair in the training data,
@@ -222,43 +209,51 @@ class Con:
         # TODO make it create a m and a f constraint against things that exist
         # in the computed but not in the grammatical
         # and the reverse? gen won't create infinite goodness problem...
-        self.constraints.append(Markedness(computed_winner.sr, self.num_features, self.feature_names))
-        self.constraints.append(Faithfulness(computed_winner.changes))
+        self.constraints.append(Markedness(computed_winner.sr, self.num_features))
+        if computed_winner.changes != []:
+            self.constraints.append(Faithfulness(computed_winner.changes))
         added = len(self.constraints) - (len(self.weights) - 1) # weights will always be 1 longer because of intercept weight
         for i in range(added):
-            numpy.append(self.weights, 0) # could change to random low value
+            self.weights = numpy.append(self.weights, random.random()) # could change to random low value
 
     def get_violations(self, mapping):
         mapping.violations = numpy.array([1]) # intercept
         mapping.violations = numpy.append(mapping.violations, numpy.array([constraint.get_violation(mapping)
                                                                            for constraint in self.constraints]))
+#class Intercept:
+    #def __init__(self):
+        #pass
+
+    #def get_violation(self):
+        #return 1
 
 class Markedness:
-    # gets feature names for each of two segments, to make set out of dictionary of feature names:feature values.
-    # this is unnecessary, i think - all segments have the same feature names. just get them once in feature_names.
-    # change to take two srs. make each into a set with the list comp used below. subtract. make constraints against differences. will have to figure out how to choose how much goes into each constraint.
-    # in fact, num features and feature names are constants throughout the program. they shouldn't need to be recalculated each time.
-    def __init__(self, sr, num_features, feature_names):
-        """For a given output, whether grammatical or ungrammatical,
-        makes a bigram constraint on a random number of random features in adjacent segments, including boundaries."""
-
-        if len(sr) > 1:
-            locus = random.randint(0, len(sr) - 2) # picks first segment constraint is on
-            beginning_features = [random.choice(feature_names) for item in range(random.randint(1, num_features))] # list of keys
-            self.beginning = set([(key, sr[locus][key]) for key in beginning_features]) # add in the values
-            end_features = [random.choice(feature_names) for item in range(random.randint(1, num_features))]
-            self.end = set([(key, sr[locus + 1][key]) for key in end_features])
-            self.constraint = str([self.beginning, self.end])
-        else:
-            self.beginning = None
-            self.end = None
+    def __init__(self, sr, num_features):
+        """For a given output, make a constraint against one, two,
+        or three adjacent natural classes. The constraint is a list of
+        sets of feature-value tuples."""
+        locus = random.randint(0, len(sr) - 1)
+        self.constraint = []
+        self.gram = 0
+        for gram in range(random.randint(1, 3)):
+            try:
+                natural_class = random.sample(list(sr[locus].iteritems()), random.randint(1, num_features))
+                self.constraint.append(set(natural_class))
+                locus += 1
+                self.gram += 1
+            except IndexError: # sr ran out of segments
+                break
 
     def get_violation(self, mapping):
-        """Finds the number of places in the sr (including overlapping ones) that match the pattern of the constraint."""
+        """Finds the number of places in the surface representation
+        (including overlapping ones) that match the pattern of the constraint."""
         violation = 0
-        tuplesr = [set([(key, segment[key]) for key in segment]) for segment in mapping.sr] # problem: keys are treated as segment sometimes
-        for i in range(len(tuplesr)):
-            if (self.beginning in tuplesr[i]) and (self.end in tuplesr[i+1]):
+        for i in range(len(mapping.sr) - self.gram + 1):
+            segments = mapping.sr[i:i + self.gram]
+            assert len(segments) == self.gram, 'slice of sr is the wrong size'
+            # if each segment in the slice is in the corresponding natural class
+            # of the constraint, add a violation
+            if False not in map(lambda x, y: set(x.iteritems()) >= y, segments, self.constraint):
                 violation += 1
         return violation
 
@@ -278,19 +273,27 @@ class HGGLA:
         multiplied by the learning rate."""
         self.learning_rate = learning_rate
         self.constraints = Con(feature_dict)
-        self.actual_winner = None # is this at all a good idea?
+        self.actual_winner = None
 
     def eval(self, tableau):
         """Use constraints to find mappings violations
         and constraint weights to find mappings harmony scores.
         From harmony scores, find and return the mapping predicted to win."""
-        highest_harmony = []
-        for i, mapping in enumerate(tableau):
-            self.constraints.get_violations(mapping)
-            mapping.harmony = numpy.dot(self.constraints.weights, mapping.violations)
-            if i == 0 or mapping.harmony > highest_harmony[0]:
-                highest_harmony = [mapping.harmony, mapping]
-        computed_winner = highest_harmony[1]
+        computed_winner = None
+        while computed_winner == None:
+            for i, mapping in enumerate(tableau):
+                self.constraints.get_violations(mapping) #make sure this changes violations in place
+                mapping.harmony = numpy.dot(self.constraints.weights, mapping.violations)
+            highest_harmony = max([mapping.harmony for mapping in tableau])
+            computed_winners = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
+            if len(computed_winners) > 1: # there's a tie
+                #for i in range(len(computed_winners) - 1): # for inducing based on two forms
+                    #self.constraints.induce(computed_winners[i], computed_winners[i + 1]) # though doesn't compare nonadjacent ties
+                for cw in computed_winners:
+                    self.constraints.induce(cw)
+            else:
+                #print 'found a cw'
+                computed_winner = computed_winners[0]
         return computed_winner
 
     def train(self, inputs):
@@ -298,21 +301,23 @@ class HGGLA:
             differences = []
             for tableau in inputs: # learn one tableau at a time
                 computed_winner = self.eval(tableau)
+                print 'c winner', computed_winner
                 grammatical_winner = None
                 for mapping in tableau:
                     #print 'mg', mapping.grammatical
                     if mapping.grammatical == True:
                         grammatical_winner = mapping
+                        #print 'g winner', grammatical_winner
                         break
                 if grammatical_winner != computed_winner:
                     difference = grammatical_winner.violations - computed_winner.violations
-                    self.constraints.induce(computed_winner)
                     self.constraints.weights += difference * self.learning_rate
-                    differences.append(difference)                  # check how it's doing
+                    differences.append(difference)
+                    self.constraints.induce(computed_winner)
                 else:
                     differences.append(0)
-            #if len(differences) != 0:
-                #print(sum(differences)/len(differences))
+            if len(differences) != 0:
+                print 'avg diff', numpy.mean(differences) # not sure if this is meaningful
 
     def test(self, inputs):
         winners = []
@@ -332,9 +337,9 @@ class CrossValidate:
         allinput = inputs.allinputs
         self.alg = algorithm(learning_rate, feature_dict)
         if algorithm == HGGLA:
-            self.accuracy = self.HGvalidate(allinput)
+            self.accuracy = self.HG_validate(allinput)
         else:
-            self.accuracy = self.Perceptronvalidate(allinput)
+            self.accuracy = self.perceptron_validate(allinput)
 
     def make_tableaux(self, inputs):
         #print inputs
@@ -342,7 +347,7 @@ class CrossValidate:
         tableaux = [[mapping for mapping in inputs if mapping.ur == item] for item in urs]
         return tableaux
 
-    def HGvalidate(self, inputs):
+    def HG_validate(self, inputs):
         tableaux = self.make_tableaux(inputs)
         self.accuracy = []
         for i, tableau in enumerate(tableaux):
@@ -354,7 +359,7 @@ class CrossValidate:
             for mapping in tableau:
                 if mapping.grammatical == True:
                     desired = mapping.sr
-                map_copy = copy.copy(mapping)
+                map_copy = copy.deepcopy(mapping)
                 map_copy.grammatical = 'test'
                 test_tableau.append(map_copy)
             if self.alg.test([test_tableau])[0].sr == desired: # [0] because it returns a list of one element
@@ -363,7 +368,7 @@ class CrossValidate:
                 self.accuracy.append(0)
         return self.accuracy
 
-    def Perceptronvalidate(self, inputs):
+    def perceptron_validate(self, inputs):
         self.accuracy = []
         for mapping in inputs:
             inputs.remove(mapping)
