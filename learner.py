@@ -3,7 +3,6 @@ import csv, copy, random, numpy
 #TODO get numpy working with python3
 #TODO figure out how to represent tiers
 #TODO improve change logging
-#TODO change input files to have empty changelog for faithful cands - if that creates problems, change generated changelogs to say 'none'
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0 or 1 for ungrammatical or grammatical, then underlying form
@@ -148,7 +147,7 @@ class Mapping:
         self.ur = ur
         self.sr = sr
         self.changes = changes
-        self.violations = []
+        self.violations = numpy.array([1]) # intercept
         self.harmony = None
         self.feature_dict = feature_dict
 
@@ -212,20 +211,19 @@ class Con:
         self.constraints.append(Markedness(computed_winner.sr, self.num_features))
         if computed_winner.changes != []:
             self.constraints.append(Faithfulness(computed_winner.changes))
-        added = len(self.constraints) - (len(self.weights) - 1) # weights will always be 1 longer because of intercept weight
-        for i in range(added):
-            self.weights = numpy.append(self.weights, random.random()) # could change to random low value
+        self.weights = numpy.append(self.weights, numpy.random.random(self.num_needed(self.weights)))
 
     def get_violations(self, mapping):
-        mapping.violations = numpy.array([1]) # intercept
-        mapping.violations = numpy.append(mapping.violations, numpy.array([constraint.get_violation(mapping)
-                                                                           for constraint in self.constraints]))
-#class Intercept:
-    #def __init__(self):
-        #pass
+        old_constraints = -self.num_needed(mapping.violations)
+        if old_constraints < 0:
+            new_violations = numpy.array([constraint.get_violation(mapping) for constraint in self.constraints[old_constraints:]])
+            mapping.violations = numpy.append(mapping.violations, new_violations)
 
-    #def get_violation(self):
-        #return 1
+    def num_needed(self, array):
+        """Find number of constraints added since the array was updated,
+        keeping in mind that the array has an intercept not included in
+        the constraint set."""
+        return len(self.constraints) - (len(array) - 1)
 
 class Markedness:
     def __init__(self, sr, num_features):
@@ -292,7 +290,6 @@ class HGGLA:
                 for cw in computed_winners:
                     self.constraints.induce(cw)
             else:
-                #print 'found a cw'
                 computed_winner = computed_winners[0]
         return computed_winner
 
