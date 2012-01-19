@@ -3,20 +3,27 @@ import csv, copy, random, numpy
 #TODO get numpy working with python3
 #TODO figure out how to represent tiers
 #TODO improve change logging
+#TODO if deepcopy slows it down too much, change to numpy matrices to avoid
+#needing it
+#FIXME bug in array lengths
 
 class Input:
-    """Give input in the form of a csv file where each line is a mapping, with 0 or 1 for ungrammatical or grammatical, then underlying form
-    in segments, then surface form in segments, then semicolon-delimited list of changes from underlying form to surface form.
-    Ungrammatical mappings are optional; if you include them, the second line must be ungrammatical."""
-    def __init__(self, feature_dict, infile, num_negatives, max_changes, processes, epenthetics):
-        """Convert lines of input to mapping objects.
-        Generate ungrammatical input-output pairs if they were not already present in the input file."""
+    """Give input in the form of a csv file where each line is a mapping, with 0
+    or 1 for ungrammatical or grammatical, then underlying form in segments,
+    then surface form in segments, then semicolon-delimited list of changes from
+    underlying form to surface form.  Ungrammatical mappings are optional; if
+    you include them, the second line must be ungrammatical."""
+    def __init__(self, feature_dict, infile, num_negatives, max_changes, processes,
+        epenthetics):
+        """Convert lines of input to mapping objects.  Generate
+        ungrammatical input-output pairs if they were not already present in the
+        input file."""
         self.feature_dict = feature_dict
         self.gen_args = [num_negatives, max_changes, processes, epenthetics]
         self.allinputs = self.make_input(infile)
 
     def make_input(self, infile):
-        """Based on file of lines of the form "1 underlyingform surfaceform changes"
+        """Based on file of lines of the form "1,underlyingform,surfaceform,changes"
         create Mapping objects with those attributes.
         Make words into lists of segments,
         segments into dictionaries of feature values,
@@ -208,16 +215,29 @@ class Con:
         # TODO make it create a m and a f constraint against things that exist
         # in the computed but not in the grammatical
         # and the reverse? gen won't create infinite goodness problem...
-        self.constraints.append(Markedness(computed_winner.sr, self.num_features))
+        assert len(self.weights) == len(self.constraints) + 1
+        got_markedness = False
+        while got_markedness == False:
+            new_markedness = Markedness(computed_winner.sr, self.num_features)
+            if new_markedness not in self.constraints:
+                self.constraints.append(new_markedness)
+                got_markedness = True
         if computed_winner.changes != []:
-            self.constraints.append(Faithfulness(computed_winner.changes))
+            got_faithfulness = False
+            while got_faithfulness == False:
+                new_faithfulness = Faithfulness(computed_winner.changes)
+                if new_faithfulness not in self.constraints:
+                    self.constraints.append(new_faithfulness)
+                    got_faithfulness = True
         self.weights = numpy.append(self.weights, numpy.random.random(self.num_needed(self.weights)))
+        assert len(self.weights) == len(self.constraints) + 1
 
     def get_violations(self, mapping):
-        old_constraints = -self.num_needed(mapping.violations)
-        if old_constraints < 0:
-            new_violations = numpy.array([constraint.get_violation(mapping) for constraint in self.constraints[old_constraints:]])
+        new_constraints = -self.num_needed(mapping.violations)
+        if new_constraints < 0:
+            new_violations = numpy.array([constraint.get_violation(mapping) for constraint in self.constraints[new_constraints:]])
             mapping.violations = numpy.append(mapping.violations, new_violations)
+        assert len(mapping.violations) == len(self.constraints) + 1
 
     def num_needed(self, array):
         """Find number of constraints added since the array was updated,
@@ -271,16 +291,15 @@ class HGGLA:
         multiplied by the learning rate."""
         self.learning_rate = learning_rate
         self.constraints = Con(feature_dict)
-        self.actual_winner = None
 
-    def eval(self, tableau):
+    def evaluate(self, tableau):
         """Use constraints to find mappings violations
         and constraint weights to find mappings harmony scores.
         From harmony scores, find and return the mapping predicted to win."""
         computed_winner = None
         while computed_winner == None:
             for i, mapping in enumerate(tableau):
-                self.constraints.get_violations(mapping) #make sure this changes violations in place
+                self.constraints.get_violations(mapping)
                 mapping.harmony = numpy.dot(self.constraints.weights, mapping.violations)
             highest_harmony = max([mapping.harmony for mapping in tableau])
             computed_winners = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
@@ -294,32 +313,38 @@ class HGGLA:
         return computed_winner
 
     def train(self, inputs):
-        for iteration in range(10): # learn from the data this many times
-            differences = []
-            for tableau in inputs: # learn one tableau at a time
-                computed_winner = self.eval(tableau)
-                print 'c winner', computed_winner
-                grammatical_winner = None
-                for mapping in tableau:
-                    #print 'mg', mapping.grammatical
-                    if mapping.grammatical == True:
-                        grammatical_winner = mapping
-                        #print 'g winner', grammatical_winner
-                        break
-                if grammatical_winner != computed_winner:
-                    difference = grammatical_winner.violations - computed_winner.violations
-                    self.constraints.weights += difference * self.learning_rate
-                    differences.append(difference)
-                    self.constraints.induce(computed_winner)
-                else:
-                    differences.append(0)
-            if len(differences) != 0:
-                print 'avg diff', numpy.mean(differences) # not sure if this is meaningful
+        # for iteration in range(10): # learn from the data this many times
+        differences = []
+        for tableau in inputs: # learn one tableau at a time
+            computed_winner = self.evaluate(tableau)
+            #print 'c winner', computed_winner
+            grammatical_winner = None
+            for mapping in tableau:
+                #print 'mg', mapping.grammatical
+                if mapping.grammatical == True:
+                    grammatical_winner = mapping
+                    #print 'g winner', grammatical_winner
+                    break
+            if grammatical_winner != computed_winner:
+                difference = grammatical_winner.violations - computed_winner.violations
+                self.constraints.weights += difference * self.learning_rate
+                differences.append(difference)
+                self.constraints.induce(computed_winner)
+            else:
+                differences.append(0)
+        #if len(differences) != 0:
+            #print 'avg diff', numpy.mean(differences) # not sure if this is meaningful
 
     def test(self, inputs):
         winners = []
         for tableau in inputs: # probably only one of them, but open to other kinds of cross validation
-            winners.append(self.eval(tableau))
+            winners.append(self.evaluate(tableau))
+        #for winner in winners:
+            #print 'winner', winner
+            #for c in self.constraints.constraints:
+                #if isinstance(c.constraint, Markedness):
+                    #if set([('voice', 1), ('cor', 1)]) <= c.constraint:
+                        #print 'got the right constraint'
         return winners
 
 class CrossValidate:
@@ -344,10 +369,23 @@ class CrossValidate:
         tableaux = [[mapping for mapping in inputs if mapping.ur == item] for item in urs]
         return tableaux
 
+    def refresh_input(self, inputs):
+        for tableau in inputs:
+            for mapping in tableau:
+                mapping.violations = numpy.array([1])
+                mapping.harmony = None
+
+    def refresh_con(self):
+        self.alg.constraints.constraints = []
+        self.alg.constraints.weights = numpy.array([0])
+
     def HG_validate(self, inputs):
         tableaux = self.make_tableaux(inputs)
         self.accuracy = []
         for i, tableau in enumerate(tableaux):
+            self.refresh_input(tableaux)
+            self.refresh_con()
+            assert self.alg.constraints.constraints == []
             training_set = tableaux[:i] + tableaux[i + 1:]
             self.alg.train(training_set)
             # test
@@ -359,6 +397,9 @@ class CrossValidate:
                 map_copy = copy.deepcopy(mapping)
                 map_copy.grammatical = 'test'
                 test_tableau.append(map_copy)
+            for m in test_tableau:
+                assert m.harmony == None
+                assert m.violations == numpy.array([1])
             if self.alg.test([test_tableau])[0].sr == desired: # [0] because it returns a list of one element
                 self.accuracy.append(1)
             else:
