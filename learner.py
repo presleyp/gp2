@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 import csv, copy, random, numpy
 #TODO get numpy working with python3
-#TODO figure out how to represent tiers
 #TODO improve change logging
+#TODO implicational constraints
+#TODO consider constraining GEN
+#TODO graphs - error rate
 #TODO if deepcopy slows it down too much, change to numpy matrices to avoid
 #needing it
+#TODO shuffle training set
+#TODO add a way to test on training set
+#TODO consider adding lexically conditioned constraints - adding meaning attribute
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -243,9 +248,11 @@ class Markedness:
         self.gram = random.randint(1, 3)
         self.num_features = num_features
         self.tier = None
+        self.use_tier = False
         if random.randint(1, tier_freq) == tier_freq:
             self.use_tier = True
-            winners = [self.get_tier(winner) for winner in winners]
+            winners = [self.get_tier(winner) for winner in winners] #FIXME sometimes creating empty lists.
+            #don't want to create empty constraints, but what if some winners have the tier but not all winners do?
         if len(winners) > 1:
             self.constraint = self.pick_unique_pattern(winners)
         else:
@@ -259,6 +266,9 @@ class Markedness:
         all_ngrams = []
         different_ngrams = []
         for winner in winners:
+            if type(winner) == list:
+                print 'winner', winner
+                print 'winners', winners
             word = winner.sr
             ngrams_in_word = []
             starting_positions = range(len(word) + 1 - self.gram)
@@ -297,7 +307,7 @@ class Markedness:
         feature. Features currently supported are vowel, consonant, nasal, and strident."""
         tiers = ['vowel', 'consonant', 'nasal', 'strident']
         assert set(tiers) & set(winner.sr[0]) != 0, "feature dictionary doesn't support tiers"
-        if self.tier == None:
+        if self.tier == None: #if creating the constraint, not getting violations
             while True:
                 self.tier = random.choice(tiers)
                 if self.tier in set(winner.sr[0]):
@@ -367,6 +377,7 @@ class HGGLA:
             highest_harmony = max(harmonies)
             computed_winners = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
             if len(computed_winners) > 1: # there's a tie
+                print 'computed winners', computed_winners
                 self.constraints.induce(computed_winners)
                 continue
             else:
@@ -380,7 +391,6 @@ class HGGLA:
         differences = []
         for tableau in inputs: # learn one tableau at a time
             computed_winner = self.evaluate(tableau)
-            print computed_winner
             assert isinstance(computed_winner, Mapping), "computed winner isn't a Mapping"
             #print 'c winner', computed_winner
             grammatical_winner = None
@@ -392,6 +402,7 @@ class HGGLA:
                     break
             if grammatical_winner != computed_winner:
                 assert isinstance(computed_winner, Mapping), "computed winner isn't a Mapping"
+                assert isinstance(grammatical_winner, Mapping), "grammatical winner isn't a Mapping"
                 difference = grammatical_winner.violations - computed_winner.violations
                 self.constraints.weights += difference * self.learning_rate
                 differences.append(difference)
@@ -417,7 +428,7 @@ class CrossValidate:
     """Train the algorithm on every possible set of all but one data point
     and test on the leftover data point.
     Look at the average accuracy across tests."""
-    def __init__(self, feature_chart, input_file, algorithm, learning_rate = 0.1, num_negatives = 5, max_changes = 10,
+    def __init__(self, feature_chart, input_file, algorithm, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
                  processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
                  epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
         feature_dict = FeatureDict(feature_chart)
@@ -491,7 +502,7 @@ if __name__ == '__main__':
     #localpath = os.getcwd() + '/' + '/'.join(sys.argv[0].split('/')[:-1])
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
-    xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', HGGLA)
-    xval2 = CrossValidate('feature_chart2.csv', 'input3.csv', HGGLA)
+    xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', HGGLA, tier_freq = 100000)
+    xval2 = CrossValidate('feature_chart3.csv', 'input4.csv', HGGLA, tier_freq = 100000)
     print(xval1.accuracy)
     print(xval2.accuracy)
