@@ -267,9 +267,9 @@ class Markedness:
         all_ngrams = []
         different_ngrams = []
         for winner in winners:
-            if type(winner) == list:
-                print 'winner', winner
-                print 'winners', winners
+            #if type(winner) == list:
+                #print 'winner', winner
+                #print 'winners', winners
             word = winner.sr
             ngrams_in_word = []
             starting_positions = range(len(word) + 1 - self.gram)
@@ -376,7 +376,7 @@ class HGGLA:
             highest_harmony = max(harmonies)
             computed_winners = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
             if len(computed_winners) > 1: # there's a tie
-                print 'computed winners', computed_winners
+                #print 'computed winners', computed_winners
                 self.constraints.induce(computed_winners)
                 continue
             else:
@@ -425,7 +425,7 @@ class Learn:
         allinput = inputs.allinputs
         self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
         if algorithm == HGGLA:
-            self.accuracy = self.HG_learn(allinput)
+            self.accuracy = self.run_HGGLA(allinput)
 
     def make_tableaux(self, inputs):
         #print inputs
@@ -433,17 +433,7 @@ class Learn:
         tableaux = [[mapping for mapping in inputs if mapping.ur == item] for item in urs]
         return tableaux
 
-    def refresh_input(self, inputs):
-        for tableau in inputs:
-            for mapping in tableau:
-                mapping.violations = numpy.array([1])
-                mapping.harmony = None
-
-    def refresh_con(self):
-        self.alg.constraints.constraints = []
-        self.alg.constraints.weights = numpy.array([0])
-
-    def HG_learn(self, inputs):
+    def run_HGGLA(self, inputs):
         tableaux = self.make_tableaux(inputs)
         accuracy = []
         assert self.alg.constraints.constraints == []
@@ -460,17 +450,27 @@ class CrossValidate(Learn):
     """Train the algorithm on every possible set of all but one data point
     and test on the leftover data point.
     Look at the average accuracy across tests."""
-    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
-                 processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
-        feature_dict = FeatureDict(feature_chart)
-        inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
-        allinput = inputs.allinputs
-        self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
-        if algorithm == HGGLA:
-            self.accuracy = self.HG_validate(allinput)
+    #def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
+                 #processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
+                 #epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
+        #feature_dict = FeatureDict(feature_chart)
+        #inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
+        #allinput = inputs.allinputs
+        #self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
+        #if algorithm == HGGLA:
+            #self.accuracy = self.run_HGGLA(allinput)
 
-    def HG_validate(self, inputs):
+    def refresh_input(self, inputs):
+        for tableau in inputs:
+            for mapping in tableau:
+                mapping.violations = numpy.array([1])
+                mapping.harmony = None
+
+    def refresh_con(self):
+        self.alg.constraints.constraints = []
+        self.alg.constraints.weights = numpy.array([0])
+
+    def run_HGGLA(self, inputs):
         tableaux = self.make_tableaux(inputs)
         accuracy = []
         for i, tableau in enumerate(tableaux):
