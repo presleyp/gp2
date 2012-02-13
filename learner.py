@@ -417,13 +417,14 @@ class HGGLA:
         return winners
 
 class Learn:
-    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
+    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
                  processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
                  epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
         feature_dict = FeatureDict(feature_chart)
         inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
         allinput = inputs.allinputs
         self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
+        self.num_trainings = num_trainings
         if algorithm == HGGLA:
             self.accuracy = self.run_HGGLA(allinput)
 
@@ -437,7 +438,8 @@ class Learn:
         tableaux = self.make_tableaux(inputs)
         accuracy = []
         assert self.alg.constraints.constraints == []
-        self.alg.train(tableaux)
+        for i in range(self.num_trainings):
+            self.alg.train(tableaux)
         computed_winners = self.alg.test(tableaux)
         for winner in computed_winners:
             if winner.grammatical == True:
@@ -479,7 +481,8 @@ class CrossValidate(Learn):
             assert self.alg.constraints.constraints == []
             training_set = tableaux[:i] + tableaux[i + 1:]
             random.shuffle(training_set)
-            self.alg.train(training_set)
+            for i in range(self.num_trainings):
+                self.alg.train(training_set)
             # test
             desired = None
             test_tableau = []
