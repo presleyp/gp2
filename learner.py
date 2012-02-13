@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 import csv, copy, random, numpy
 #TODO get numpy working with python3
-#TODO improve change logging
+#TODO improve change logging - change feature in fset instead of in segment?
 #TODO implicational constraints
 #TODO consider constraining GEN
 #TODO graphs - error rate
 #TODO if deepcopy slows it down too much, change to numpy matrices to avoid
 #needing it
-#TODO shuffle training set
-#TODO add a way to test on training set
-#TODO consider adding lexically conditioned constraints - adding meaning attribute
+#TODO consider adding lexically conditioned constraints
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -39,8 +37,8 @@ class Input:
             fread = list(csv.reader(f))
             if fread[1][0] == '0':
                 ungrammatical_included = True
-            for (grammatical, ur, sr, changes) in fread:
-                mapping = Mapping(grammatical, ur, sr, changes, self.feature_dict)
+            for line in fread:
+                mapping = Mapping(self.feature_dict, line)
                 mapping.to_data()
                 allinputs.append(mapping)
                 if ungrammatical_included == False:
@@ -64,7 +62,7 @@ class Gen:
         i = 0
         while len(negatives) < self.num_negatives:
             i += 1
-            new_mapping = Mapping(False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), [], self.feature_dict)
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
             for j in range(random.randint(0, self.max_changes)):       # randomly pick number of processes
                 process = random.choice(eval(self.processes))          # randomly pick process
                 process(new_mapping)
@@ -149,17 +147,18 @@ class Gen:
             mapping.changes.append('change ' + str(feature) + ' in ' + str(original_segment) + ' to ' + str(value))
 
 class Mapping:
-    def __init__(self, grammatical, ur, sr, changes, feature_dict):
+    def __init__(self, feature_dict, line):
         """Each input-output mapping is an object with attributes: grammatical (is it grammatical?),
         ur (underlying form), sr (surface form), changes (operations to get from ur to sr),
         violations (of constraints in order), and harmony (violations times constraint weights).
         ur and sr are lists of segments, which are dictionaries of feature-value pairs."""
-        self.grammatical = grammatical
-        self.ur = ur
-        self.sr = sr
-        self.changes = changes
+        self.grammatical = line[0]
+        self.ur = line[1]
+        self.sr = line[2]
+        self.changes = line[3]
         self.violations = numpy.array([1]) # intercept
         self.harmony = None
+        self.meaning = line[4] if len(line) == 5 else None
         self.feature_dict = feature_dict
 
     def to_data(self):
@@ -251,7 +250,9 @@ class Markedness:
         self.use_tier = False
         if random.randint(1, tier_freq) == tier_freq:
             self.use_tier = True
-            winners = [self.get_tier(winner) for winner in winners] #FIXME sometimes creating empty lists.
+            tiered_winners = [self.get_tier(winner) for winner in winners if self.get_tier(winner) != []] #FIXME sometimes creating empty lists.
+            if tiered_winners != []:
+                winners = tiered_winners
             #don't want to create empty constraints, but what if some winners have the tier but not all winners do?
         if len(winners) > 1:
             self.constraint = self.pick_unique_pattern(winners)
@@ -313,9 +314,7 @@ class Markedness:
                 if self.tier in set(winner.sr[0]):
                     break
         winner_tier = [segment for segment in winner.sr if segment[self.tier] == 1]
-        return winner_tier #FIXME will return empty constraint if making a constraint
-    #from a word that doesn't have these features; but I can't test that straightforwardly bc it
-    # has to work for getting violations too
+        return winner_tier
 
     def get_violation(self, mapping):
         """Finds the number of places in the surface representation
@@ -362,7 +361,7 @@ class HGGLA:
         self.constraints = Con(feature_dict, tier_freq)
         self.induction = induction
 
-    def evaluate(self, tableau):
+    def evaluate(self, tableau): #FIXME HGGLA.test probably shouldn't be able to induce constraints
         """Use constraints to find mappings violations
         and constraint weights to find mappings harmony scores.
         From harmony scores, find and return the mapping predicted to win."""
@@ -389,6 +388,7 @@ class HGGLA:
     def train(self, inputs):
         # for iteration in range(10): # learn from the data this many times
         differences = []
+        random.shuffle(inputs)
         for tableau in inputs: # learn one tableau at a time
             computed_winner = self.evaluate(tableau)
             assert isinstance(computed_winner, Mapping), "computed winner isn't a Mapping"
@@ -413,22 +413,11 @@ class HGGLA:
             #print 'avg diff', numpy.mean(differences) # not sure if this is meaningful
 
     def test(self, inputs):
-        winners = []
-        for tableau in inputs: # probably only one of them, but open to other kinds of cross validation
-            winners.append(self.evaluate(tableau))
-        #for winner in winners:
-            #print 'winner', winner
-            #for c in self.constraints.constraints:
-                #if isinstance(c.constraint, Markedness):
-                    #if set([('voice', 1), ('cor', 1)]) <= c.constraint:
-                        #print 'got the right constraint'
+        winners = [self.evaluate(tableau) for tableau in inputs]
         return winners
 
-class CrossValidate:
-    """Train the algorithm on every possible set of all but one data point
-    and test on the leftover data point.
-    Look at the average accuracy across tests."""
-    def __init__(self, feature_chart, input_file, algorithm, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
+class Learn:
+    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
                  processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
                  epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
         feature_dict = FeatureDict(feature_chart)
@@ -436,9 +425,7 @@ class CrossValidate:
         allinput = inputs.allinputs
         self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
         if algorithm == HGGLA:
-            self.accuracy = self.HG_validate(allinput)
-        else:
-            self.accuracy = self.perceptron_validate(allinput)
+            self.accuracy = self.HG_learn(allinput)
 
     def make_tableaux(self, inputs):
         #print inputs
@@ -456,14 +443,42 @@ class CrossValidate:
         self.alg.constraints.constraints = []
         self.alg.constraints.weights = numpy.array([0])
 
+    def HG_learn(self, inputs):
+        tableaux = self.make_tableaux(inputs)
+        accuracy = []
+        assert self.alg.constraints.constraints == []
+        self.alg.train(tableaux)
+        computed_winners = self.alg.test(tableaux)
+        for winner in computed_winners:
+            if winner.grammatical == True:
+                accuracy.append(1)
+            else:
+                accuracy.append(0)
+        return accuracy
+
+class CrossValidate(Learn):
+    """Train the algorithm on every possible set of all but one data point
+    and test on the leftover data point.
+    Look at the average accuracy across tests."""
+    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
+                 processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
+                 epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
+        feature_dict = FeatureDict(feature_chart)
+        inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
+        allinput = inputs.allinputs
+        self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
+        if algorithm == HGGLA:
+            self.accuracy = self.HG_validate(allinput)
+
     def HG_validate(self, inputs):
         tableaux = self.make_tableaux(inputs)
-        self.accuracy = []
+        accuracy = []
         for i, tableau in enumerate(tableaux):
             self.refresh_input(tableaux)
             self.refresh_con()
             assert self.alg.constraints.constraints == []
             training_set = tableaux[:i] + tableaux[i + 1:]
+            random.shuffle(training_set)
             self.alg.train(training_set)
             # test
             desired = None
@@ -478,23 +493,10 @@ class CrossValidate:
                 assert m.harmony == None
                 assert m.violations == numpy.array([1])
             if self.alg.test([test_tableau])[0].sr == desired: # [0] because it returns a list of one element
-                self.accuracy.append(1)
+                accuracy.append(1)
             else:
-                self.accuracy.append(0)
-        return self.accuracy
-
-    def perceptron_validate(self, inputs):
-        self.accuracy = []
-        for mapping in inputs:
-            inputs.remove(mapping)
-            answer = mapping.grammatical
-            mapping.grammatical = None
-            self.alg.train(inputs)
-            if self.alg.test(mapping)[0] == answer:
-                self.accuracy.append(1)
-            else:
-                self.accuracy.append(0)
-        return self.accuracy
+                accuracy.append(0)
+        return accuracy
 
 if __name__ == '__main__':
     import os
@@ -502,7 +504,11 @@ if __name__ == '__main__':
     #localpath = os.getcwd() + '/' + '/'.join(sys.argv[0].split('/')[:-1])
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
-    xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', HGGLA, tier_freq = 100000)
-    xval2 = CrossValidate('feature_chart3.csv', 'input4.csv', HGGLA, tier_freq = 100000)
+    learn1 = Learn('feature_chart2.csv', 'input2.csv', tier_freq = 100000)
+    learn2 = Learn('feature_chart3.csv', 'input4.csv', tier_freq = 100000)
+    print(learn1.accuracy)
+    print(learn2.accuracy)
+    xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', tier_freq = 100000)
+    xval2 = CrossValidate('feature_chart3.csv', 'input4.csv', tier_freq = 100000)
     print(xval1.accuracy)
     print(xval2.accuracy)
