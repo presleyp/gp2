@@ -389,7 +389,7 @@ class HGGLA:
 
     def train(self, inputs):
         # for iteration in range(10): # learn from the data this many times
-        differences = []
+        errors = []
         random.shuffle(inputs)
         for tableau in inputs: # learn one tableau at a time
             computed_winner = self.evaluate(tableau, if_tie = 'induce')
@@ -407,12 +407,12 @@ class HGGLA:
                 assert isinstance(grammatical_winner, Mapping), "grammatical winner isn't a Mapping"
                 difference = grammatical_winner.violations - computed_winner.violations
                 self.constraints.weights += difference * self.learning_rate
-                differences.append(difference)
                 self.constraints.induce([computed_winner, grammatical_winner])
+                errors.append(1)
             else:
-                differences.append(0)
-        #if len(differences) != 0:
-            #print 'avg diff', numpy.mean(differences) # not sure if this is meaningful
+                errors.append(0)
+        return errors
+
 
     def test(self, inputs):
         winners = [self.evaluate(tableau, if_tie = 'guess') for tableau in inputs]
@@ -427,8 +427,8 @@ class Learn:
         allinput = inputs.allinputs
         self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
         self.num_trainings = num_trainings
-        if algorithm == HGGLA:
-            self.accuracy = self.run_HGGLA(allinput)
+        self.all_errors = []
+        self.accuracy = self.run_HGGLA(allinput)
 
     def make_tableaux(self, inputs):
         #print inputs
@@ -441,7 +441,8 @@ class Learn:
         accuracy = []
         assert self.alg.constraints.constraints == []
         for i in range(self.num_trainings):
-            self.alg.train(tableaux)
+            errors = self.alg.train(tableaux)
+            self.all_errors.append(errors)
         computed_winners = self.alg.test(tableaux)
         for winner in computed_winners:
             if winner.grammatical == True:
@@ -484,7 +485,8 @@ class CrossValidate(Learn):
             training_set = tableaux[:i] + tableaux[i + 1:]
             random.shuffle(training_set)
             for i in range(self.num_trainings):
-                self.alg.train(training_set)
+                errors = self.alg.train(training_set)
+                self.all_errors.append(errors)
             # test
             desired = None
             test_tableau = []
@@ -503,6 +505,7 @@ class CrossValidate(Learn):
                 accuracy.append(0)
         return accuracy
 
+#TODO graph all_errors instead of printing
 if __name__ == '__main__':
     import os
     import sys
@@ -511,9 +514,13 @@ if __name__ == '__main__':
     os.chdir(localpath)
     learn1 = Learn('feature_chart2.csv', 'input2.csv', tier_freq = 100000)
     learn2 = Learn('feature_chart3.csv', 'input4.csv', tier_freq = 100000)
+    print(learn1.all_errors)
     print(learn1.accuracy)
+    print(learn2.all_errors)
     print(learn2.accuracy)
     xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', tier_freq = 100000)
     xval2 = CrossValidate('feature_chart3.csv', 'input4.csv', tier_freq = 100000)
+    print(xval1.all_errors)
     print(xval1.accuracy)
+    print(xval2.all_errors)
     print(xval2.accuracy)
