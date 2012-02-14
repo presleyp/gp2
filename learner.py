@@ -361,7 +361,7 @@ class HGGLA:
         self.constraints = Con(feature_dict, tier_freq)
         self.induction = induction
 
-    def evaluate(self, tableau): #FIXME HGGLA.test probably shouldn't be able to induce constraints
+    def evaluate(self, tableau, if_tie = 'guess'): #FIXME HGGLA.test probably shouldn't be able to induce constraints
         """Use constraints to find mappings violations
         and constraint weights to find mappings harmony scores.
         From harmony scores, find and return the mapping predicted to win."""
@@ -377,20 +377,22 @@ class HGGLA:
             computed_winners = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
             if len(computed_winners) > 1: # there's a tie
                 #print 'computed winners', computed_winners
-                self.constraints.induce(computed_winners)
-                continue
+                if if_tie == 'guess':
+                    computed_winner = random.choice(computed_winners)
+                else:
+                    self.constraints.induce(computed_winners)
             else:
                 assert len(computed_winners) == 1, 'no computed winners'
                 computed_winner = computed_winners[0]
-                assert isinstance(computed_winner, Mapping), 'cw not a mapping'
-                return computed_winner
+        assert isinstance(computed_winner, Mapping), 'cw not a mapping'
+        return computed_winner
 
     def train(self, inputs):
         # for iteration in range(10): # learn from the data this many times
         differences = []
         random.shuffle(inputs)
         for tableau in inputs: # learn one tableau at a time
-            computed_winner = self.evaluate(tableau)
+            computed_winner = self.evaluate(tableau, if_tie = 'induce')
             assert isinstance(computed_winner, Mapping), "computed winner isn't a Mapping"
             #print 'c winner', computed_winner
             grammatical_winner = None
@@ -413,7 +415,7 @@ class HGGLA:
             #print 'avg diff', numpy.mean(differences) # not sure if this is meaningful
 
     def test(self, inputs):
-        winners = [self.evaluate(tableau) for tableau in inputs]
+        winners = [self.evaluate(tableau, if_tie = 'guess') for tableau in inputs]
         return winners
 
 class Learn:
