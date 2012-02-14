@@ -248,15 +248,18 @@ class Markedness:
         self.num_features = num_features
         self.tier = None
         self.use_tier = False
+        tiered_winners = []
         if random.randint(1, tier_freq) == tier_freq:
             self.use_tier = True
-            tiered_winners = [self.get_tier(winner) for winner in winners if self.get_tier(winner) != []] #FIXME sometimes creating empty lists.
-            if tiered_winners != []:
-                winners = tiered_winners
-            #don't want to create empty constraints, but what if some winners have the tier but not all winners do?
+            tiered_winners = [self.get_tier(winner) for winner in winners]
+            tiered_winners = [winner for winner in tiered_winners if winner != []]
         if len(winners) > 1:
+            if len(tiered_winners) > 1:
+                winners = tiered_winners
             self.constraint = self.pick_unique_pattern(winners)
         else:
+            if tiered_winners != []:
+                winners = tiered_winners
             self.constraint = self.pick_any_pattern(winners)
         #print self.constraint
 
@@ -313,14 +316,15 @@ class Markedness:
                 self.tier = random.choice(tiers)
                 if self.tier in set(winner.sr[0]):
                     break
-        winner_tier = [segment for segment in winner.sr if segment[self.tier] == 1]
+        winner_tier = copy.deepcopy(winner)
+        winner_tier.sr = [segment for segment in winner.sr if segment[self.tier] == 1]
         return winner_tier
 
     def get_violation(self, mapping):
         """Finds the number of places in the surface representation
         (including overlapping ones) that match the pattern of the constraint."""
         if self.use_tier == True:
-            mapping = self.get_tier(mapping)
+            mapping = self.get_tier(mapping) #FIXME get tier gives a list instead of a mapping, can't get its sr
         violation = 0
         for i in range(len(mapping.sr) + 1 - self.gram):
             segments = mapping.sr[i:i + self.gram]
@@ -512,15 +516,19 @@ if __name__ == '__main__':
     #localpath = os.getcwd() + '/' + '/'.join(sys.argv[0].split('/')[:-1])
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
-    learn1 = Learn('feature_chart2.csv', 'input2.csv', tier_freq = 100000)
-    learn2 = Learn('feature_chart3.csv', 'input4.csv', tier_freq = 100000)
+    learn1 = Learn('feature_chart2.csv', 'input2.csv', tier_freq = 10)
+    learn2 = Learn('feature_chart3.csv', 'input4.csv', tier_freq = 10)
+    learn1.all_errors = [sum(tableau) for tableau in learn1.all_errors]
     print(learn1.all_errors)
     print(learn1.accuracy)
+    learn2.all_errors = [sum(tableau) for tableau in learn2.all_errors]
     print(learn2.all_errors)
     print(learn2.accuracy)
-    xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', tier_freq = 100000)
-    xval2 = CrossValidate('feature_chart3.csv', 'input4.csv', tier_freq = 100000)
+    xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', tier_freq = 10)
+    xval2 = CrossValidate('feature_chart3.csv', 'input4.csv', tier_freq = 10)
+    xval1.all_errors = [sum(tableau) for tableau in xval1.all_errors]
     print(xval1.all_errors)
     print(xval1.accuracy)
+    xval2.all_errors = [sum(tableau) for tableau in xval2.all_errors]
     print(xval2.all_errors)
     print(xval2.accuracy)
