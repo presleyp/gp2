@@ -423,16 +423,27 @@ class HGGLA:
         return winners
 
 class Learn:
-    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
+    def __init__(self, feature_chart, input_file_list, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
                  processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
                  epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
         feature_dict = FeatureDict(feature_chart)
-        inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
+        inputs = Input(feature_dict, input_file_list[0], num_negatives, max_changes, processes, epenthetics)
         allinput = inputs.allinputs
+        test_file = False
+        if len(input_file_list) == 2: # there's separate test input
+            test_file = True
+            test_inputs = Input(feature_dict, input_file_list[1], num_negatives, max_changes, processes, epenthetics)
+            testinput = test_inputs.allinputs
         self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
         self.num_trainings = num_trainings
+        self.accuracy = []
         self.all_errors = []
-        self.accuracy = self.run_HGGLA(allinput)
+        self.run_HGGLA(allinput)
+        if test_file:
+            self.test_HGGLA(testinput)
+        print('errors per training', self.all_errors, 'accuracy', self.accuracy,
+               'number of constraints', len(self.alg.constraints.constraints))
+              #sep = '\n') # file = filename for storing output
 
     def make_tableaux(self, inputs):
         #print inputs
@@ -442,18 +453,19 @@ class Learn:
 
     def run_HGGLA(self, inputs):
         tableaux = self.make_tableaux(inputs)
-        accuracy = []
         assert self.alg.constraints.constraints == []
         for i in range(self.num_trainings):
             errors = self.alg.train(tableaux)
-            self.all_errors.append(errors)
+            self.all_errors.append(sum(errors))
+
+    def test_HGGLA(self, testinput):
+        tableaux = self.make_tableaux(testinput)
         computed_winners = self.alg.test(tableaux)
         for winner in computed_winners:
             if winner.grammatical == True:
-                accuracy.append(1)
+                self.accuracy.append(1)
             else:
-                accuracy.append(0)
-        return accuracy
+                self.accuracy.append(0)
 
 class CrossValidate(Learn):
     """Train the algorithm on every possible set of all but one data point
@@ -481,7 +493,6 @@ class CrossValidate(Learn):
 
     def run_HGGLA(self, inputs):
         tableaux = self.make_tableaux(inputs)
-        accuracy = []
         for i, tableau in enumerate(tableaux):
             self.refresh_input(tableaux)
             self.refresh_con()
@@ -490,7 +501,7 @@ class CrossValidate(Learn):
             random.shuffle(training_set)
             for i in range(self.num_trainings):
                 errors = self.alg.train(training_set)
-                self.all_errors.append(errors)
+                self.all_errors.append(sum(errors))
             # test
             desired = None
             test_tableau = []
@@ -504,10 +515,9 @@ class CrossValidate(Learn):
                 assert m.harmony == None
                 assert m.violations == numpy.array([1])
             if self.alg.test([test_tableau])[0].sr == desired: # [0] because it returns a list of one element
-                accuracy.append(1)
+                self.accuracy.append(1)
             else:
-                accuracy.append(0)
-        return accuracy
+                self.accuracy.append(0)
 
 #TODO graph all_errors instead of printing
 if __name__ == '__main__':
@@ -516,19 +526,7 @@ if __name__ == '__main__':
     #localpath = os.getcwd() + '/' + '/'.join(sys.argv[0].split('/')[:-1])
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
-    learn1 = Learn('feature_chart2.csv', 'input2.csv', tier_freq = 10)
-    learn2 = Learn('feature_chart3.csv', 'input4.csv', tier_freq = 10)
-    learn1.all_errors = [sum(tableau) for tableau in learn1.all_errors]
-    print(learn1.all_errors)
-    print(learn1.accuracy)
-    learn2.all_errors = [sum(tableau) for tableau in learn2.all_errors]
-    print(learn2.all_errors)
-    print(learn2.accuracy)
-    xval1 = CrossValidate('feature_chart2.csv', 'input2.csv', tier_freq = 10)
-    xval2 = CrossValidate('feature_chart3.csv', 'input4.csv', tier_freq = 10)
-    xval1.all_errors = [sum(tableau) for tableau in xval1.all_errors]
-    print(xval1.all_errors)
-    print(xval1.accuracy)
-    xval2.all_errors = [sum(tableau) for tableau in xval2.all_errors]
-    print(xval2.all_errors)
-    print(xval2.accuracy)
+    learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
+    learn2 = Learn('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
+    xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
+    xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
