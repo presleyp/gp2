@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-import csv, copy, random, numpy
+import csv, copy, random, numpy, itertools
 #TODO get numpy working with python3
-#TODO improve change logging - change feature in fset instead of in segment?
+#TODO improve change logging - currently gives whole feature set, should give a sample, or just voc, cons, or son
 #TODO implicational constraints
 #TODO consider constraining GEN
 #TODO graphs - error rate
@@ -45,7 +45,7 @@ class Input:
                     gen = Gen(self.feature_dict, *self.gen_args)
                     negatives = gen.ungrammaticalize(mapping)
                     allinputs += negatives
-        return allinputs
+            return allinputs
 
 class Gen:
     """Generates input-output mappings."""
@@ -59,9 +59,7 @@ class Gen:
     def ungrammaticalize(self, mapping):
         """Given a grammatical input-output mapping, create randomly ungrammatical mappings with the same input."""
         negatives = []
-        i = 0
         while len(negatives) < self.num_negatives:
-            i += 1
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
             for j in range(random.randint(0, self.max_changes)):       # randomly pick number of processes
                 process = random.choice(eval(self.processes))          # randomly pick process
@@ -72,7 +70,6 @@ class Gen:
             # Don't add a mapping if its sr has a segment that isn't in the
             # inventory
             try:
-                #print new_mapping
                 self.feature_dict.get_segments(new_mapping.sr)
             except IndexError:
                 continue
@@ -87,25 +84,21 @@ class Gen:
                 negatives.append(new_mapping)
         return negatives
 
+#TODO: change processes to accomodate matrices
     def epenthesize(self, mapping):
         """Map a ur to an sr with one more segment."""
         epenthetic_segment = random.choice(self.epenthetics)
         epenthetic_features = self.feature_dict.get_features(epenthetic_segment)
         locus = random.randint(0, len(mapping.sr))
         mapping.sr.insert(locus, epenthetic_features)
-        mapping.changes.append('epenthesize ' + epenthetic_segment)
+        mapping.changes.append('epenthesize ' + str(epenthetic_features))
 
     def delete(self, mapping):
         """Map a ur to an sr with one less segment."""
         if len(mapping.sr) > 1:
             locus = random.randint(0, len(mapping.sr) - 1)
             deleted = mapping.sr.pop(locus)
-            try:
-                deleted = self.feature_dict.get_segment(deleted)
-            except IndexError:
-                pass
-            finally:
-                mapping.changes.append('delete ' + str(deleted))
+            mapping.changes.append('delete ' + str(deleted))
 
     def metathesize(self, mapping):
         """Map a ur to an sr with two segments having swapped places."""
@@ -114,13 +107,7 @@ class Gen:
             moved_left = mapping.sr[locus + 1]
             moved_right = mapping.sr.pop(locus)
             mapping.sr.insert(locus + 1, moved_right)
-            try:
-                moved_right = self.feature_dict.get_segment(moved_right)
-                moved_left = self.feature_dict.get_segment(moved_left)
-            except IndexError:
-                pass
-            finally:
-                mapping.changes.append('metathesize ' + str(moved_right) + ' and ' + str(moved_left))
+            mapping.changes.append('metathesize ' + str(moved_right) + ' and ' + str(moved_left))
 
     # I want to change feature values rather than change from one segment to
     # another so that the probability of changing from t to d is higher than the
@@ -139,12 +126,8 @@ class Gen:
         feature = random.choice(segment.keys()) # wrap in list() for python3
         segment[feature] = '1' if segment[feature] == '0' else '0'
         value = segment[feature]
-        try:
-            original_segment = self.feature_dict.get_segment(original_segment)
-        except IndexError:
-            pass
-        finally:
-            mapping.changes.append('change ' + str(feature) + ' in ' + str(original_segment) + ' to ' + str(value))
+        #mapping.changes.append('change ' + str(feature) + ' in ' + str(original_segment) + ' to ' + str(value))
+        mapping.changes.append('change ' + str(feature) + ' in ' + original_segment + ' to ' + value)
 
 class Mapping:
     def __init__(self, feature_dict, line):
@@ -166,6 +149,11 @@ class Mapping:
         self.ur = [self.feature_dict.get_features(segment) for segment in self.ur]
         self.sr = [self.feature_dict.get_features(segment) for segment in self.sr]
         self.changes = [] if self.changes == 'none' else self.changes.split(';')
+        for i in range(len(self.changes)):
+            if 'change ' in self.changes[i]:
+                changeparts = self.changes[i].split(' ')
+                changeparts[3] = self.feature_dict.get_features(changeparts[3])
+                self.changes[i] = ' '.join(changeparts)
 
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))
@@ -173,6 +161,7 @@ class Mapping:
         return ', '.join([str(self.grammatical), ur, sr, str(self.changes)])
 
 class FeatureDict:
+    #TODO change to accomodate matrices
     def __init__(self, feature_chart):
         """Make a dictionary of dictionaries like {segment:{feature:value, ...} ...}.
         This will be used to determine the features of the input segments.
@@ -200,7 +189,7 @@ class Con:
     def __init__(self, feature_dict, tier_freq):
         self.constraints = []
         self.weights = numpy.array([0]) # intercept weight
-        key = random.choice(feature_dict.fd.keys()) # list() in python 3
+        key = random.choice(feature_dict.fd.keys()) # list() in python 3 TODO change to accomodate matrices
         self.num_features = len(feature_dict.fd[key])
         self.tier_freq = tier_freq
 
@@ -244,12 +233,25 @@ class Markedness:
         or three adjacent natural classes. The constraint is a list of
         sets of feature-value tuples. 1/tier_freq of the time, the
         constraint is tier-based."""
+        #TODO think about using lexical and tier constraints smartly, not based
+        #on frequency in the constraint set. You need a tier constraint when the
+        #gw has similar things on a tier and the cw doesn't. You need a lexical constraint
+        # when your constraints worked on a really similar word but don't work
+        # on this one (harder, because constraint set keeps changing).
+        #self.lexical = False
+        #if random.randint(1, lexical_freq) == lexical_freq:
+            #self.lexical = True
+            #self.constraint = random.choice(winners).meaning
         self.gram = random.randint(1, 3)
         self.num_features = num_features
         self.tier = None
         self.use_tier = False
         tiered_winners = []
-        if random.randint(1, tier_freq) == tier_freq:
+        # pick tier, then make grams, then find differences. if none, start
+        # over? would work but would waste time.
+        # make grams, find differences, then make tiers?
+        # make grams with and without tiers, find differences, pick one.
+        if random.randint(1, tier_freq) == tier_freq and self.gram != 1: # a unigram tier constraint is just a unigram constraint
             self.use_tier = True
             tiered_winners = [self.get_tier(winner) for winner in winners]
             tiered_winners = [winner for winner in tiered_winners if winner != []]
@@ -261,7 +263,6 @@ class Markedness:
             if tiered_winners != []:
                 winners = tiered_winners
             self.constraint = self.pick_any_pattern(winners)
-        #print self.constraint
 
     def pick_unique_pattern(self, winners):
         """Given a list of words, find sequences of segments that are self.gram long
@@ -283,14 +284,20 @@ class Markedness:
                 #print 'ngrams', ngrams_in_word
             all_ngrams.append(set(ngrams_in_word))
         for i in range(len(all_ngrams) - 1):
-            different_ngrams += (all_ngrams[i] ^ all_ngrams[i + 1])
+            different_ngrams += (all_ngrams[i] ^ all_ngrams[i + 1]) # list of ngrams of segments of fv pairs
+            # is there a way to find the ones that occur different numbers of
+            # times?
         try:
-            pattern = random.choice(different_ngrams) # may want to choose more than one
-            #TODO Choose a subset of the features of the segments in this ngram
+            pattern = random.choice(different_ngrams)
+            for i in range(len(pattern)):
+                pattern[i] = random.sample(pattern[i], random.randint(1, self.num_features)) # subset of the features
+
             pattern = [set(element) for element in pattern]
             assert len(pattern) == self.gram, "constraint length doesn't match self.gram"
             return pattern
         except IndexError: # no different_ngrams (say, unigrams used and only metathesis done)
+            # another case where it could fail: bigram in both, but once in one
+            # and twice in the other. what to do?
             return None
 
     def pick_any_pattern(self, winner):
@@ -527,6 +534,7 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    learn2 = Learn('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
+    #learn2 = Learn('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
+    #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
+    #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
+    #learnTurkish = Learn('TurkishFeaturesSPE.csv', ['TurkishInput1.csv', 'TurkishTest1.csv'], tier_freq = 10)
