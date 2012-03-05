@@ -5,9 +5,8 @@ import csv, copy, random, numpy, itertools
 #TODO implicational constraints
 #TODO consider constraining GEN
 #TODO graphs - error rate
-#TODO if deepcopy slows it down too much, change to numpy matrices to avoid
-#needing it
 #TODO consider adding lexically conditioned constraints
+#TODO check M constraints for whether they really find a difference bw winners; sampling of features might mess this up
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -51,6 +50,7 @@ class Gen:
     """Generates input-output mappings."""
     def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics):
         self.feature_dict = feature_dict
+        self.major_features = self.feature_dict.major_features
         self.num_negatives = num_negatives
         self.max_changes = max_changes
         self.processes = processes
@@ -85,20 +85,25 @@ class Gen:
         return negatives
 
 #TODO: change processes to accomodate matrices
+
+
+
     def epenthesize(self, mapping):
         """Map a ur to an sr with one more segment."""
         epenthetic_segment = random.choice(self.epenthetics)
         epenthetic_features = self.feature_dict.get_features(epenthetic_segment)
         locus = random.randint(0, len(mapping.sr))
         mapping.sr.insert(locus, epenthetic_features)
-        mapping.changes.append('epenthesize ' + str(epenthetic_features))
+        new_change = ['epenthesize', self.major_features(epenthetic_features)]
+        mapping.changes.append(' '.join([`item` for item in new_change]))
 
     def delete(self, mapping):
         """Map a ur to an sr with one less segment."""
         if len(mapping.sr) > 1:
             locus = random.randint(0, len(mapping.sr) - 1)
             deleted = mapping.sr.pop(locus)
-            mapping.changes.append('delete ' + str(deleted))
+            new_change = ['delete', self.major_features(deleted)]
+            mapping.changes.append(' '.join([`item` for item in new_change]))
 
     def metathesize(self, mapping):
         """Map a ur to an sr with two segments having swapped places."""
@@ -107,7 +112,8 @@ class Gen:
             moved_left = mapping.sr[locus + 1]
             moved_right = mapping.sr.pop(locus)
             mapping.sr.insert(locus + 1, moved_right)
-            mapping.changes.append('metathesize ' + str(moved_right) + ' and ' + str(moved_left))
+            new_change = ['metathesize', self.major_features(moved_right), self.major_features(moved_left)]
+            mapping.changes.append(' '.join([`item` for item in new_change]))
 
     # I want to change feature values rather than change from one segment to
     # another so that the probability of changing from t to d is higher than the
@@ -122,12 +128,13 @@ class Gen:
         """Map a ur to an sr with the value of a feature of a segment changed."""
         locus = random.randint(0, len(mapping.sr) - 1)
         segment = mapping.sr[locus]
-        original_segment = copy.deepcopy(segment)
-        feature = random.choice(segment.keys()) # wrap in list() for python3
-        segment[feature] = '1' if segment[feature] == '0' else '0'
+        major_features = self.major_features(segment)
+        feature_index = random.randint(0, len(segment) - 1)
+        segment[feature_index] = 1 if segment[feature_index] == 0 else 0
         value = segment[feature]
-        #mapping.changes.append('change ' + str(feature) + ' in ' + str(original_segment) + ' to ' + str(value))
-        mapping.changes.append('change ' + str(feature) + ' in ' + original_segment + ' to ' + value)
+        # follow rule writing: change a to b in the environment of c
+        new_change = ['change', feature_index, value, major_features]
+        mapping.changes.append(' '.join([`item` for item in new_change]))
 
 class Mapping:
     def __init__(self, feature_dict, line):
@@ -146,13 +153,14 @@ class Mapping:
 
     def to_data(self):
         self.grammatical = bool(int(self.grammatical))
-        self.ur = [self.feature_dict.get_features(segment) for segment in self.ur]
-        self.sr = [self.feature_dict.get_features(segment) for segment in self.sr]
+        self.ur = self.feature_dict.get_features_word(self.ur)
+        self.sr = self.feature_dict.get_features_word(self.sr)
         self.changes = [] if self.changes == 'none' else self.changes.split(';')
         for i in range(len(self.changes)):
             if 'change ' in self.changes[i]:
                 changeparts = self.changes[i].split(' ')
-                changeparts[3] = self.feature_dict.get_features(changeparts[3])
+                changeparts[3] = self.feature_dict.get_features_seg(changeparts[3])
+                changeparts[3] = self.feature_dict.major_features(changeparts[3])
                 self.changes[i] = ' '.join(changeparts)
 
     def __str__(self):
@@ -161,36 +169,42 @@ class Mapping:
         return ', '.join([str(self.grammatical), ur, sr, str(self.changes)])
 
 class FeatureDict:
-    #TODO change to accomodate matrices
     def __init__(self, feature_chart):
         """Make a dictionary of dictionaries like {segment:{feature:value, ...} ...}.
         This will be used to determine the features of the input segments.
         Also find the number of features in the chart, which will be used in constraint induction."""
         self.fd = {}
         with open(feature_chart, 'r') as fc:
-            fcd = csv.DictReader(fc)
-            for line in fcd:
-                seg = line.pop('segment')
-                self.fd[seg] = line
+            fcd = csv.reader(fc)
+            for i, line in enumerate(fcd):
+                if i > 0:
+                    segment = line.pop(0)
+                    self.num_features = len(line)
+                    self.fd[segment] = numpy.array([int(value) for value in line])
 
-    def get_features(self, segment):
-        features = copy.deepcopy(self.fd[segment])
+    def get_features_seg(self, segment):
+        return copy.copy(self.fd[segment])
+
+    def get_features_word(self, word):
+        features = [self.get_features_seg(segment) for segment in word]
+        features = numpy.array(features)
         return features
 
     def get_segments(self, word):
-        segments = [self.get_segment(features) for features in word] # change iteritems to items for python3
-        return segments
+        return [self.get_segment(features) for features in word]
 
     def get_segment(self, features):
-        segment = [k for k, v in self.fd.iteritems() if v == features][0]
-        return segment
+        return [k for k, v in self.fd.iteritems() if v == features][0]
+
+    def major_features(self, featureset):
+        """Select only the first three features. These should be vocalic, consonantal, and sonorant."""
+        return featureset[0:3]
 
 class Con:
     def __init__(self, feature_dict, tier_freq):
         self.constraints = []
         self.weights = numpy.array([0]) # intercept weight
-        key = random.choice(feature_dict.fd.keys()) # list() in python 3 TODO change to accomodate matrices
-        self.num_features = len(feature_dict.fd[key])
+        self.num_features = feature_dict.num_features
         self.tier_freq = tier_freq
 
     def induce(self, winners):
@@ -264,6 +278,18 @@ class Markedness:
                 winners = tiered_winners
             self.constraint = self.pick_any_pattern(winners)
 
+    def get_ngrams(self, word):
+        ngrams_in_word = []
+        starting_positions = range(len(word) + 1 - self.gram)
+        for i in starting_positions:
+            ngram = word[i:i + self.gram + 1]
+            # tuple segments
+            ngram = [tuple(segment) for segment in ngram]
+            # tuple ngram
+            ngrams_in_word.append(tuple(ngram))
+        # get set of ngrams from each word
+        return ngrams_in_word
+
     def pick_unique_pattern(self, winners):
         """Given a list of words, find sequences of segments that are self.gram long
         and, for any adjacent pair of words in the list, exist in only one of the words
@@ -271,22 +297,16 @@ class Markedness:
         all_ngrams = []
         different_ngrams = []
         for winner in winners:
-            #if type(winner) == list:
-                #print 'winner', winner
-                #print 'winners', winners
             word = winner.sr
-            ngrams_in_word = []
-            starting_positions = range(len(word) + 1 - self.gram)
-            for i in starting_positions:
-                ngram = [tuple(word[i + gram].iteritems()) for gram in range(self.gram)]
-                #print 'ngram', ngram
-                ngrams_in_word.append(tuple(ngram))
-                #print 'ngrams', ngrams_in_word
-            all_ngrams.append(set(ngrams_in_word))
-        for i in range(len(all_ngrams) - 1):
-            different_ngrams += (all_ngrams[i] ^ all_ngrams[i + 1]) # list of ngrams of segments of fv pairs
-            # is there a way to find the ones that occur different numbers of
-            # times?
+            all_ngrams += self.get_ngrams(word)
+        all_ngrams = set(all_ngrams)
+        #for i in range(len(all_ngrams) - 1): # for pair of winners
+            #different_ngrams += (all_ngrams[i] ^ all_ngrams[i + 1])
+            #shared_ngrams += (all_ngrams[i] & all_ngrams[i + 1])
+        for ngram in all_ngrams:
+            occurrences = [winner.sr.count(ngram) for winner in winners]
+            if occurrences.count(occurrences[0]) == len(occurrences):
+                different_ngrams += ngram
         try:
             pattern = random.choice(different_ngrams)
             for i in range(len(pattern)):
@@ -296,8 +316,6 @@ class Markedness:
             assert len(pattern) == self.gram, "constraint length doesn't match self.gram"
             return pattern
         except IndexError: # no different_ngrams (say, unigrams used and only metathesis done)
-            # another case where it could fail: bigram in both, but once in one
-            # and twice in the other. what to do?
             return None
 
     def pick_any_pattern(self, winner):
@@ -372,7 +390,7 @@ class HGGLA:
         self.constraints = Con(feature_dict, tier_freq)
         self.induction = induction
 
-    def evaluate(self, tableau, if_tie = 'guess'): #FIXME HGGLA.test probably shouldn't be able to induce constraints
+    def evaluate(self, tableau, if_tie = 'guess'):
         """Use constraints to find mappings violations
         and constraint weights to find mappings harmony scores.
         From harmony scores, find and return the mapping predicted to win."""
@@ -455,7 +473,7 @@ class Learn:
     def make_tableaux(self, inputs):
         #print inputs
         urs = [mapping.ur for mapping in inputs if mapping.grammatical == True]
-        tableaux = [[mapping for mapping in inputs if mapping.ur == item] for item in urs]
+        tableaux = [[mapping for mapping in inputs if (mapping.ur == item).all()] for item in urs]
         return tableaux
 
     def run_HGGLA(self, inputs):
@@ -505,7 +523,7 @@ class CrossValidate(Learn):
             self.refresh_con()
             assert self.alg.constraints.constraints == []
             training_set = tableaux[:i] + tableaux[i + 1:]
-            random.shuffle(training_set)
+            random.shuffle(training_set) #FIXME should I shuffle here and in train?
             for i in range(self.num_trainings):
                 errors = self.alg.train(training_set)
                 self.all_errors.append(sum(errors))
