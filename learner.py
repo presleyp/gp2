@@ -139,12 +139,30 @@ class Gen:
         locus = random.randint(0, len(mapping.sr) - 1)
         segment = mapping.sr[locus]
         major_features = self.major_features(segment)
-        feature_index = random.randint(0, len(segment) - 1)
-        mapping.sr[locus][feature_index] = 1 if segment[feature_index] == -1 else -1
-        value = segment[feature_index]
+        #feature_index = random.randint(0, len(segment) - 1)
+        #mapping.sr[locus][feature_index] = 1 if segment[feature_index] == -1 else -1
+        #value = segment[feature_index]
+        new_segments = []
+        new_segment = None
+        population = [(-x + self.feature_dict.num_features + 1)*[x] for x in range(self.feature_dict.num_features)]
+        population = [x for list in population for x in list]
+        while new_segment == None:
+            num_changes = random.sample(population, 1)
+            for seg in self.feature_dict.fd.values():
+                if numpy.sum(numpy.absolute(segment - seg)) == 2*num_changes[0]:
+                    new_segments.append(seg)
+            try:
+                new_segment = random.choice(new_segments)
+            except IndexError:
+                continue
+        differences = segment - new_segment
+        mapping.sr[locus] = new_segment
+        for i in range(len(differences)):
+            if differences[i] != 0:
+                mapping.changes.append(' '.join(['change', str(i), str(new_segment[i]), str(major_features)]))
         # follow rule writing: change a to b in the environment of c
-        new_change = ['change', feature_index, value, major_features]
-        mapping.changes.append(' '.join([`item` for item in new_change]))
+        #new_change = ['change', feature_index, value, major_features]
+        #mapping.changes.append(' '.join([`item` for item in new_change]))
 
 class Mapping:
     def __init__(self, feature_dict, line):
@@ -347,6 +365,8 @@ class Markedness:
     def distinguishes_winners(self, pattern, winners):
         violations = []
         for winner in winners:
+            if type(winner) == list:
+                violations.append(self.get_violation_sr(winner))
             violations.append(self.get_violation_sr(winner.sr))
         if violations.count(violations[0]) != len(violations):
             return True
