@@ -324,10 +324,14 @@ class Markedness:
         if len(winners) > 1:
             if len(tiered_winners) > 1:
                 winners = tiered_winners
+            else:
+                winners = [winner.sr for winner in winners]
             self.pick_unique_pattern(winners)
         else:
             if tiered_winners != []:
                 winners = tiered_winners
+            else:
+                winners = winners.sr
             self.constraint = self.pick_any_pattern(winners)
 
     def get_ngrams(self, word, tuples = True):
@@ -365,9 +369,8 @@ class Markedness:
     def distinguishes_winners(self, pattern, winners):
         violations = []
         for winner in winners:
-            if type(winner) == list:
-                violations.append(self.get_violation_sr(winner))
-            violations.append(self.get_violation_sr(winner.sr))
+            violations.append(self.get_violation_sr(winner))
+            #violations.append(self.get_violation_sr(winner.sr))
         if violations.count(violations[0]) != len(violations):
             return True
         else:
@@ -380,10 +383,7 @@ class Markedness:
         all_ngrams = []
         different_ngrams = []
         for winner in winners:
-            if type(winner) == list:
-                all_ngrams.append(self.get_ngrams(winner))
-            else:
-                all_ngrams.append(self.get_ngrams(winner.sr))
+            all_ngrams.append(self.get_ngrams(winner))
         all_unique_ngrams = self.unique_ngrams(all_ngrams)
         for ngram in all_unique_ngrams:
             occurrences = [word.count(ngram) for word in all_ngrams]
@@ -402,7 +402,7 @@ class Markedness:
     def pick_any_pattern(self, winner):
         """Starting at a random point in the word, find self.gram number of
         segments."""
-        word = copy.copy(winner[0].sr)
+        word = copy.copy(winner[0])
         locus = random.randint(0, len(word) + 1 - self.gram)
         pattern = numpy.array([])
         for gram in range(self.gram):
