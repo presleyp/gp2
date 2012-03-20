@@ -68,14 +68,14 @@ class Gen:
                 process(new_mapping)
             # Don't add a mapping if it's the same as the grammatical one.
             if numpy.equal(new_mapping.sr, mapping.sr).all():
-                print 'process didnt apply'
+                #print 'process didnt apply'
                 continue
             # Don't add a mapping if its sr has a segment that isn't in the
             # inventory
             try:
                 self.feature_dict.get_segments(new_mapping.sr)
             except IndexError:
-                print 'bad segment'
+                #print 'bad segment'
                 continue
             # Don't add a mapping if it's the same as a previously
             # generated one.
@@ -83,11 +83,11 @@ class Gen:
             for negative in negatives:
                 if numpy.equal(new_mapping.sr, negative.sr).all():
                     duplicate = True
-                    print 'made duplicate'
+                    #print 'made duplicate'
                     break
             if duplicate == False:
                 negatives.append(new_mapping)
-                print 'appended'
+                #print 'appended'
         return negatives
 
 #TODO: change processes to accomodate matrices
@@ -246,7 +246,6 @@ class FeatureDict:
                 tiers.append(self.feature_names.index(name))
             except ValueError:
                 pass
-        #assert set(tiers) & set(winner.sr[0]) != 0, "feature dictionary doesn't support tiers"
         assert len(tiers) > 0, "feature chart doesn't support tiers"
         return tiers
 
@@ -257,13 +256,16 @@ class Con:
         self.feature_dict = feature_dict
         self.tier_freq = tier_freq
 
-    def induce(self, winners):
+    def induce(self, winners, aligned):
         """Makes one new markedness and one new faithfulness constraint
         and initializes their weights, unless appropriate constraints
         cannot be found within 15 tries."""
         print 'calling induce'
         assert len(self.weights) == len(self.constraints) + 1
-        self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
+        if aligned == True:
+            self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
+        else:
+            self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
         self.make_constraint(Faithfulness, winners)
         new_weights = numpy.random.random(self.num_needed(self.weights))
         self.weights = numpy.append(self.weights, new_weights)
@@ -279,6 +281,7 @@ class Con:
                 break
 
     def get_violations(self, mapping):
+        print 'evaluating'
         new_constraints = -self.num_needed(mapping.violations)
         if new_constraints < 0:
             new_violations = numpy.array([constraint.get_violation(mapping)
@@ -307,36 +310,32 @@ class Markedness:
         #if random.randint(1, lexical_freq) == lexical_freq:
             #self.lexical = True
             #self.constraint = random.choice(winners).meaning
-        self.gram = random.randint(1, 3)
+        #print 'markedness init'
+        winners = [winner.sr for winner in winners]
+        self.constraint = []
+        self.gram = random.randint(1, 3) #FIXME avoid setting too high a gram for the word
         self.feature_dict = feature_dict
         self.num_features = self.feature_dict.num_features
         self.tier = None
-        self.use_tier = False
-        tiered_winners = []
+        tier_winners = []
         # pick tier, then make grams, then find differences. if none, start
         # over? would work but would waste time.
         # make grams, find differences, then make tiers?
         # make grams with and without tiers, find differences, pick one.
         if random.randint(1, tier_freq) == tier_freq and self.gram != 1: # a unigram tier constraint is just a unigram constraint
-            self.use_tier = True
-            tiered_winners = [self.get_tier(winner) for winner in winners]
-            tiered_winners = [winner for winner in tiered_winners if winner != []]
-        if len(winners) > 1:
-            if len(tiered_winners) > 1:
-                winners = tiered_winners
+            tier_winners = [self.get_tier(winner) for winner in winners]
+            tier_winners = [winner for winner in winners if winner != []]
+            if tier_winners != []:
+                winners = tier_winners
             else:
-                winners = [winner.sr for winner in winners]
+                self.tier = None
+        if len(winners) > 1:
             self.pick_unique_pattern(winners)
         else:
-            if tiered_winners != []:
-                winners = tiered_winners
-            else:
-                winners = winners.sr
-            self.constraint = self.pick_any_pattern(winners)
+            self.pick_any_pattern(winners)
 
     def get_ngrams(self, word, tuples = True):
-        placeholder = numpy.zeros((self.gram, self.num_features), dtype = int)
-        ngrams_in_word = [placeholder]
+        ngrams_in_word = [numpy.zeros((self.gram, self.num_features), dtype = int)]
         starting_positions = range(len(word) + 1 - self.gram)
         for i in starting_positions:
             ngram = word[i:i + self.gram]
@@ -402,26 +401,18 @@ class Markedness:
     def pick_any_pattern(self, winner):
         """Starting at a random point in the word, find self.gram number of
         segments."""
-        word = copy.copy(winner[0])
-        locus = random.randint(0, len(word) + 1 - self.gram)
-        pattern = numpy.array([])
-        for gram in range(self.gram):
-            segment = word[locus]
-            self.dontcares(segment)
-            numpy.vstack((pattern, segment)) #FIXME can't vstack on empty array
-            locus += 1
-        return pattern
+        start = random.randint(0, len(winner) + 1 - self.gram)
+        ngram = winner[start:start + self.gram]
+        ngram = self.dontcares(ngram)
+        self.constraint = ngram
 
     def get_tier(self, winner): #TODO ask if all kinds of tiers should be searched over
         """Returns a list of the segments in a word that are positive for a certain
         feature. Features currently supported are vocalic, consonantal, nasal, and strident."""
         if self.tier == None: #if creating the constraint, not getting violations
-            while True:
-                self.tier = random.choice(self.feature_dict.tiers)
-                if self.tier in set(winner.sr[0]):
-                    break
-        winner_tier_sr = [segment for segment in winner.sr if segment[self.tier] == 1]
-        return winner_tier_sr
+            self.tier = random.choice(self.feature_dict.tiers)
+        winner_tier = [segment for segment in winner if segment[self.tier] == 1]
+        return winner_tier
 
     def get_violation_sr(self, sr):
         violation = 0
@@ -434,8 +425,36 @@ class Markedness:
     def get_violation(self, mapping):
         """Finds the number of places in the surface representation
         (including overlapping ones) that match the pattern of the constraint."""
-        sr = self.get_tier(mapping) if self.use_tier == True else mapping.sr
-        return self.get_violation_sr(sr)
+        winner = mapping.sr
+        if self.tier != None:
+            winner = self.get_tier(winner)
+        return self.get_violation_sr(winner)
+
+class MarkednessAligned(Markedness):
+    def pick_unique_pattern(self, winners):
+        """Chooses two winners if there are more than two. Finds all differences
+        between them and picks one to preserve in the constraint. Bases the
+        constraint off of one of the two winners, but makes features don't-cares
+        at random. Does not allow the protected feature to become a
+        don't-care."""
+        winners = random.sample(winners, 2)
+        winner = winners[0]
+        diff_array = numpy.array(numpy.array(winners[0]) - numpy.array(winners[1]))
+        differences = numpy.nonzero(diff_array) # indices of differences
+        found_ngram = False
+        while self.constraint == []:
+            ind = random.choice(range(len(differences[0])))
+            segment = differences[0][ind]
+            feature = differences[1][ind]
+            position_in_ngram = random.choice(range(self.gram))
+            pattern = winner[segment - position_in_ngram:segment + self.gram - position_in_ngram]
+            if len(pattern) == self.gram:
+                self.constraint = pattern
+        indices = [random.sample(range(self.num_features), random.randint(0, self.num_features -1)) for seg in range(len(self.constraint))]
+        for seg in range(len(indices)):
+            for feat in indices[seg]:
+                if ((seg == segment) and (feat == feature)) == False:
+                    self.constraint[seg][feat] = 0
 
 class Faithfulness:
     def __init__(self, winners):
@@ -454,14 +473,14 @@ class Faithfulness:
         return mapping.changes.count(self.constraint)
 
 class HGGLA:
-    def __init__(self, learning_rate, feature_dict, induction, tier_freq):
+    def __init__(self, learning_rate, feature_dict, aligned, tier_freq):
         """Takes processed input and learns on it one tableau at a time.
         The constraints are updated by the difference in violation vectors
         between the computed winner and the desired winner,
         multiplied by the learning rate."""
         self.learning_rate = learning_rate
         self.constraints = Con(feature_dict, tier_freq)
-        self.induction = induction
+        self.aligned = aligned
 
     def evaluate(self, tableau, if_tie = 'guess'):
         """Use constraints to find mappings violations
@@ -482,7 +501,7 @@ class HGGLA:
                 if if_tie == 'guess':
                     computed_winner = random.choice(computed_winners)
                 else:
-                    self.constraints.induce(computed_winners)
+                    self.constraints.induce(computed_winners, self.aligned)
             else:
                 assert len(computed_winners) == 1, 'no computed winners'
                 computed_winner = computed_winners[0]
@@ -509,7 +528,7 @@ class HGGLA:
                 assert isinstance(grammatical_winner, Mapping), "grammatical winner isn't a Mapping"
                 difference = grammatical_winner.violations - computed_winner.violations
                 self.constraints.weights += difference * self.learning_rate
-                self.constraints.induce([computed_winner, grammatical_winner])
+                self.constraints.induce([computed_winner, grammatical_winner], self.aligned)
                 errors.append(1)
             else:
                 errors.append(0)
@@ -523,7 +542,7 @@ class HGGLA:
 class Learn:
     def __init__(self, feature_chart, input_file_list, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
                  processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
+                 epenthetics = ['e', '?'], aligned = True, tier_freq = 5):
         feature_dict = FeatureDict(feature_chart)
         inputs = Input(feature_dict, input_file_list[0], num_negatives, max_changes, processes, epenthetics)
         allinput = inputs.allinputs
@@ -532,7 +551,7 @@ class Learn:
             test_file = True
             test_inputs = Input(feature_dict, input_file_list[1], num_negatives, max_changes, processes, epenthetics)
             testinput = test_inputs.allinputs
-        self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
+        self.alg = algorithm(learning_rate, feature_dict, aligned, tier_freq)
         self.num_trainings = num_trainings
         self.accuracy = []
         self.all_errors = []
@@ -625,7 +644,7 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    learn2 = Learn('feature_chart3.csv', ['input4.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 5, tier_freq = 10)
+    #learn2 = Learn('feature_chart3.csv', ['input4.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 5, tier_freq = 10)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    #learnTurkish = Learn('TurkishFeaturesSPE.csv', ['TurkishInput1.csv', 'TurkishTest1.csv'], tier_freq = 10)
+    learnTurkish = Learn('TurkishFeaturesSPE.csv', ['TurkishInput1.csv', 'TurkishTest1.csv'], tier_freq = 10, processes = '[self.change_feature_value]')
