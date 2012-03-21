@@ -4,10 +4,14 @@ import csv, copy, random, numpy, itertools
 #TODO implicational constraints
 #TODO consider constraining GEN
 #TODO graphs - error rate
+#TODO think about using lexical and tier constraints smartly, not based
+        #on frequency in the constraint set. You need a tier constraint when the
+        #gw has similar things on a tier and the cw doesn't. You need a lexical constraint
+        # when your constraints worked on a really similar word but don't work
+        # on this one (harder, because constraint set keeps changing).
 #TODO consider adding lexically conditioned constraints
-#TODO check M constraints for whether they really find a difference bw winners; sampling of features might mess this up
-#TODO change feature charts and input files to agree with current implementation
-#TODO the alignment problem: maybe just turn off deletion and epenthesis for now and align words for finding constraints
+#TODO take deletions out of turkish input while i'm not doing deletion
+#TODO save input
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -23,6 +27,7 @@ class Input:
         print 'calling Input'
         self.feature_dict = feature_dict
         self.gen_args = [num_negatives, max_changes, processes, epenthetics]
+        # if there's a file with a name based on infile, use it. else:
         self.allinputs = self.make_input(infile)
 
     def make_input(self, infile):
@@ -33,7 +38,7 @@ class Input:
         and changes into a list of strings.
         Create ungrammatical mappings if not present."""
         allinputs = []
-        ungrammatical_included = False # could change to be passed as arg, but this is intuitive for me
+        ungrammatical_included = False
         with open(infile, 'r') as f:
             fread = list(csv.reader(f))
             if fread[1][0] == '0':
@@ -41,10 +46,14 @@ class Input:
             for line in fread:
                 mapping = Mapping(self.feature_dict, line)
                 mapping.to_data()
-                allinputs.append(mapping)
-                if ungrammatical_included == False:
+                if ungrammatical_included:
+                    mapping.add_boundaries()
+                    allinputs.append(mapping)
+                else:
                     gen = Gen(self.feature_dict, *self.gen_args)
                     negatives = gen.ungrammaticalize(mapping)
+                    mapping.add_boundaries()
+                    allinputs.append(mapping)
                     allinputs += negatives
             return allinputs
 
@@ -55,7 +64,7 @@ class Gen:
         self.major_features = self.feature_dict.major_features
         self.num_negatives = num_negatives
         self.max_changes = max_changes
-        self.processes = processes
+        self.processes = eval(processes)
         self.epenthetics = epenthetics
 
     def ungrammaticalize(self, mapping):
@@ -63,34 +72,32 @@ class Gen:
         negatives = []
         while len(negatives) < self.num_negatives:
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
-            for j in range(random.randint(0, self.max_changes)):       # randomly pick number of processes
-                process = random.choice(eval(self.processes))          # randomly pick process
+            for j in range(random.randint(0, self.max_changes)):
+                process = random.choice(self.processes)
                 process(new_mapping)
             # Don't add a mapping if it's the same as the grammatical one.
-            if numpy.equal(new_mapping.sr, mapping.sr).all():
-                #print 'process didnt apply'
-                continue
-            # Don't add a mapping if its sr has a segment that isn't in the
-            # inventory
             try:
-                self.feature_dict.get_segments(new_mapping.sr)
-            except IndexError:
-                #print 'bad segment'
-                continue
+                if numpy.equal(new_mapping.sr, mapping.sr).all():
+                    #print 'process didnt apply'
+                    continue
+            except ValueError: # they're not the same length
+                pass
             # Don't add a mapping if it's the same as a previously
             # generated one.
             duplicate = False
             for negative in negatives:
-                if numpy.equal(new_mapping.sr, negative.sr).all():
-                    duplicate = True
-                    #print 'made duplicate'
-                    break
+                try:
+                    if numpy.equal(new_mapping.sr, negative.sr).all():
+                        duplicate = True
+                        #print 'made duplicate'
+                        break
+                except ValueError:
+                    pass
             if duplicate == False:
+                new_mapping.add_boundaries()
                 negatives.append(new_mapping)
                 #print 'appended'
         return negatives
-
-#TODO: change processes to accomodate matrices
 
     def epenthesize(self, mapping):
         """Map a ur to an sr with one more segment."""
@@ -135,34 +142,38 @@ class Gen:
     # phonetics is doing it, perhaps); for now I'll also filter out segments not
     # in the inventory, but in the future it's may be better to change that.
     def change_feature_value(self, mapping):
-        """Map a ur to an sr with the value of a feature of a segment changed."""
-        locus = random.randint(0, len(mapping.sr) - 1)
+        """Map a ur to an sr with one segment changed. Prefers fewer feature
+        changes, but will only map to segments that are in the inventory. Each
+        feature change is recorded in rule format: 'change
+        feature-index new-feature-value
+        major-features-of-original-segment'."""
+        locus = random.randint(0,
+        len(mapping.sr) - 1)
         segment = mapping.sr[locus]
         major_features = self.major_features(segment)
-        #feature_index = random.randint(0, len(segment) - 1)
-        #mapping.sr[locus][feature_index] = 1 if segment[feature_index] == -1 else -1
-        #value = segment[feature_index]
         new_segments = []
         new_segment = None
+        # make a population of numbers representing the number of features to
+        # change. the higher the number, the less it is represented. The
+        # relationship is linear. Randomly select a number from this population.
         population = [(-x + self.feature_dict.num_features + 1)*[x] for x in range(self.feature_dict.num_features)]
-        population = [x for list in population for x in list]
+        population = [x for block in population for x in block]
+        # Search the segmental inventory for segments with that many features
+        # different from the original one. If none are found, sample again.
         while new_segment == None:
-            num_changes = random.sample(population, 1)
+            num_changes = random.sample(population, 1)[0]
             for seg in self.feature_dict.fd.values():
-                if numpy.sum(numpy.absolute(segment - seg)) == 2*num_changes[0]:
+                if numpy.sum(numpy.absolute(segment - seg)) == 2 * num_changes:
                     new_segments.append(seg)
             try:
                 new_segment = random.choice(new_segments)
             except IndexError:
-                continue
-        differences = segment - new_segment
+                pass
         mapping.sr[locus] = new_segment
-        for i in range(len(differences)):
-            if differences[i] != 0:
-                mapping.changes.append(' '.join(['change', str(i), str(new_segment[i]), str(major_features)]))
-        # follow rule writing: change a to b in the environment of c
-        #new_change = ['change', feature_index, value, major_features]
-        #mapping.changes.append(' '.join([`item` for item in new_change]))
+        differences = segment - new_segment
+        changed_features = numpy.nonzero(differences)
+        for i in changed_features:
+            mapping.changes.append(' '.join(['change', str(i), str(new_segment[i]), str(major_features)]))
 
 class Mapping:
     def __init__(self, feature_dict, line):
@@ -181,8 +192,6 @@ class Mapping:
 
     def to_data(self):
         self.grammatical = bool(int(self.grammatical))
-        self.ur = ''.join(['|', self.ur, '|'])
-        self.sr = ''.join(['|', self.sr, '|'])
         self.ur = self.feature_dict.get_features_word(self.ur)
         self.sr = self.feature_dict.get_features_word(self.sr)
         self.changes = [] if self.changes == 'none' else self.changes.split(';')
@@ -194,6 +203,11 @@ class Mapping:
             if changeparts[0] == 'change':
                 changeparts[1] = str(self.feature_dict.feature_names.index(changeparts[1]))
             self.changes[i] = ' '.join(changeparts)
+
+    def add_boundaries(self):
+        boundary = self.feature_dict.fd['|']
+        self.ur = numpy.vstack((boundary, self.ur, boundary))
+        self.sr = numpy.vstack((boundary, self.sr, boundary))
 
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))
@@ -298,18 +312,8 @@ class Con:
 class Markedness:
     def __init__(self, feature_dict, tier_freq, winners):
         """For a given output, make a constraint against one, two,
-        or three adjacent natural classes. The constraint is a list of
-        sets of feature-value tuples. 1/tier_freq of the time, the
+        or three adjacent natural classes. 1/tier_freq of the time, the
         constraint is tier-based."""
-        #TODO think about using lexical and tier constraints smartly, not based
-        #on frequency in the constraint set. You need a tier constraint when the
-        #gw has similar things on a tier and the cw doesn't. You need a lexical constraint
-        # when your constraints worked on a really similar word but don't work
-        # on this one (harder, because constraint set keeps changing).
-        #self.lexical = False
-        #if random.randint(1, lexical_freq) == lexical_freq:
-            #self.lexical = True
-            #self.constraint = random.choice(winners).meaning
         #print 'markedness init'
         winners = [winner.sr for winner in winners]
         self.constraint = []
@@ -317,86 +321,76 @@ class Markedness:
         self.feature_dict = feature_dict
         self.num_features = self.feature_dict.num_features
         self.tier = None
+        self.tier_freq = tier_freq
         tier_winners = []
-        # pick tier, then make grams, then find differences. if none, start
-        # over? would work but would waste time.
-        # make grams, find differences, then make tiers?
-        # make grams with and without tiers, find differences, pick one.
-        if random.randint(1, tier_freq) == tier_freq and self.gram != 1: # a unigram tier constraint is just a unigram constraint
-            tier_winners = [self.get_tier(winner) for winner in winners]
-            tier_winners = [winner for winner in winners if winner != []]
-            if tier_winners != []:
-                winners = tier_winners
-            else:
-                self.tier = None
+        if self.gram != 1: # a unigram tier constraint is just a unigram constraint
+            winners = self.decide_tier(winners)
         if len(winners) > 1:
             self.pick_unique_pattern(winners)
         else:
             self.pick_any_pattern(winners)
 
-    def get_ngrams(self, word, tuples = True):
-        ngrams_in_word = [numpy.zeros((self.gram, self.num_features), dtype = int)]
-        starting_positions = range(len(word) + 1 - self.gram)
-        for i in starting_positions:
-            ngram = word[i:i + self.gram]
-            if tuples == True:
-                ngram = tuple([tuple(segment) for segment in ngram])
-                ngrams_in_word.append(ngram)
+    def decide_tier(self, winners):
+        """Randomly decide whether to have a tier constraint. If yes, call
+        get_tiers on winners. Remove any winners that have none of the chosen
+        tier. If there are fewer than the desired number of winners (one or
+        at least two), then decide not to use a tier after all."""
+        if random.randint(1,
+        self.tier_freq) == self.tier_freq:
+            tier_winners = [self.get_tier(winner) for winner in winners]
+            tier_winners = [winner for winner in winners if winner != []]
+            desired_number = 1 if len(winners) == 1 else 2
+            if len(tier_winners) >= desired_number:
+                winners = tier_winners
             else:
-                ngrams_in_word = numpy.vstack((ngrams_in_word, [ngram]))
-        return ngrams_in_word[1:]
+                self.tier = None
+        return winners
+
+    def get_ngrams(self, word):
+        starting_positions = range(len(word) + 1 - self.gram)
+        ngrams_in_word = numpy.array([word[i:i + self.gram] for i in starting_positions])
+        return ngrams_in_word
+
+    def different_ngram(self, all_ngrams):
+        """Finds the set of all ngrams in the winners, and finds one ngram that
+        does not occur the same number of times in all winners."""
+        list_all_ngrams = all_ngrams.tolist()
+        flattened_ngrams = [ngram for word in list_all_ngrams for ngram in word]
+        sorted_ngrams = flattened_ngrams.sort()
+        unique_ngrams = [n for i, n in enumerate(sorted_ngrams) if i == 0 or n != sorted_ngrams[i-1]]
+        for ngram in random.shuffle(unique_ngrams):
+            occurrences = [word.count(ngram) for word in all_ngrams]
+            if occurrences.count(occurrences[0]) != len(occurrences):
+                return numpy.asarray(ngram)
 
     def dont_care(self, ngram):
-        self.dontcares = [random.sample(range(self.num_features), random.randint(0, self.num_features -1)) for segment in ngram]
+        self.dontcares = [random.sample(range(self.num_features), random.randint(0, self.num_features - 1)) for segment in ngram]
+        self.cares = []
         for segment in self.dontcares:
             for feature in segment:
                 ngram[segment][feature] = 0
 
-    def make_care(self, set_pattern, pattern):
-        make_care_segment = random.randint(0, self.gram - 1)
-        make_care_feature = self.dontcares[make_care_segment].pop(random.choice(len(make_care_segment)))
-        pattern[make_care_segment][make_care_feature] = list(set_pattern)[make_care_segment][make_care_feature]
-
-    def unique_ngrams(self, all_ngrams):
-        """Flattens so that all ngrams are in one list, regardless of the word they came from. Then removes duplicates."""
-        all_unique_ngrams = [ngram for word in all_ngrams for ngram in word]
-        all_unique_ngrams = set(all_unique_ngrams)
-        #all_unique_ngrams = [[list(segment) for segment in ngram] for ngram in all_unique_ngrams]
-        #all_unique_ngrams = numpy.array(all_unique_ngrams)
-        return all_unique_ngrams
+    def make_care(self, pattern):
+        segment = random.randint(0, self.gram - 1)
+        feature = self.dontcares[segment].pop(random.choice(range(len(segment))))
+        self.constraint[segment][feature] = pattern[segment][feature]
 
     def distinguishes_winners(self, pattern, winners):
-        violations = []
-        for winner in winners:
-            violations.append(self.get_violation_sr(winner))
-            #violations.append(self.get_violation_sr(winner.sr))
-        if violations.count(violations[0]) != len(violations):
-            return True
-        else:
-            return False
+        violations = [self.get_violation_sr(winner) for winner in winners]
+        return violations.count(violations[0]) != len(violations)
 
     def pick_unique_pattern(self, winners):
-        """Given a list of words, find sequences of segments that are self.gram long
-        and, for any adjacent pair of words in the list, exist in only one of the words
-        in the pair. Return one such sequence."""
-        all_ngrams = []
-        different_ngrams = []
-        for winner in winners:
-            all_ngrams.append(self.get_ngrams(winner))
-        all_unique_ngrams = self.unique_ngrams(all_ngrams)
-        for ngram in all_unique_ngrams:
-            occurrences = [word.count(ngram) for word in all_ngrams]
-            if occurrences.count(occurrences[0]) != len(occurrences):
-                different_ngrams.append(ngram)
-        try:
-            set_pattern = random.choice(different_ngrams)
-            self.constraint = numpy.array([list(segment) for segment in set_pattern])
+        """Choose a constraint from a list of words. The constraint should be
+        self.gram segments long and capable of distinguishing between two of the
+        words in the list."""
+        all_ngrams = numpy.array([self.get_ngrams(winner) for winner in winners])
+        self.constraint = self.different_ngram(all_ngrams)
+        if self.constraint != None:
+            pattern = self.constraint
             self.dont_care(self.constraint)
             assert len(self.constraint) == self.gram, "constraint length doesn't match self.gram"
             while self.distinguishes_winners(self.constraint, winners) == False:
-                self.make_care(set_pattern, self.constraint)
-        except IndexError: # no different_ngrams
-            self.constraint = None
+                self.make_care(pattern)
 
     def pick_any_pattern(self, winner):
         """Starting at a random point in the word, find self.gram number of
@@ -416,7 +410,7 @@ class Markedness:
 
     def get_violation_sr(self, sr):
         violation = 0
-        ngrams = self.get_ngrams(sr, tuples = False)
+        ngrams = self.get_ngrams(sr)
         for ngram in ngrams:
             if (numpy.absolute(ngram - self.constraint) > 1).any() == False:
                 violation += 1
@@ -439,7 +433,7 @@ class MarkednessAligned(Markedness):
         don't-care."""
         winners = random.sample(winners, 2)
         winner = winners[0]
-        diff_array = numpy.array(numpy.array(winners[0]) - numpy.array(winners[1]))
+        diff_array = winners[0] - winners[1]
         differences = numpy.nonzero(diff_array) # indices of differences
         found_ngram = False
         while self.constraint == []:
@@ -588,15 +582,6 @@ class CrossValidate(Learn):
     """Train the algorithm on every possible set of all but one data point
     and test on the leftover data point.
     Look at the average accuracy across tests."""
-    #def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_negatives = 10, max_changes = 10,
-                 #processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 #epenthetics = ['e', '?'], induction = 'comparative', tier_freq = 5):
-        #feature_dict = FeatureDict(feature_chart)
-        #inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
-        #allinput = inputs.allinputs
-        #self.alg = algorithm(learning_rate, feature_dict, induction, tier_freq)
-        #if algorithm == HGGLA:
-            #self.accuracy = self.run_HGGLA(allinput)
 
     def refresh_input(self, inputs):
         for tableau in inputs:
@@ -615,7 +600,7 @@ class CrossValidate(Learn):
             self.refresh_con()
             assert self.alg.constraints.constraints == []
             training_set = tableaux[:i] + tableaux[i + 1:]
-            random.shuffle(training_set) #FIXME should I shuffle here and in train?
+            random.shuffle(training_set)
             for i in range(self.num_trainings):
                 errors = self.alg.train(training_set)
                 self.all_errors.append(sum(errors))
@@ -631,12 +616,11 @@ class CrossValidate(Learn):
             for m in test_tableau:
                 assert m.harmony == None
                 assert m.violations == numpy.array([1])
-            if self.alg.test([test_tableau])[0].sr == desired: # [0] because it returns a list of one element
+            if self.alg.test([test_tableau])[0].sr == desired: # returns a list of one element
                 self.accuracy.append(1)
             else:
                 self.accuracy.append(0)
 
-#TODO graph all_errors instead of printing
 if __name__ == '__main__':
     import os
     import sys
