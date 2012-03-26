@@ -24,7 +24,6 @@ from featuredict import FeatureDict
 #sample (which will both be choice, with an optional size arg, have to take an
         #array)
 #TODO save output to file; consider tracking SSE
-#TODO take out print statements
 #TODO work on get ngrams (copy problem in diff ngrams), get violations
 
 #Profiler:
@@ -87,6 +86,7 @@ class Input:
                     gen = Gen(self.feature_dict, *self.gen_args)
                     negatives = gen.ungrammaticalize(mapping)
                     mapping.add_boundaries()
+                    mapping.set_ngrams()
                     tableau = [mapping] + negatives
                     allinputs.append(tableau)
             return allinputs
@@ -130,6 +130,7 @@ class Gen:
                 except ValueError:
                     pass
             if duplicate == False:
+                new_mapping.set_ngrams()
                 negatives.append(new_mapping)
         return negatives
 
@@ -184,7 +185,8 @@ class Gen:
         locus = numpy.random.randint(0, len(mapping.sr))
         segment = mapping.sr[locus]
         major_features = self.major_features(segment)
-        closest = None
+        closest_num = None
+        closest_phone = None
         differences = None
         new_segment = None
         num_to_change = numpy.random.geometric(p = .5, size = 1)
@@ -192,14 +194,14 @@ class Gen:
             num_to_change = random.sample(range(1, self.feature_dict.num_features + 1), 1)
         for phone in self.non_boundaries.values():
             differences = segment - phone
-            num_different = differences.count_nonzero()
+            num_different = numpy.count_nonzero(differences)
             if num_different <= num_to_change:
                 new_segment = phone
             else:
-                if num_different < closest or closest == None:
-                    closest = phone
+                if num_different < closest_num or closest_num == None:
+                    closest_phone = phone
         if new_segment == None:
-            new_segment = closest
+            new_segment = closest_phone
         # make a population of numbers representing the number of features to
         # change. the higher the number, the less it is represented. The
         # relationship is linear. Randomly select a number from this population.
@@ -228,23 +230,26 @@ class Con:
         self.weights = numpy.array([0]) # intercept weight
         self.feature_dict = feature_dict
         self.tier_freq = tier_freq
+        self.i = 0
 
     def induce(self, winners, aligned):
         """Makes one new markedness and one new faithfulness constraint
         and initializes their weights, unless appropriate constraints
         cannot be found within 15 tries."""
-        print 'calling induce'
+        #print 'calling induce'
+        #print self.i
         assert len(self.weights) == len(self.constraints) + 1
         self.make_constraint(Faithfulness, winners)
-        print 'made F'
+        #print 'made F'
         if aligned == True:
             self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
-            print 'made M'
+            #print 'made M'
         else:
             self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
         new_weights = numpy.random.random(self.num_needed(self.weights))
         self.weights = numpy.append(self.weights, new_weights)
         assert len(self.weights) == len(self.constraints) + 1
+        self.i += 1
 
     def make_constraint(self, constraint_type, *args):
         i = 0
@@ -336,7 +341,7 @@ class Markedness:
         self.constraint[segment][feature] = pattern[segment][feature]
 
     def distinguishes_winners(self, pattern, winners):
-        violations = [self.get_violation_sr(winner) for winner in winners]
+        violations = [self.get_violation(winner) for winner in winners]
         return violations.count(violations[0]) != len(violations)
 
     def pick_unique_pattern(self, winners):
@@ -368,21 +373,16 @@ class Markedness:
         winner_tier = [segment for segment in winner if segment[self.tier] == 1]
         return winner_tier
 
-    def get_violation_sr(self, sr):
+    def get_violation(self, mapping):
+        """Finds the number of places in the surface representation
+        (including overlapping ones) that match the pattern of the constraint."""
         violation = 0
-        ngrams = self.get_ngrams(sr)
+        ngrams = mapping.ngrams[self.gram - 1] if self.tier == None else mapping.get_ngrams(self.get_tier(mapping.sr), self.gram)
+        print len(ngrams)
         for ngram in ngrams:
             if (numpy.absolute(ngram - self.constraint) > 1).any() == False:
                 violation += 1
         return violation
-
-    def get_violation(self, mapping):
-        """Finds the number of places in the surface representation
-        (including overlapping ones) that match the pattern of the constraint."""
-        winner = mapping.sr
-        if self.tier != None:
-            winner = self.get_tier(winner)
-        return self.get_violation_sr(winner)
 
 class MarkednessAligned(Markedness):
     def pick_unique_pattern(self, winners):
@@ -440,60 +440,56 @@ class HGGLA:
         self.constraints = Con(feature_dict, tier_freq)
         self.aligned = aligned
 
-    def evaluate(self, tableau, if_tie = 'guess'):
+    def evaluate(self, tableau):
         """Use constraints to find mappings violations
         and constraint weights to find mappings harmony scores.
         From harmony scores, find and return the mapping predicted to win."""
         computed_winner = None
-        while computed_winner is None:
-            harmonies = []
-            for mapping in tableau:
-                self.constraints.get_violations(mapping)
-                mapping.harmony = numpy.dot(self.constraints.weights, mapping.violations)
-                harmonies.append(mapping.harmony)
-            highest_harmony = max(harmonies)
-            computed_winners = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
-            if len(computed_winners) > 1: # there's a tie
-                if if_tie == 'guess':
-                    computed_winner = random.choice(computed_winners)
-                else:
-                    self.constraints.induce(computed_winners, self.aligned)
-            else:
-                assert len(computed_winners) == 1, 'no computed winners'
-                computed_winner = computed_winners[0]
-        assert isinstance(computed_winner, Mapping), 'cw not a mapping'
-        return computed_winner
+        grammatical_winner = None
+        correct = None
+        harmonies = []
+        for mapping in tableau:
+            self.constraints.get_violations(mapping)
+            mapping.harmony = numpy.dot(self.constraints.weights, mapping.violations)
+            harmonies.append(mapping.harmony)
+            if mapping.grammatical == True:
+                grammatical_winner = mapping
+        highest_harmony = max(harmonies)
+        computed_winner = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
+        try:
+            correct = True if grammatical_winner.harmony == highest_harmony else False
+        except AttributeError: # grammatical_winner is None because this is a test
+            pass
+        return (grammatical_winner, computed_winner, correct)
+
+    def update(self, grammatical_winner, computed_winner):
+        difference = grammatical_winner.violations - computed_winner.violations
+        assert len(difference) == len(self.constraints.constraints) + 1
+        assert difference[0] == 0
+        self.constraints.weights += difference * self.learning_rate
 
     def train(self, inputs):
-        # for iteration in range(10): # learn from the data this many times
         errors = []
         random.shuffle(inputs)
         for tableau in inputs: # learn one tableau at a time
-            computed_winner = self.evaluate(tableau, if_tie = 'induce')
-            assert isinstance(computed_winner, Mapping), "computed winner isn't a Mapping"
-            #print 'c winner', computed_winner
-            grammatical_winner = None
-            for mapping in tableau:
-                #print 'mg', mapping.grammatical
-                if mapping.grammatical == True:
-                    grammatical_winner = mapping
-                    #print 'g winner', grammatical_winner
-                    break
-            if grammatical_winner != computed_winner:
-                assert isinstance(computed_winner, Mapping), "computed winner isn't a Mapping"
-                assert isinstance(grammatical_winner, Mapping), "grammatical winner isn't a Mapping"
-                difference = grammatical_winner.violations - computed_winner.violations
-                assert len(difference) == len(self.constraints.constraints) + 1
-                assert difference[0] == 0
-                self.constraints.weights += difference * self.learning_rate
-                self.constraints.induce([computed_winner, grammatical_winner], self.aligned)
-                errors.append(1)
+            (grammatical_winner, computed_winner, correct) = self.evaluate(tableau)
+            if correct:
+                if len(computed_winner) == 1:
+                    errors.append(0)
+                else:
+                    wrongful_winner = [cw for cw in computed_winner if cw.grammatical == False]
+                    self.constraints.induce([grammatical_winner, wrongful_winner[0]], self.aligned)
+                    errors.append(1)
             else:
-                errors.append(0)
+                if numpy.random.randint(0, 10) == 9:
+                    self.constraints.induce([grammatical_winner, computed_winner[0]], self.aligned)
+                else:
+                    self.update(grammatical_winner, computed_winner[0])
+                errors.append(1)
         return errors
 
-    def test(self, inputs):
-        winners = [self.evaluate(tableau, if_tie = 'guess') for tableau in inputs]
+    def test(self, inputs): # a little wasteful, make a separate function for test evaluation?
+        (gw, winners, c) = [self.evaluate(tableau) for tableau in inputs]
         return winners
 
 class Learn:
@@ -597,7 +593,7 @@ if __name__ == '__main__':
     #learn2 = Learn('feature_chart3.csv', ['input5.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 5, tier_freq = 10)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    learnTurkish = Learn('TurkishFeaturesSPE.csv', ['TurkishInput2.csv']#, 'TurkishTest2.csv']
+    learnTurkish = Learn('TurkishFeaturesSPE.csv', ['TurkishInput2.csv']#, 'TurkishTest2.csv'
                          , num_trainings = 2, max_changes = 5, num_negatives = 5, tier_freq = 10, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.

@@ -1,4 +1,4 @@
-import csv, numpy, copy
+import csv, numpy, copy, random
 
 class FeatureDict:
     def __init__(self, feature_chart):
@@ -43,7 +43,11 @@ class FeatureDict:
     def major_features(self, featureset):
         """Select only the first three features. These should be vocalic,
         consonantal, and sonorant."""
-        return featureset[0:3]
+        majors = copy.copy(featureset[0:3])
+        dontcares = random.sample(range(4), random.randint(1,3))
+        for i in dontcares:
+            majors[i] = 0
+        return majors
 
     def init_tiers(self):
         """Build a list of feature indices for the features that can have tiers
