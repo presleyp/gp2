@@ -26,13 +26,16 @@ from featuredict import FeatureDict
 #TODO save output to file; consider tracking SSE
 #TODO work on get ngrams (copy problem in diff ngrams), get violations
 
+#TODO data presentation (str method for constraints, graphs for errors), consider setting initial weights positive or negative depending on where they came from
+#TODO reward constraints
+
 #Profiler:
     #change feature value is slow
     #array to string is slow. think it's used in getting violations.
     #multiarray.array
     #getviolations, get violation sr, get ngrams, numpy.any
 # import cProfile, learner, pstats
-# cProfile.run("Learn('feature_chart3.csv', ['input5.csv'], processes =
+# cProfile.run("Learn('feature_chart4.csv', ['input5.csv'], processes =
 # '[self.change_feature_value]')", 'learnerprofile.txt')
 # p = pstats.Stats('learnerprofile.txt')
 # p.sort_stats('cumulative').print_stats(30)
@@ -80,6 +83,7 @@ class Input:
                 mapping.to_data()
                 if ungrammatical_included:
                     mapping.add_boundaries()
+                    mapping.set_ngrams()
                     allinputs.append(mapping)
                     #TODO put into tableaux with dictionary of urs
                 else:
@@ -108,7 +112,7 @@ class Gen:
         ungrammatical mappings with the same input."""
         negatives = []
         while len(negatives) < self.num_negatives:
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), set()])
             for j in range(numpy.random.randint(0, self.max_changes + 1)):
                 process = random.choice(self.processes)
                 process(new_mapping)
@@ -142,8 +146,7 @@ class Gen:
         mapping.sr = list(mapping.sr)
         mapping.sr.insert(locus, epenthetic_features)
         mapping.sr = numpy.array(mapping.sr)
-        new_change = ['epenthesize', self.major_features(epenthetic_features)]
-        mapping.changes.append(' '.join([str(item) for item in new_change]))
+        mapping.changes.add(frozenset('epenthesize', self.major_features(epenthetic_features)))
 
     def delete(self, mapping):
         """Map a ur to an sr with one less segment."""
@@ -152,8 +155,7 @@ class Gen:
             mapping.sr = list(mapping.sr)
             deleted = mapping.sr.pop(locus)
             mapping.sr = numpy.array(mapping.sr)
-            new_change = ['delete', self.major_features(deleted)]
-            mapping.changes.append(' '.join([str(item) for item in new_change]))
+            mapping.changes.add(frozenset('delete', self.major_features(deleted)))
 
     def metathesize(self, mapping):
         """Map a ur to an sr with two segments having swapped places."""
@@ -164,8 +166,8 @@ class Gen:
             moved_right = mapping.sr.pop(locus)
             mapping.sr.insert(locus + 1, moved_right)
             mapping.sr = numpy.array(mapping.sr)
-            new_change = ['metathesize', self.major_features(moved_right), self.major_features(moved_left)]
-            mapping.changes.append(' '.join([str(item) for item in new_change]))
+            moved_left_features = [''.join([2, f]) for f in self.major_features(moved_left)]
+            mapping.changes.add(frozenset('metathesize', self.major_features(moved_right), moved_left_features))
 
     # I want to change feature values rather than change from one segment to
     # another so that the probability of changing from t to d is higher than the
@@ -222,31 +224,35 @@ class Gen:
         mapping.sr[locus] = new_segment
         changed_features = numpy.nonzero(differences)
         for i in changed_features[0]:
-            mapping.changes.append(' '.join(['change', str(i), str(new_segment[i]), str(major_features)]))
+            #new_change = ''.join(['change', str(i), str(new_segment[i])])
+            #new_change = major_features + new_change #major features should return a set of keys
+            changelist = ['change', str(i), new_segment[i]] + major_features
+            mapping.changes.add(frozenset(changelist))
 
 class Con:
-    def __init__(self, feature_dict, tier_freq):
+    def __init__(self, feature_dict, tier_freq, aligned):
         self.constraints = []
         self.weights = numpy.array([0]) # intercept weight
         self.feature_dict = feature_dict
         self.tier_freq = tier_freq
+        self.aligned = aligned
         self.i = 0
 
-    def induce(self, winners, aligned):
+    def induce(self, winners):
         """Makes one new markedness and one new faithfulness constraint
         and initializes their weights, unless appropriate constraints
         cannot be found within 15 tries."""
         #print 'calling induce'
         #print self.i
         assert len(self.weights) == len(self.constraints) + 1
-        self.make_constraint(Faithfulness, winners)
+        self.make_constraint(Faithfulness, winners, self.feature_dict)
         #print 'made F'
-        if aligned == True:
+        if self.aligned == True:
             self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
             #print 'made M'
         else:
             self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
-        new_weights = numpy.random.random(self.num_needed(self.weights))
+        new_weights = -1 * numpy.random.random(self.num_needed(self.weights)) #for negative weights
         self.weights = numpy.append(self.weights, new_weights)
         assert len(self.weights) == len(self.constraints) + 1
         self.i += 1
@@ -378,7 +384,7 @@ class Markedness:
         (including overlapping ones) that match the pattern of the constraint."""
         violation = 0
         ngrams = mapping.ngrams[self.gram - 1] if self.tier == None else mapping.get_ngrams(self.get_tier(mapping.sr), self.gram)
-        print len(ngrams)
+        #print len(ngrams) # 9989 10 10 10
         for ngram in ngrams:
             if (numpy.absolute(ngram - self.constraint) > 1).any() == False:
                 violation += 1
@@ -391,10 +397,10 @@ class MarkednessAligned(Markedness):
         constraint off of one of the two winners, but makes features don't-cares
         at random. Does not allow the protected feature to become a
         don't-care."""
-        winners = random.sample(winners, 2)
-        winner = winners[0]
+        winner = winners[1] #for negative constraints; could randomly choose for a mix of negative and positive
         diff_array = winners[0] - winners[1]
-        differences = numpy.nonzero(diff_array) # indices of differences
+        differences = numpy.nonzero(numpy.absolute(diff_array) > 1) # indices of differences
+        #print winners[0], winners[1], differences
         assert differences[0].size > 0, 'duplicates'
         ind = random.choice(range(len(differences[0])))
         segment = differences[0][ind]
@@ -412,23 +418,72 @@ class MarkednessAligned(Markedness):
         saved_constraint = self.constraint[position_in_ngram][feature]
         self.constraint[indices] = 0
         self.constraint[position_in_ngram][feature] = saved_constraint
-        assert (winners[0]).all(), 'dontcares affected winner'
+        #assert (winners[0]).all(), 'dontcares affected winner'
+
+    def __str__(self):
+        segments = []
+        for segment in self.constraint:
+            natural_class = [k for k, v in self.feature_dict.fd.iteritems() if (numpy.absolute(segment - v) < 2).all()]
+            segments.append(str(natural_class))
+        if self.tier != None:
+            return ' '.join([self.feature_dict.feature_names[self.tier], 'tier', str(segments)])
+        else:
+            return str(segments)
 
 class Faithfulness:
-    def __init__(self, winners):
-        if len(winners) > 0:
-            all_changes = [winner.changes for winner in winners]
-            different_changes = []
-            for i in range(len(all_changes) - 1):
-                different_changes.append(set(all_changes[i]) ^ set(all_changes[i + 1]))
-            self.constraint = random.choice(different_changes)
+    #TODO make it only work for negative faithfulness constraints
+    def __init__(self, winners, feature_dict):
+        """Find a change that exists in only one winner. Abstract away from some
+        of its feature values, but not so much that it becomes equivalent to a
+        change in the other winner. Make this a faithfulness constraint."""
+        self.feature_dict = feature_dict
+        pattern = None
+        not_origin = winners[0]
+        try:
+            pattern = set((winners[1].changes - winners[0].changes).pop())
+        except KeyError:
+            pattern = set((winners[0].changes - winners[1].changes).pop())
+            not_origin = winners[1]
+        if 'metathesis' in pattern:
+            dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', '2consonant:1', '2vowel:1', '2sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1', '2consonant:-1', '2vowel:-1', '2sonorant:-1'], numpy.random.randint(0, 13))
         else:
-            changes = winners[0].changes
-            self.constraint = random.choice(changes)
+            dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1'], numpy.random.randint(0, 7))
+        dontcares = set(dontcares) & pattern
+        pattern -= dontcares
+        for change in not_origin.changes:
+            while pattern <= change:
+                docare = random.choice(dontcares)
+                dontcares = dontcares.remove(docare)
+                pattern.add(docare)
+        self.constraint = pattern
 
     def get_violation(self, mapping):
         """Finds the number of times the change referred to by the constraint occurs in the input-output pair."""
-        return mapping.changes.count(self.constraint)
+        violation = 0
+        for change in mapping.changes:
+            if self.constraint <= change:
+                violation += 1
+        return violation
+
+    def __str__(self):
+        segment_type = []
+        new_value = None
+        feature = None
+        process_type = None
+        for item in self.constraint:
+            if type(item) == numpy.int32 or int:
+                new_value = item
+            elif ':' in item:
+                segment_type.append(item)
+            elif len(item) < 3:
+                feature = self.feature_dict.feature_names[item]
+            else:
+                process_type = item
+        segment_type.sort()
+        if feature != None:
+            return ' '.join([process_type, feature, 'to', new_value, 'in', str(segment_type)])
+        else:
+            return ' '.join([process_type, str(segment_type)])
 
 class HGGLA:
     def __init__(self, learning_rate, feature_dict, aligned, tier_freq):
@@ -437,8 +492,7 @@ class HGGLA:
         between the computed winner and the desired winner,
         multiplied by the learning rate."""
         self.learning_rate = learning_rate
-        self.constraints = Con(feature_dict, tier_freq)
-        self.aligned = aligned
+        self.con = Con(feature_dict, tier_freq, aligned)
 
     def evaluate(self, tableau):
         """Use constraints to find mappings violations
@@ -449,8 +503,8 @@ class HGGLA:
         correct = None
         harmonies = []
         for mapping in tableau:
-            self.constraints.get_violations(mapping)
-            mapping.harmony = numpy.dot(self.constraints.weights, mapping.violations)
+            self.con.get_violations(mapping)
+            mapping.harmony = numpy.dot(self.con.weights, mapping.violations)
             harmonies.append(mapping.harmony)
             if mapping.grammatical == True:
                 grammatical_winner = mapping
@@ -462,11 +516,12 @@ class HGGLA:
             pass
         return (grammatical_winner, computed_winner, correct)
 
+
     def update(self, grammatical_winner, computed_winner):
         difference = grammatical_winner.violations - computed_winner.violations
-        assert len(difference) == len(self.constraints.constraints) + 1
+        assert len(difference) == len(self.con.constraints) + 1
         assert difference[0] == 0
-        self.constraints.weights += difference * self.learning_rate
+        self.con.weights += difference * self.learning_rate
 
     def train(self, inputs):
         errors = []
@@ -477,20 +532,28 @@ class HGGLA:
                 if len(computed_winner) == 1:
                     errors.append(0)
                 else:
-                    wrongful_winner = [cw for cw in computed_winner if cw.grammatical == False]
-                    self.constraints.induce([grammatical_winner, wrongful_winner[0]], self.aligned)
+                    computed_winner.remove(grammatical_winner)
+                    self.con.induce([grammatical_winner, computed_winner[0]])
                     errors.append(1)
             else:
                 if numpy.random.randint(0, 10) == 9:
-                    self.constraints.induce([grammatical_winner, computed_winner[0]], self.aligned)
+                    self.con.induce([grammatical_winner, computed_winner[0]])
                 else:
                     self.update(grammatical_winner, computed_winner[0])
                 errors.append(1)
         return errors
 
-    def test(self, inputs): # a little wasteful, make a separate function for test evaluation?
-        (gw, winners, c) = [self.evaluate(tableau) for tableau in inputs]
-        return winners
+    def test(self, tableau):
+        computed_winner = None
+        harmonies = []
+        for mapping in tableau: # iteration over nonsequence when testing
+            self.con.get_violations(mapping)
+            mapping.harmony = numpy.dot(self.con.weights, mapping.violations)
+            harmonies.append(mapping.harmony)
+            highest_harmony = max(harmonies)
+            computed_winner = [mapping for mapping in tableau if mapping.harmony == highest_harmony]
+        computed_winner = computed_winner[0] if len(computed_winner) == 1 else random.choice(computed_winner)
+        return computed_winner
 
 class Learn:
     def __init__(self, feature_chart, input_file_list, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
@@ -508,35 +571,41 @@ class Learn:
         self.num_trainings = num_trainings
         self.accuracy = []
         self.all_errors = []
+        self.output = 'Output-' + str(datetime.datetime.now())
         self.run_HGGLA(allinput)
         if test_file:
             self.test_HGGLA(testinput)
-        print('errors per training', self.all_errors, 'accuracy', self.accuracy,
-               'number of constraints', len(self.alg.constraints.constraints))
+        #for c in self.alg.con.constraints:
+            #print c
+        with open(self.output, 'a') as f:
+            f.write('\n'.join(['\n\nmean testing accuracy',
+                               str(numpy.mean(self.accuracy)),
+                               'number of constraints',
+                               str(len(self.alg.con.constraints)),
+                               'constraints'#,
+                               #'\n'.join([str(c) for c in self.alg.con.constraints])
+                              ]))
+            print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
+               'number of constraints', len(self.alg.con.constraints))
               #sep = '\n') # file = filename for storing output
 
-    #def make_tableaux(self, inputs):
-        ##print inputs
-        #urs = [mapping.ur for mapping in inputs if mapping.grammatical == True]
-        #tableaux = [[mapping for mapping in inputs if (mapping.ur.shape == item.shape and numpy.equal(mapping.ur, item).all())] for item in urs]
-        #return tableaux
-
     def run_HGGLA(self, inputs):
-        #tableaux = self.make_tableaux(inputs)
-        assert self.alg.constraints.constraints == []
+        assert self.alg.con.constraints == []
         for i in range(self.num_trainings):
             errors = self.alg.train(inputs)
-            self.all_errors.append(sum(errors))
-            with open('Output-' + str(datetime.datetime.now()), 'w') as f:
-                f.write(''.join(['Sum of Errors for Training #', str(i), '\n', str(sum(errors))]))
-                f.write('Errors\n' + str(errors))
-                f.write('All errors\n' + str(self.all_errors))
+            sum_errors = sum(errors)
+            self.all_errors.append(sum_errors)
+            with open(self.output, 'a') as f:
+                f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum_errors)]))
+                f.write(''.join(['number of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
+                if sum_errors != 0:
+                    f.write('\nerrors: ' + str(errors))
+                f.write('\nall errors: ' + str(self.all_errors))
 
     def test_HGGLA(self, testinput):
-        #tableaux = self.make_tableaux(testinput)
-        computed_winners = self.alg.test(testinput)
-        for winner in computed_winners:
-            if winner.grammatical == True:
+        for tableau in testinput:
+            winner = self.alg.test(tableau)
+            if winner.grammatical:
                 self.accuracy.append(1)
             else:
                 self.accuracy.append(0)
@@ -553,15 +622,15 @@ class CrossValidate(Learn):
                 mapping.harmony = None
 
     def refresh_con(self):
-        self.alg.constraints.constraints = []
-        self.alg.constraints.weights = numpy.array([0])
+        self.alg.con.constraints = []
+        self.alg.con.constraints.weights = numpy.array([0])
 
     def run_HGGLA(self, inputs):
         tableaux = self.make_tableaux(inputs)
         for i, tableau in enumerate(tableaux):
             self.refresh_input(tableaux)
             self.refresh_con()
-            assert self.alg.constraints.constraints == []
+            assert self.alg.con.constraints == []
             training_set = tableaux[:i] + tableaux[i + 1:]
             for i in range(self.num_trainings):
                 errors = self.alg.train(training_set)
@@ -578,7 +647,7 @@ class CrossValidate(Learn):
             for m in test_tableau:
                 assert m.harmony == None
                 assert m.violations == numpy.array([1])
-            if self.alg.test([test_tableau])[0].sr == desired: # returns a list of one element
+            if self.alg.test(test_tableau).sr == desired:
                 self.accuracy.append(1)
             else:
                 self.accuracy.append(0)
@@ -590,11 +659,11 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    #learn2 = Learn('feature_chart3.csv', ['input5.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 5, tier_freq = 10)
+    #learn2 = Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 5, tier_freq = 10)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    learnTurkish = Learn('TurkishFeaturesSPE.csv', ['TurkishInput2.csv']#, 'TurkishTest2.csv'
-                         , num_trainings = 2, max_changes = 5, num_negatives = 5, tier_freq = 10, processes = '[self.change_feature_value]')
+    learnTurkish = Learn('TurkishFeaturesWithNA.csv', ['TurkishInput2.csv', 'TurkishTest2.csv']
+                         , num_trainings = 3, max_changes = 5, num_negatives = 5, tier_freq = 10, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files

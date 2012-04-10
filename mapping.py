@@ -21,15 +21,29 @@ class Mapping:
         self.grammatical = bool(int(self.grammatical))
         self.ur = self.feature_dict.get_features_word(self.ur)
         self.sr = self.feature_dict.get_features_word(self.sr)
-        self.changes = [] if self.changes == 'none' else self.changes.split(';')
-        for i in range(len(self.changes)):
-            changeparts = self.changes[i].split(' ')
-            for j in range(len(changeparts)):
-                if len(changeparts[j]) == 1 and changeparts[j] not in ['0', '1']: #segment
-                    changeparts[j] = str(self.feature_dict.major_features(self.feature_dict.get_features_seg(changeparts[j])))
-            if changeparts[0] == 'change':
-                changeparts[1] = str(self.feature_dict.feature_names.index(changeparts[1]))
-            self.changes[i] = ' '.join(changeparts)
+        if self.changes == 'none':
+            self.changes = set()
+        else:
+            self.changes = self.changes.split(';')
+            for i in range(len(self.changes)):
+                changeparts = self.changes[i].split(' ')
+                #change = set(changeparts[0:2])
+                #for j in range(len(changeparts)):
+                    #if len(changeparts[j]) == 1 and changeparts[j] not in ['0', '1']: #segment
+                        #changeparts[j] = self.feature_dict.major_features(self.feature_dict.get_features_seg(changeparts[j]))
+                segment = changeparts.pop()
+                changeparts += self.feature_dict.major_features(self.feature_dict.get_features_seg(segment))
+                if changeparts[0] == 'metathesize':
+                    segment2 = changeparts.pop(-4)
+                    segment2 = self.feature_dict.major_features(self.feature_dict.get_features_seg(segment2))
+                    segment2 = [''.join([2, f]) for f in segment2]
+                    changeparts += segment2
+                if changeparts[0] == 'change':
+                    feature = changeparts.pop(1)
+                    feature = self.feature_dict.feature_names.index(feature)
+                    changeparts.append(feature)
+                self.changes[i] = frozenset(changeparts)
+            self.changes = set(self.changes)
 
     def add_boundaries(self):
         boundary = self.feature_dict.fd['|']

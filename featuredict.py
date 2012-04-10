@@ -17,7 +17,7 @@ class FeatureDict:
                     self.num_features = len(line)
                     for j in range(len(line)):
                         line[j] = int(line[j])
-                        line[j] = -1 if line[j] == 0 else line[j]
+                        #line[j] = -1 if line[j] == 0 else line[j]
                     self.fd[segment] = numpy.array(line)
         self.tiers = self.init_tiers()
 
@@ -43,11 +43,12 @@ class FeatureDict:
     def major_features(self, featureset):
         """Select only the first three features. These should be vocalic,
         consonantal, and sonorant."""
-        majors = copy.copy(featureset[0:3])
-        dontcares = random.sample(range(4), random.randint(1,3))
-        for i in dontcares:
-            majors[i] = 0
-        return majors
+        majors = self.feature_names[0:3]
+        features = copy.copy(featureset[0:3])
+        major_features = []
+        for i in range(3):
+            major_features.append(':'.join([majors[i], str(features[i])]))
+        return major_features
 
     def init_tiers(self):
         """Build a list of feature indices for the features that can have tiers
