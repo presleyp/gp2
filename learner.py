@@ -28,6 +28,7 @@ from featuredict import FeatureDict
 
 #TODO data presentation (str method for constraints, graphs for errors), consider setting initial weights positive or negative depending on where they came from
 #TODO reward constraints
+#TODO figure out why | is in natural classes and fix it
 
 #Profiler:
     #change feature value is slow
@@ -252,7 +253,7 @@ class Con:
             #print 'made M'
         else:
             self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
-        new_weights = -1 * numpy.random.random(self.num_needed(self.weights)) #for negative weights
+        new_weights = numpy.random.random(self.num_needed(self.weights)) #for negative weights
         self.weights = numpy.append(self.weights, new_weights)
         assert len(self.weights) == len(self.constraints) + 1
         self.i += 1
@@ -389,7 +390,7 @@ class Markedness:
         #print len(ngrams) # 9989 10 10 10
         for ngram in ngrams:
             if (numpy.absolute(ngram - self.constraint) > 1).any() == False:
-                violation += 1
+                violation += self.violation
         return violation
 
 class MarkednessAligned(Markedness):
@@ -399,7 +400,12 @@ class MarkednessAligned(Markedness):
         constraint off of one of the two winners, but makes features don't-cares
         at random. Does not allow the protected feature to become a
         don't-care."""
-        winner = winners[1] #for negative constraints; could randomly choose for a mix of negative and positive
+        if numpy.random.randint(0,2) == 1:
+            winner = winners[0]
+            self.violation = 1
+        else:
+            winner = winners[1]
+            self.violation = -1
         diff_array = winners[0] - winners[1]
         differences = numpy.nonzero(numpy.absolute(diff_array) > 1) # indices of differences
         #print winners[0], winners[1], differences
@@ -467,14 +473,18 @@ class Faithfulness:
         feature = None
         process_type = None
         for item in self.constraint:
-            if type(item) == numpy.int32 or int:
-                new_value = item
+            if type(item) == numpy.int32:
+                new_value = str(item)
+                assert item != 'change', 'change as int'
             elif ':' in item:
                 segment_type.append(item)
+                assert item != 'change', 'change as :'
             elif len(item) < 3:
-                feature = self.feature_dict.feature_names[item]
+                feature = self.feature_dict.feature_names[int(item)]
+                assert item != 'change', 'change as index'
             else:
                 process_type = item
+        assert type(process_type) == str, 'change not str'
         segment_type.sort()
         if feature != None:
             return ' '.join([process_type, feature, 'to', new_value, 'in', str(segment_type)])
@@ -571,15 +581,15 @@ class Learn:
         self.run_HGGLA(allinput)
         if test_file:
             self.test_HGGLA(testinput)
-        #for c in self.alg.con.constraints:
-            #print c
+        for c in self.alg.con.constraints:
+            print c.constraint
         with open(self.output, 'a') as f:
             f.write('\n'.join(['\n\nmean testing accuracy',
                                str(numpy.mean(self.accuracy)),
                                'number of constraints',
                                str(len(self.alg.con.constraints)),
-                               'constraints'#,
-                               #'\n'.join([str(c) for c in self.alg.con.constraints])
+                               'constraints',
+                               '\n'.join([str(c) for c in self.alg.con.constraints])
                               ]))
             print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
                'number of constraints', len(self.alg.con.constraints))
@@ -593,7 +603,7 @@ class Learn:
             self.all_errors.append(sum_errors)
             with open(self.output, 'a') as f:
                 f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum_errors)]))
-                f.write(''.join(['number of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
+                f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
                 if sum_errors != 0:
                     f.write('\nerrors: ' + str(errors))
                 f.write('\nall errors: ' + str(self.all_errors))
