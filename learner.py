@@ -262,7 +262,9 @@ class Con:
         while i < 15:
             new_constraint = constraint_type(*args)
             i += 1
-            if new_constraint not in self.constraints and new_constraint.constraint != None:
+            if new_constraint.constraint == None:
+                break
+            elif new_constraint not in self.constraints:
                 self.constraints.append(new_constraint)
                 break
 
@@ -431,31 +433,25 @@ class MarkednessAligned(Markedness):
             return str(segments)
 
 class Faithfulness:
-    #TODO make it only work for negative faithfulness constraints
     def __init__(self, winners, feature_dict):
         """Find a change that exists in only one winner. Abstract away from some
         of its feature values, but not so much that it becomes equivalent to a
         change in the other winner. Make this a faithfulness constraint."""
         self.feature_dict = feature_dict
-        pattern = None
-        not_origin = winners[0]
         try:
-            pattern = set((winners[1].changes - winners[0].changes).pop())
+            self.constraint = set((winners[1].changes - winners[0].changes).pop())
+            if 'metathesis' in self.constraint:
+                dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', '2consonant:1', '2vowel:1', '2sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1', '2consonant:-1', '2vowel:-1', '2sonorant:-1'], numpy.random.randint(0, 13))
+            else:
+                dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1'], numpy.random.randint(0, 7))
+            dontcares = set(dontcares) & self.constraint # so if you add things back, you don't add something that wasn't there to begin with
+            self.constraint -= dontcares
+            for change in winners[0].changes:
+                while self.constraint <= change:
+                    docare = dontcares.pop()
+                    self.constraint.add(docare)
         except KeyError:
-            pattern = set((winners[0].changes - winners[1].changes).pop())
-            not_origin = winners[1]
-        if 'metathesis' in pattern:
-            dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', '2consonant:1', '2vowel:1', '2sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1', '2consonant:-1', '2vowel:-1', '2sonorant:-1'], numpy.random.randint(0, 13))
-        else:
-            dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1'], numpy.random.randint(0, 7))
-        dontcares = set(dontcares) & pattern
-        pattern -= dontcares
-        for change in not_origin.changes:
-            while pattern <= change:
-                docare = random.choice(dontcares)
-                dontcares = dontcares.remove(docare)
-                pattern.add(docare)
-        self.constraint = pattern
+            self.constraint = None
 
     def get_violation(self, mapping):
         """Finds the number of times the change referred to by the constraint occurs in the input-output pair."""
