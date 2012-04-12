@@ -26,9 +26,8 @@ from featuredict import FeatureDict
 #TODO save output to file; consider tracking SSE
 #TODO work on get ngrams (copy problem in diff ngrams), get violations
 
-#TODO data presentation (str method for constraints, graphs for errors), consider setting initial weights positive or negative depending on where they came from
-#TODO reward constraints
-#TODO figure out why | is in natural classes and fix it
+#TODO figure out why features are getting deleted from winners when they shouldn't be. maybe a copy is needed somewhere.
+#TODO check all set pops - they're not random
 
 #Profiler:
     #change feature value is slow
@@ -36,8 +35,7 @@ from featuredict import FeatureDict
     #multiarray.array
     #getviolations, get violation sr, get ngrams, numpy.any
 # import cProfile, learner, pstats
-# cProfile.run("Learn('feature_chart4.csv', ['input5.csv'], processes =
-# '[self.change_feature_value]')", 'learnerprofile.txt')
+# cProfile.run("Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]')", 'learnerprofile.txt')
 # p = pstats.Stats('learnerprofile.txt')
 # p.sort_stats('cumulative').print_stats(30)
 # with input, .414 on input5
@@ -193,15 +191,16 @@ class Gen:
         differences = None
         new_segment = None
         num_to_change = numpy.random.geometric(p = .5, size = 1)
-        if num_to_change > self.feature_dict.num_features:
-            num_to_change = random.sample(range(1, self.feature_dict.num_features + 1), 1)
+        if num_to_change > len(segment):
+            num_to_change = random.sample(range(1, len(segment) + 1), 1)
         for phone in self.non_boundaries.values():
-            differences = segment - phone
-            num_different = numpy.count_nonzero(differences)
-            if num_different <= num_to_change:
+            differences = segment - phone # FIXME not sure this makes sense
+            num_different = len(differences)
+            if num_different == num_to_change:
                 new_segment = phone
             else:
-                if num_different < closest_num or closest_num == None:
+                if closest_num == None or num_different < closest_num:
+                    closest_num = num_different
                     closest_phone = phone
         if new_segment == None:
             new_segment = closest_phone
@@ -223,12 +222,11 @@ class Gen:
                 #pass
         #differences = segment - new_segment
         mapping.sr[locus] = new_segment
-        changed_features = numpy.nonzero(differences)
-        for i in changed_features[0]:
-            #new_change = ''.join(['change', str(i), str(new_segment[i])])
-            #new_change = major_features + new_change #major features should return a set of keys
-            changelist = ['change', str(i), new_segment[i]] + major_features
-            mapping.changes.add(frozenset(changelist))
+        changed_features = new_segment - segment
+        changepart = set(['change']) | major_features
+        for feature in changed_features:
+            changeset = changepart | set([feature])
+            mapping.changes.add(frozenset(changeset))
 
 class Con:
     def __init__(self, feature_dict, tier_freq, aligned):
@@ -378,8 +376,9 @@ class Markedness:
         """Returns a list of the segments in a word that are positive for a certain
         feature. Features currently supported are vocalic, consonantal, nasal, and strident."""
         if self.tier == None: #if creating the constraint, not getting violations
-            self.tier = random.choice(self.feature_dict.tiers)
-        winner_tier = [segment for segment in winner if segment[self.tier] == 1]
+            self.tier = self.feature_dict.tiers.pop()
+            self.feature_dict.tiers.add(self.tier)
+        winner_tier = [segment for segment in winner if self.tier in segment]
         return winner_tier
 
     def get_violation(self, mapping):
@@ -389,7 +388,10 @@ class Markedness:
         ngrams = mapping.ngrams[self.gram - 1] if self.tier == None else mapping.get_ngrams(self.get_tier(mapping.sr), self.gram)
         #print len(ngrams) # 9989 10 10 10
         for ngram in ngrams:
-            if (numpy.absolute(ngram - self.constraint) > 1).any() == False:
+            if (self.constraint <= ngram).all():
+            #if (numpy.absolute(ngram - self.constraint) > 1).any() == False:
+            #for nonzero in self.constraint:
+                #if ngram[nonzero[0]][nonzero[1]] == self.constraint[nonzero[0]][nonzero[1]]:
                 violation += self.violation
         return violation
 
@@ -400,38 +402,63 @@ class MarkednessAligned(Markedness):
         constraint off of one of the two winners, but makes features don't-cares
         at random. Does not allow the protected feature to become a
         don't-care."""
+        base = None
+        other = None
         if numpy.random.randint(0,2) == 1:
-            winner = winners[0]
+            base = winners[0]
+            other = winners[1]
             self.violation = 1
         else:
-            winner = winners[1]
+            base = winners[1]
+            other = winners[0]
             self.violation = -1
-        diff_array = winners[0] - winners[1]
-        differences = numpy.nonzero(numpy.absolute(diff_array) > 1) # indices of differences
-        #print winners[0], winners[1], differences
-        assert differences[0].size > 0, 'duplicates'
-        ind = random.choice(range(len(differences[0])))
-        segment = differences[0][ind]
-        feature = differences[1][ind]
+        pattern = base - other
+        assert pattern.any(), 'duplicates' # will be false if all sets are empty
+        protected_segment = random.choice(numpy.where(pattern)[0])
         positions = range(self.gram)
         random.shuffle(positions)
         for position_in_ngram in positions:
-            pattern = copy.copy(winner[segment - position_in_ngram:segment + self.gram - position_in_ngram])
+            pattern = copy.copy(base[protected_segment - position_in_ngram:protected_segment + self.gram - position_in_ngram])
             if len(pattern) == self.gram:
                 self.constraint = pattern
                 break
         #print self.constraint
-        indices = numpy.where(numpy.random.random(self.constraint.shape) > numpy.random.random(1))
-        #print self.constraint.shape, segment, feature
-        saved_constraint = self.constraint[position_in_ngram][feature]
-        self.constraint[indices] = 0
-        self.constraint[position_in_ngram][feature] = saved_constraint
-        #assert (winners[0]).all(), 'dontcares affected winner'
+        dontcares = []
+        for i in range(len(pattern)):
+            if i == protected_segment:
+                try:
+                    dontcares = random.sample(pattern[i], numpy.random.randint(len(pattern[i]) - 1))
+                except ValueError: # only 1 feature there
+                    pass
+            else:
+                dontcares = random.sample(pattern[i], numpy.random.randint(len(pattern[i])))
+            extras = base[i] - pattern[i]
+            if len(extras) > 0:
+                docares = random.sample(extras, numpy.random.randint(len(extras)))
+                pattern[i] |= set(docares)
+            pattern[i] -= set(dontcares)
+        self.constraint = pattern
+
+        #diff_array = winners[0] - winners[1]
+        #differences = numpy.nonzero(numpy.absolute(diff_array) > 1) # indices of differences
+        ##print winners[0], winners[1], differences
+        #assert differences[0].size > 0, 'duplicates'
+        #ind = random.choice(range(len(differences[0])))
+        #segment = differences[0][ind]
+        #feature = differences[1][ind]
+        ##where position stuff went
+        #indices = numpy.where(numpy.random.random(self.constraint.shape) > numpy.random.random(1))
+        ##print self.constraint.shape, segment, feature
+        #saved_constraint = self.constraint[position_in_ngram][feature]
+        #self.constraint[indices] = 0
+        #self.constraint[position_in_ngram][feature] = saved_constraint
+        #self.constraint = numpy.transpose(numpy.nonzero(self.constraint)) #hack for the moment
+        ##assert (winners[0]).all(), 'dontcares affected winner'
 
     def __str__(self):
         segments = []
         for segment in self.constraint:
-            natural_class = [k for k, v in self.feature_dict.fd.iteritems() if (numpy.absolute(segment - v) < 2).all()]
+            natural_class = [k for k, v in self.feature_dict.fd.iteritems() if segment <= v]
             segments.append(str(natural_class))
         if self.tier != None:
             return ' '.join([self.feature_dict.feature_names[self.tier], 'tier', str(segments)])
@@ -452,6 +479,7 @@ class Faithfulness:
                 dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1'], numpy.random.randint(0, 7))
             dontcares = set(dontcares) & self.constraint # so if you add things back, you don't add something that wasn't there to begin with
             self.constraint -= dontcares
+            #TODO sometimes take absolute value of feature value, for Id-Voice instead of Id-+Voice
             for change in winners[0].changes:
                 while self.constraint <= change:
                     docare = dontcares.pop()
@@ -469,25 +497,21 @@ class Faithfulness:
 
     def __str__(self):
         segment_type = []
-        new_value = None
         feature = None
         process_type = None
         for item in self.constraint:
             if type(item) == numpy.int32:
-                new_value = str(item)
+                feature = str(item)
                 assert item != 'change', 'change as int'
-            elif ':' in item:
+            elif type(item) == float:
                 segment_type.append(item)
                 assert item != 'change', 'change as :'
-            elif len(item) < 3:
-                feature = self.feature_dict.feature_names[int(item)]
-                assert item != 'change', 'change as index'
             else:
                 process_type = item
         assert type(process_type) == str, 'change not str'
         segment_type.sort()
         if feature != None:
-            return ' '.join([process_type, feature, 'to', new_value, 'in', str(segment_type)])
+            return ' '.join([process_type, feature, 'in', str(segment_type)])
         else:
             return ' '.join([process_type, str(segment_type)])
 
@@ -521,7 +545,6 @@ class HGGLA:
         except AttributeError: # grammatical_winner is None because this is a test
             pass
         return (grammatical_winner, computed_winner, correct)
-
 
     def update(self, grammatical_winner, computed_winner):
         difference = grammatical_winner.violations - computed_winner.violations
@@ -665,11 +688,11 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    #learn2 = Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 5, tier_freq = 10)
+    learn2 = Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 5, tier_freq = 10)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    learnTurkish = Learn('TurkishFeaturesWithNA.csv', ['TurkishInput2.csv', 'TurkishTest2.csv']
-                         , num_trainings = 3, max_changes = 5, num_negatives = 5, tier_freq = 10, processes = '[self.change_feature_value]')
+    #learnTurkish = Learn('TurkishFeaturesWithNA.csv', ['TurkishInput2.csv', 'TurkishTest2.csv']
+                         #, num_trainings = 3, max_changes = 5, num_negatives = 5, tier_freq = 10, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files

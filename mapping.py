@@ -27,10 +27,6 @@ class Mapping:
             self.changes = self.changes.split(';')
             for i in range(len(self.changes)):
                 changeparts = self.changes[i].split(' ')
-                #change = set(changeparts[0:2])
-                #for j in range(len(changeparts)):
-                    #if len(changeparts[j]) == 1 and changeparts[j] not in ['0', '1']: #segment
-                        #changeparts[j] = self.feature_dict.major_features(self.feature_dict.get_features_seg(changeparts[j]))
                 segment = changeparts.pop()
                 changeparts += self.feature_dict.major_features(self.feature_dict.get_features_seg(segment))
                 if changeparts[0] == 'metathesize':
@@ -47,8 +43,8 @@ class Mapping:
 
     def add_boundaries(self):
         boundary = self.feature_dict.fd['|']
-        self.ur = numpy.vstack((boundary, self.ur, boundary))
-        self.sr = numpy.vstack((boundary, self.sr, boundary))
+        self.ur = numpy.hstack((boundary, self.ur, boundary))
+        self.sr = numpy.hstack((boundary, self.sr, boundary))
 
     def __eq__(self, other):
         return numpy.equal(self.sr, other.sr).all()
