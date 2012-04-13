@@ -28,12 +28,12 @@ class Mapping:
             for i in range(len(self.changes)):
                 changeparts = self.changes[i].split(' ')
                 segment = changeparts.pop()
-                changeparts += self.feature_dict.major_features(self.feature_dict.get_features_seg(segment))
+                #changeparts += self.feature_dict.major_features(self.feature_dict.get_features_seg(segment))
                 if changeparts[0] == 'metathesize':
                     segment2 = changeparts.pop(-4)
-                    segment2 = self.feature_dict.major_features(self.feature_dict.get_features_seg(segment2))
-                    segment2 = [''.join([2, f]) for f in segment2]
-                    changeparts += segment2
+                    #segment2 = self.feature_dict.major_features(self.feature_dict.get_features_seg(segment2))
+                    #segment2 = [''.join([2, f]) for f in segment2]
+                    #changeparts += segment2
                 if changeparts[0] == 'change':
                     feature = changeparts.pop(1)
                     feature = self.feature_dict.feature_names.index(feature)
