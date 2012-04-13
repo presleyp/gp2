@@ -1,37 +1,25 @@
 #!/usr/bin/env python
 import csv, copy, numpy, random, cPickle, datetime
 from mapping import Mapping
+from featuredict import FeatureDict
 #THINGS TO WATCH OUT FOR:
     # delete the saved input file if you change the input making code
     # implement tableau making if you give it a file with ungrammatical mappings
-from featuredict import FeatureDict
-#TODO get numpy working with python3
-#TODO implicational constraints
-#TODO consider constraining GEN
 #TODO graphs - error rate
-#TODO think about using lexical and tier constraints smartly, not based
-        #on frequency in the constraint set. You need a tier constraint when the
-        #gw has similar things on a tier and the cw doesn't. You need a lexical constraint
-        # when your constraints worked on a really similar word but don't work
-        # on this one (harder, because constraint set keeps changing).
-#TODO consider adding lexically conditioned constraints
 #TODO switch from unigram to bigram if no constraints possible
 #TODO make non_boundaries dict in FeatureDict and make it read "boundary" from feature names
 #TODO make sure there's a faithful mapping?
-#TODO Faithfulness: delete a change that's being reversed? make dontcares in major features and make violations notice.
-
-#TODO random to numpy.random - did random.random and randint but not choice or
-#sample (which will both be choice, with an optional size arg, have to take an
-        #array)
-#TODO save output to file; consider tracking SSE
-#TODO work on get ngrams (copy problem in diff ngrams), get violations
-
+#TODO Faithfulness: delete a change that's being reversed?
+#TODO time random.sample vs numpy.random.sample
+#TODO copy problem in diff_ngrams
 #TODO figure out why features are getting deleted from winners when they shouldn't be. maybe a copy is needed somewhere.
 #FIXME tiers aren't working and avoiding duplicate constraints isn't working. thought i fixed tiers but instead of being wrong, they're now just not happening.
 # not sure i'm getting duplicate constraints anymore, but duplicate winners
 # happen occasionally. getting a runtime warning that i don't understand.
 # remember tiers make winners shorter, could affect whether ngram is too large.
 # then position finding might not work, and then everything gets messed up.
+#fixed a problem with avoiding duplicated constraints.
+#if the same operation happens to a candidate more than once, that will be lost bc of set representation.
 #TODO think about using losers to help guide constraint induction. if you make a constraint, you want it to privilege cw over gw, but you
 # also want cw to win over losers. could this help?
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
@@ -44,8 +32,6 @@ from featuredict import FeatureDict
 # cProfile.run("learner.Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]')", 'learnerprofile.txt')
 # p = pstats.Stats('learnerprofile.txt')
 # p.sort_stats('cumulative').print_stats(30)
-# with input, .414 on input5
-# without input, .142 on input5
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -248,34 +234,36 @@ class Con:
         """Makes one new markedness and one new faithfulness constraint
         and initializes their weights, unless appropriate constraints
         cannot be found within 15 tries."""
-        #print 'calling induce'
         #print self.i
         assert len(self.weights) == len(self.constraints) + 1
         self.make_constraint(Faithfulness, winners, self.feature_dict)
-        #print 'made F'
         if self.aligned:
             self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
-            #print 'made M'
         else:
             self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
-        new_weights = numpy.random.random(self.num_needed(self.weights))
-        self.weights = numpy.append(self.weights, new_weights)
-        assert len(self.weights) == len(self.constraints) + 1
+        #new_weights = numpy.random.random(self.num_needed(self.weights))
+        #self.weights = numpy.append(self.weights, new_weights)
+        #assert len(self.weights) == len(self.constraints) + 1
         self.i += 1
 
     def make_constraint(self, constraint_type, *args):
         i = 0
-        while i < 15:
+        while i < 10:
             new_constraint = constraint_type(*args)
             i += 1
             if new_constraint.constraint == None:
                 break
-            elif new_constraint not in self.constraints:
+            duplicate = False
+            for constraint in self.constraints:
+                if new_constraint == constraint:
+                    duplicate = True
+                    break
+            if not duplicate:
                 self.constraints.append(new_constraint)
+                self.weights = numpy.append(self.weights, numpy.random.random(1))
                 break
 
     def get_violations(self, mapping):
-        #print 'evaluating'
         new_constraints = -self.num_needed(mapping.violations)
         if new_constraints < 0:
             new_violations = numpy.array([constraint.get_violation(mapping)
@@ -283,7 +271,7 @@ class Con:
             mapping.violations = numpy.append(mapping.violations, new_violations)
         assert len(mapping.violations) == len(self.constraints) + 1
 
-    def num_needed(self, array):
+    def num_needed(self, array): # merge with get violations if adding to weights in make_constraint works
         """Find number of constraints added since the array was updated,
         keeping in mind that the array has an intercept not included in
         the constraint set."""
@@ -425,11 +413,11 @@ class MarkednessAligned(Markedness):
                 position = position_in_ngram
                 break
         assert self.constraint != None
-        print 'base', base, 'constraint', self.constraint, 'protected segment', protected_segment, 'position', position
+        #print 'base', base, 'constraint', self.constraint, 'protected segment', protected_segment, 'position', position
         for i in range(len(pattern)):
             if len(pattern[i]) > 1:
                 pattern[i] = set(random.sample(pattern[i], numpy.random.randint(1, len(pattern[i]))))
-        print pattern[position]
+        #print pattern[position]
         assert type(pattern[position]) == set
         pattern[position].add(protected_feature)
         self.constraint = pattern
@@ -484,6 +472,12 @@ class MarkednessAligned(Markedness):
         else:
             return '+'
 
+    def __eq__(self, other):
+        if len(self.constraint) != len(other.constraint):
+            return False
+        else:
+            return (numpy.equal(self.constraint, other.constraint)).all()
+
     def __str__(self):
         polarity = '+' if self.violation else '-'
         segments = []
@@ -525,6 +519,9 @@ class Faithfulness:
             if self.constraint <= change:
                 violation -= 1
         return violation
+
+    def __eq__(self, other):
+        self.constraint == other.constraint
 
     def __str__(self):
         #segment_type = []
