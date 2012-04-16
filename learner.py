@@ -19,7 +19,6 @@ from featuredict import FeatureDict
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
 
 #TODO test after each training iteration
-#TODO make graph show left side
 
 #Profiler:
 # import cProfile, learner, pstats
@@ -418,11 +417,12 @@ class MarkednessAligned(Markedness):
         for segment in self.constraint:
             #natural_class = [k for k, v in self.feature_dict.fd.iteritems() if segment <= v]
             natural_class = [self.polarity(feature) + self.feature_dict.feature_names[numpy.absolute(feature)] for feature in segment]
+            natural_class = ''.join(['{', ','.join(natural_class), '}'])
             segments.append(natural_class)
         if self.tier:
             return ''.join([self.feature_dict.feature_names[self.tier], ' tier ', polarity, str(segments)])
         else:
-            return ''.join([self.polarity(self.violation), str(segments)])
+            return ''.join([self.polarity(self.violation)] + [segment for segment in segments])
 
 class Faithfulness:
     def __init__(self, winners, feature_dict):
@@ -571,14 +571,17 @@ class Learn:
         self.num_trainings = num_trainings
         self.accuracy = []
         self.all_errors = []
-        self.output = 'Output-' + str(datetime.datetime.now())
+        self.output = str(datetime.datetime.now())
         self.run_HGGLA(traininput)
         self.test_HGGLA(testinput)
         self.report()
 
     def report(self):
         num_con = len(self.alg.con.constraints)
-        with open(self.output, 'a') as f:
+        print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
+               'number of constraints', num_con)
+              #sep = '\n') # file = filename for storing output
+        with open('Output-' + self.output + '.txt', 'a') as f:
             f.write('\n'.join(['\n\nmean testing accuracy',
                                str(numpy.mean(self.accuracy)),
                                'number of constraints',
@@ -586,9 +589,6 @@ class Learn:
                                'constraints',
                                '\n'.join([str(c) for c in self.alg.con.constraints])
                               ]))
-        print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
-               'number of constraints', num_con)
-              #sep = '\n') # file = filename for storing output
         constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
         weights = self.alg.con.weights
         data = zip(constraints, weights)
@@ -601,16 +601,27 @@ class Learn:
         pyplot.xlabel('Weights')
         pyplot.title('Constraint Weights')
         pyplot.yticks(ind+height/2., data[0])
+        pyplot.subplots_adjust(left = .5) # make room for constraint names
         #pyplot.xticks(np.arange(0,81,10))
         #pyplot.legend( (p1[0], p2[0]), ('Markedness', 'Faithfulness') )
-        pyplot.show()
+        pyplot.savefig('Constraints-' + self.output + '.png')
+        pyplot.clf()
+        pyplot.subplots_adjust(left = .15)
+        p1 = pyplot.plot(self.all_errors)
+        p2 = pyplot.plot(self.num_constraints)
+        pyplot.xlabel('Iteration')
+        pyplot.title('Errors and Constraints per Iteration')
+        pyplot.legend( (p1[0], p2[0]), ('Training Errors', 'Total Constraints'), loc = 0 )
+        pyplot.savefig('Errors-' + self.output + '.png')
 
     def run_HGGLA(self, inputs):
         assert self.alg.con.constraints == []
+        self.num_constraints = []
         for i in range(self.num_trainings):
             errors = self.alg.train(inputs)
             sum_errors = sum(errors)
             self.all_errors.append(sum_errors)
+            self.num_constraints.append(len(self.alg.con.constraints))
             with open(self.output, 'a') as f:
                 f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum_errors)]))
                 f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
