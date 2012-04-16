@@ -578,8 +578,8 @@ class HGGLA:
 
     def train(self, inputs):
         errors = []
-        random.shuffle(inputs)
-        for tableau in inputs: # learn one tableau at a time
+        for tableau in inputs:
+            random.shuffle(tableau)
             (grammatical_winner, computed_winner, correct) = self.evaluate(tableau)
             if correct:
                 if len(computed_winner) == 1:
@@ -609,28 +609,27 @@ class HGGLA:
         return computed_winner
 
 class Learn:
-    def __init__(self, feature_chart, input_file_list, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
+    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
                  processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
                  epenthetics = ['e', '?'], aligned = True, tier_freq = 5):
         feature_dict = FeatureDict(feature_chart)
-        inputs = Input(feature_dict, input_file_list[0], num_negatives, max_changes, processes, epenthetics)
+        inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
         allinput = inputs.allinputs
-        test_file = False
-        if len(input_file_list) == 2: # there's separate test input
-            test_file = True
-            test_inputs = Input(feature_dict, input_file_list[1], num_negatives, max_changes, processes, epenthetics)
-            testinput = test_inputs.allinputs
+        test_size = int(len(allinput)/10)
+        numpy.random.shuffle(allinput)
+        testinput = allinput[:test_size]
+        traininput = allinput[test_size:]
         self.alg = algorithm(learning_rate, feature_dict, aligned, tier_freq)
         self.num_trainings = num_trainings
         self.accuracy = []
         self.all_errors = []
         self.output = 'Output-' + str(datetime.datetime.now())
-        self.run_HGGLA(allinput)
-        if test_file:
-            self.test_HGGLA(testinput)
+        self.run_HGGLA(traininput)
+        self.test_HGGLA(testinput)
+        self.report()
+
+    def report(self):
         num_con = len(self.alg.con.constraints)
-        for i, c in enumerate(self.alg.con.constraints):
-            print c, self.alg.con.weights[i + 1]
         with open(self.output, 'a') as f:
             f.write('\n'.join(['\n\nmean testing accuracy',
                                str(numpy.mean(self.accuracy)),
@@ -639,7 +638,7 @@ class Learn:
                                'constraints',
                                '\n'.join([str(c) for c in self.alg.con.constraints])
                               ]))
-            print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
+        print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
                'number of constraints', num_con)
               #sep = '\n') # file = filename for storing output
         constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
@@ -728,7 +727,7 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    learn2 = Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 50, tier_freq = 2)
+    learn2 = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 50, tier_freq = 5)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
     #learnTurkish = Learn('TurkishFeaturesWithNA.csv', ['TurkishInput2.csv', 'TurkishTest2.csv']
