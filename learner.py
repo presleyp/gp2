@@ -1,33 +1,28 @@
 #!/usr/bin/env python
 import csv, copy, numpy, random, cPickle, datetime
+import matplotlib.pyplot as pyplot
 from mapping import Mapping
 from featuredict import FeatureDict
 #THINGS TO WATCH OUT FOR:
     # delete the saved input file if you change the input making code
     # implement tableau making if you give it a file with ungrammatical mappings
 #TODO graphs - error rate
-#TODO switch from unigram to bigram if no constraints possible
 #TODO make non_boundaries dict in FeatureDict and make it read "boundary" from feature names
-#TODO make sure there's a faithful mapping?
-#TODO Faithfulness: delete a change that's being reversed?
+#TODO Faithfulness: delete a change that's being reversed? make sure there's a faithful mapping?
 #TODO time random.sample vs numpy.random.sample
 #TODO copy problem in diff_ngrams
 #TODO figure out why features are getting deleted from winners when they shouldn't be. maybe a copy is needed somewhere.
-#FIXME tiers aren't working and avoiding duplicate constraints isn't working. thought i fixed tiers but instead of being wrong, they're now just not happening.
-# not sure i'm getting duplicate constraints anymore, but duplicate winners
-# happen occasionally. getting a runtime warning that i don't understand.
-# remember tiers make winners shorter, could affect whether ngram is too large.
-# then position finding might not work, and then everything gets messed up.
-#fixed a problem with avoiding duplicated constraints.
-#if the same operation happens to a candidate more than once, that will be lost bc of set representation.
+# keep in mind: tiers can mess up alignment
+#FIXME GEN: if the same operation happens to a candidate more than once, that will be lost bc of set representation.
+
 #TODO think about using losers to help guide constraint induction. if you make a constraint, you want it to privilege cw over gw, but you
 # also want cw to win over losers. could this help?
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
+
+#TODO make all input, then take 1/10th of tableaux randomly to make test set
+#TODO test after each training iteration
+
 #Profiler:
-    #change feature value is slow
-    #array to string is slow. think it's used in getting violations.
-    #multiarray.array
-    #getviolations, get violation sr, get ngrams, numpy.any
 # import cProfile, learner, pstats
 # cProfile.run("learner.Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]')", 'learnerprofile.txt')
 # p = pstats.Stats('learnerprofile.txt')
@@ -103,7 +98,7 @@ class Gen:
         ungrammatical mappings with the same input."""
         negatives = []
         while len(negatives) < self.num_negatives:
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), set()])
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
             for j in range(numpy.random.randint(0, self.max_changes + 1)):
                 process = random.choice(self.processes)
                 process(new_mapping)
@@ -182,16 +177,16 @@ class Gen:
         closest_phone = None
         differences = None
         new_segment = None
-        num_to_change = numpy.random.geometric(p = .5, size = 1)
+        num_to_change = numpy.random.geometric(p = .5, size = 1)[0]
         if num_to_change > len(segment):
-            num_to_change = random.sample(range(1, len(segment) + 1), 1)
+            num_to_change = random.sample(range(1, len(segment) + 1), 1)[0]
         for phone in self.non_boundaries.values():
             differences = segment - phone # FIXME not sure this makes sense
             num_different = len(differences)
             if num_different == num_to_change:
                 new_segment = phone
             else:
-                if closest_num == None or num_different < closest_num:
+                if num_different != 0 and (closest_num == None or numpy.absolute(num_different - num_to_change) < numpy.absolute(closest_num - num_to_change)):
                     closest_num = num_different
                     closest_phone = phone
         if not new_segment:
@@ -214,12 +209,10 @@ class Gen:
                 #pass
         #differences = segment - new_segment
         mapping.sr[locus] = new_segment
-        changed_features = new_segment - segment
-        #changepart = set(['change']) | major_features
+        changed_features = segment - new_segment
+        assert changed_features, 'no change made'
         #TODO major features as tuple or frozen set?
-        #assert len(changepart) == 4, 'set union not working'
-        for feature in changed_features:
-            mapping.changes.add(frozenset(['change', feature]))
+        mapping.changes = [set(['change'] + mapping.split(feature)) for feature in changed_features]
 
 class Con:
     def __init__(self, feature_dict, tier_freq, aligned):
@@ -241,9 +234,7 @@ class Con:
             self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
         else:
             self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
-        #new_weights = numpy.random.random(self.num_needed(self.weights))
-        #self.weights = numpy.append(self.weights, new_weights)
-        #assert len(self.weights) == len(self.constraints) + 1
+        assert len(self.weights) == len(self.constraints) + 1
         self.i += 1
 
     def make_constraint(self, constraint_type, *args):
@@ -264,52 +255,53 @@ class Con:
                 break
 
     def get_violations(self, mapping):
-        new_constraints = -self.num_needed(mapping.violations)
+        new_constraints = -(len(self.constraints) - (len(mapping.violations) - 1))
         if new_constraints < 0:
             new_violations = numpy.array([constraint.get_violation(mapping)
                                           for constraint in self.constraints[new_constraints:]])
             mapping.violations = numpy.append(mapping.violations, new_violations)
         assert len(mapping.violations) == len(self.constraints) + 1
 
-    def num_needed(self, array): # merge with get violations if adding to weights in make_constraint works
-        """Find number of constraints added since the array was updated,
-        keeping in mind that the array has an intercept not included in
-        the constraint set."""
-        return len(self.constraints) - (len(array) - 1)
-
 class Markedness:
     def __init__(self, feature_dict, tier_freq, winners):
         """For a given output, make a constraint against one, two,
         or three adjacent natural classes. 1/tier_freq of the time, the
         constraint is tier-based."""
-        #print 'markedness init'
         winners = [winner.sr for winner in winners]
         self.constraint = None
-        self.gram = numpy.random.randint(1, 4) #FIXME avoid setting too high a gram for the word
         self.feature_dict = feature_dict
         self.num_features = self.feature_dict.num_features
-        self.tier = None
         self.tier_freq = tier_freq
-        tier_winners = []
-        if self.gram != 1: # a unigram tier constraint is just a unigram constraint
-            winners = self.decide_tier(winners)
+        self.tier = None
+        winners = self.decide_tier(winners)
+        self.pick_gram(winners)
         if len(winners) > 1:
             self.pick_unique_pattern(winners)
         else:
             self.pick_any_pattern(winners)
 
+    def pick_gram(self, winners):
+        lengths = [len(winner) for winner in winners] + [3]
+        ceiling = min(lengths)
+        self.gram = numpy.random.randint(1, ceiling)
+
     def decide_tier(self, winners):
         """Randomly decide whether to have a tier constraint. If yes, call
         get_tiers on winners. Remove any winners that have none of the chosen
         tier. If there are fewer than the desired number of winners (one or
-        at least two), then decide not to use a tier after all."""
+        at least two), then decide not to use a tier after all. If the winners
+        are not different, decide not to use a tier. If the
+        winners have different lengths, decide not to use a tier.""" #change that when not using MarkednessAligned anymore
         if numpy.random.randint(1, self.tier_freq + 1) == self.tier_freq:
             tier_winners = [self.get_tier(winner) for winner in winners]
             tier_winners = [winner for winner in tier_winners if winner != []]
             desired_number = 1 if len(winners) == 1 else 2
-            if len(tier_winners) >= desired_number:
-                winners = tier_winners
-            else:
+            try:
+                if len(tier_winners) >= desired_number and (tier_winners[0] - tier_winners[1]).any():
+                    winners = tier_winners
+                else:
+                    self.tier = None
+            except ValueError: #the winners are not the same length
                 self.tier = None
         return winners
 
@@ -372,7 +364,6 @@ class Markedness:
         feature. Features currently supported are vocalic, consonantal, nasal, and strident."""
         if not self.tier: #if creating the constraint, not getting violations
             self.tier = random.sample(self.feature_dict.tiers, 1)[0]
-            self.feature_dict.tiers.add(self.tier)
         winner_tier = numpy.array([segment for segment in winner if self.tier in segment])
         return winner_tier
 
@@ -384,9 +375,6 @@ class Markedness:
         #print len(ngrams) # 9989 10 10 10
         for ngram in ngrams:
             if (self.constraint <= ngram).all():
-            #if (numpy.absolute(ngram - self.constraint) > 1).any() == False:
-            #for nonzero in self.constraint:
-                #if ngram[nonzero[0]][nonzero[1]] == self.constraint[nonzero[0]][nonzero[1]]:
                 violation += self.violation
         return violation
 
@@ -399,7 +387,6 @@ class MarkednessAligned(Markedness):
         don't-care."""
         (base, difference) = self.coinflip(winners)
         assert difference.any(), 'duplicates'
-        # protect one place where they differ
         protected_segment = random.choice(numpy.where(difference)[0])
         protected_feature = random.sample(difference[protected_segment], 1)[0]
         # pick ngram
@@ -465,7 +452,6 @@ class MarkednessAligned(Markedness):
             self.violation = -1
             return (winners[1], winners[1] - winners[0])
 
-
     def polarity(self, input):
         if input < 0:
             return '-'
@@ -486,9 +472,9 @@ class MarkednessAligned(Markedness):
             natural_class = [self.polarity(feature) + self.feature_dict.feature_names[numpy.absolute(feature)] for feature in segment]
             segments.append(natural_class)
         if self.tier:
-            return ' '.join([self.feature_dict.feature_names[self.tier], 'tier', polarity, str(segments)])
+            return ''.join([self.feature_dict.feature_names[self.tier], ' tier ', polarity, str(segments)])
         else:
-            return ' '.join([self.polarity(self.violation), str(segments)])
+            return ''.join([self.polarity(self.violation), str(segments)])
 
 class Faithfulness:
     def __init__(self, winners, feature_dict):
@@ -496,21 +482,27 @@ class Faithfulness:
         of its feature values, but not so much that it becomes equivalent to a
         change in the other winner. Make this a faithfulness constraint."""
         self.feature_dict = feature_dict
-        try:
-            self.constraint = random.sample(set((winners[1].changes - winners[0].changes)), 1)[0]
-            #if 'metathesis' in self.constraint:
-                #dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', '2consonant:1', '2vowel:1', '2sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1', '2consonant:-1', '2vowel:-1', '2sonorant:-1'], numpy.random.randint(0, 13))
-            #else:
-                #dontcares = random.sample(['consonant:1', 'vowel:1', 'sonorant:1', 'consonant:-1', 'vowel:-1', 'sonorant:-1'], numpy.random.randint(0, 7))
-            #dontcares = set(dontcares) & self.constraint # so if you add things back, you don't add something that wasn't there to begin with
-            #self.constraint -= dontcares
-            #TODO sometimes take absolute value of feature value, for Id-Voice instead of Id-+Voice
-            #for change in winners[0].changes:
-                #while self.constraint <= change:
-                    #docare = dontcares.pop()
-                    #self.constraint.add(docare)
-        except ValueError:
-            self.constraint = None
+        self.constraint = None
+        base = copy.copy(winners[1].changes)
+        assert type(base) == list
+        random.shuffle(base)
+        for change in base:
+            if base.count(change) > winners[0].changes.count(change):
+                self.constraint = change
+                if numpy.random.random() > .5:
+                    polarity = self.constraint & set(['+', '-'])
+                    self.constraint -= polarity
+                    v_base = 0
+                    v_other = 0
+                    for change in base:
+                        if self.constraint <= change:
+                            v_base += 1
+                    for change in winners[0].changes:
+                        if self.constraint <= change:
+                            v_other += 1
+                    if v_base <= v_other:
+                        self.constraint |= polarity
+                break
 
     def get_violation(self, mapping):
         """Finds the number of times the change referred to by the constraint occurs in the input-output pair."""
@@ -530,22 +522,20 @@ class Faithfulness:
         process_type = None
         for item in self.constraint:
             if type(item) == numpy.int32:
-                if item < 0:
-                    value = '-'
-                    feature = self.feature_dict.feature_names[-item]
-                else:
-                    value = '+'
-                    feature = self.feature_dict.feature_names[item]
-                assert item != 'change', 'change as int'
-            #elif type(item) == float:
-                #segment_type.append(item)
-                #assert item != 'change', 'change as :'
+                feature = self.feature_dict.feature_names[-item]
+            elif item in ('-', '+'):
+                value = item
             else:
                 process_type = item
+                if process_type == 'change':
+                    process_type = 'Ident'
         assert type(process_type) == str, 'change not str'
         #segment_type.sort()
         if feature:
-            return ' '.join([process_type, value, feature]) #, 'in', str(segment_type)])
+            if value:
+                return ''.join([process_type, ' ', value, feature]) #, 'in', str(segment_type)])
+            else:
+                return ' '.join([process_type, feature]) #, 'in', str(segment_type)])
         else:
             return ' '.join([process_type]) #, str(segment_type)])
 
@@ -638,19 +628,35 @@ class Learn:
         self.run_HGGLA(allinput)
         if test_file:
             self.test_HGGLA(testinput)
+        num_con = len(self.alg.con.constraints)
         for i, c in enumerate(self.alg.con.constraints):
             print c, self.alg.con.weights[i + 1]
         with open(self.output, 'a') as f:
             f.write('\n'.join(['\n\nmean testing accuracy',
                                str(numpy.mean(self.accuracy)),
                                'number of constraints',
-                               str(len(self.alg.con.constraints)),
+                               str(num_con),
                                'constraints',
                                '\n'.join([str(c) for c in self.alg.con.constraints])
                               ]))
             print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
-               'number of constraints', len(self.alg.con.constraints))
+               'number of constraints', num_con)
               #sep = '\n') # file = filename for storing output
+        constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
+        weights = self.alg.con.weights
+        data = zip(constraints, weights)
+        data.sort()
+        data = zip(*data)
+        ind = numpy.arange(num_con + 1)
+        height = .35
+        #colors = ['r' if isinstance(c, Faithfulness) else 'y' for c in self.alg.con.constraints]
+        pyplot.barh(ind, data[1]) #, color = colors
+        pyplot.xlabel('Weights')
+        pyplot.title('Constraint Weights')
+        pyplot.yticks(ind+height/2., data[0])
+        #pyplot.xticks(np.arange(0,81,10))
+        #pyplot.legend( (p1[0], p2[0]), ('Markedness', 'Faithfulness') )
+        pyplot.show()
 
     def run_HGGLA(self, inputs):
         assert self.alg.con.constraints == []

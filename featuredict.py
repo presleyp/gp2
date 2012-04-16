@@ -56,7 +56,7 @@ class FeatureDict:
         and that are in the feature dictionary. Raises an error if there are
         none in the feature dictionary."""
         tiers = set()
-        tier_names = ['vocalic', 'consonantal', 'nasal', 'strident']
+        tier_names = ['voc', 'cons', 'nas', 'strid']
         for name in tier_names:
             try:
                 tiers.add(self.feature_names.index(name))

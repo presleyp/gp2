@@ -22,7 +22,7 @@ class Mapping:
         self.ur = self.feature_dict.get_features_word(self.ur)
         self.sr = self.feature_dict.get_features_word(self.sr)
         if self.changes == 'none':
-            self.changes = set()
+            self.changes = []
         else:
             self.changes = self.changes.split(';')
             for i in range(len(self.changes)):
@@ -35,11 +35,18 @@ class Mapping:
                     #segment2 = [''.join([2, f]) for f in segment2]
                     #changeparts += segment2
                 if changeparts[0] == 'change':
-                    feature = changeparts.pop(1)
+                    value = changeparts.pop()
+                    polarity = '+' if value == 1 else '-'
+                    feature = changeparts.pop()
                     feature = self.feature_dict.feature_names.index(feature)
-                    changeparts.append(feature)
-                self.changes[i] = frozenset(changeparts)
-            self.changes = set(self.changes)
+                    changeparts += [polarity, feature]
+                self.changes[i] = set(changeparts)
+
+    def split(self, feature):
+        if feature < 0:
+            return ['-', numpy.absolute(feature)]
+        else:
+            return ['+', feature]
 
     def add_boundaries(self):
         boundary = self.feature_dict.fd['|']
