@@ -11,7 +11,6 @@ from featuredict import FeatureDict
 #TODO Faithfulness: delete a change that's being reversed? make sure there's a faithful mapping?
 #TODO time random.sample vs numpy.random.sample
 #TODO copy problem in diff_ngrams
-#TODO figure out why features are getting deleted from winners when they shouldn't be. maybe a copy is needed somewhere.
 # keep in mind: tiers can mess up alignment
 #FIXME GEN: if the same operation happens to a candidate more than once, that will be lost bc of set representation.
 
@@ -19,8 +18,8 @@ from featuredict import FeatureDict
 # also want cw to win over losers. could this help?
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
 
-#TODO make all input, then take 1/10th of tableaux randomly to make test set
 #TODO test after each training iteration
+#TODO make graph show left side
 
 #Profiler:
 # import cProfile, learner, pstats
@@ -191,23 +190,6 @@ class Gen:
                     closest_phone = phone
         if not new_segment:
             new_segment = closest_phone
-        # make a population of numbers representing the number of features to
-        # change. the higher the number, the less it is represented. The
-        # relationship is linear. Randomly select a number from this population.
-        #population = [(-x + self.feature_dict.num_features + 1)*[x] for x in range(1, self.feature_dict.num_features)]
-        #population = [x for block in population for x in block]
-        # Search the segmental inventory for segments with that many features
-        # different from the original one. If none are found, sample again.
-        #while new_segment == None:
-            #num_changes = random.sample(population, 1)[0]
-            #for seg in self.non_boundaries.values():
-                #if numpy.count_nonzero(segment - seg) == num_changes:
-                    #new_segments.append(seg)
-            #try:
-                #new_segment = random.choice(new_segments)
-            #except IndexError:
-                #pass
-        #differences = segment - new_segment
         mapping.sr[locus] = new_segment
         changed_features = segment - new_segment
         assert changed_features, 'no change made'
@@ -400,46 +382,12 @@ class MarkednessAligned(Markedness):
                 position = position_in_ngram
                 break
         assert self.constraint != None
-        #print 'base', base, 'constraint', self.constraint, 'protected segment', protected_segment, 'position', position
         for i in range(len(pattern)):
             if len(pattern[i]) > 1:
                 pattern[i] = set(random.sample(pattern[i], numpy.random.randint(1, len(pattern[i]))))
-        #print pattern[position]
         assert type(pattern[position]) == set
         pattern[position].add(protected_feature)
         self.constraint = pattern
-
-        # remove some different features and add some same features
-        #dontcares = []
-        #for i in range(len(pattern)):
-            #if i == protected_segment:
-                #try:
-                    #dontcares = random.sample(pattern[i], numpy.random.randint(len(pattern[i]) - 1))
-                #except ValueError: # only 1 feature there
-                    #pass
-            #else:
-                #dontcares = random.sample(pattern[i], numpy.random.randint(len(pattern[i])))
-            #extras = base[i] - pattern[i]
-            #if len(extras) > 0:
-                #docares = random.sample(extras, numpy.random.randint(len(extras)))
-                #pattern[i] |= set(docares)
-            #pattern[i] -= set(dontcares)
-
-        #diff_array = winners[0] - winners[1]
-        #differences = numpy.nonzero(numpy.absolute(diff_array) > 1) # indices of differences
-        ##print winners[0], winners[1], differences
-        #assert differences[0].size > 0, 'duplicates'
-        #ind = random.choice(range(len(differences[0])))
-        #segment = differences[0][ind]
-        #feature = differences[1][ind]
-        ##where position stuff went
-        #indices = numpy.where(numpy.random.random(self.constraint.shape) > numpy.random.random(1))
-        ##print self.constraint.shape, segment, feature
-        #saved_constraint = self.constraint[position_in_ngram][feature]
-        #self.constraint[indices] = 0
-        #self.constraint[position_in_ngram][feature] = saved_constraint
-        #self.constraint = numpy.transpose(numpy.nonzero(self.constraint)) #hack for the moment
-        ##assert (winners[0]).all(), 'dontcares affected winner'
 
     def coinflip(self, winners):
         """Flip a coin. If heads, the constraint will be made from the grammatical winner and will assign rewards. If tails,
@@ -730,8 +678,9 @@ if __name__ == '__main__':
     learn2 = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 50, tier_freq = 5)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    #learnTurkish = Learn('TurkishFeaturesWithNA.csv', ['TurkishInput2.csv', 'TurkishTest2.csv']
-                         #, num_trainings = 3, max_changes = 5, num_negatives = 5, tier_freq = 10, processes = '[self.change_feature_value]')
+    #learnTurkish = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput3.csv',
+                         #, num_trainings = 3, max_changes = 5, num_negatives = 15, tier_freq = 5, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
+    #TurkishInput3 is TurkishInput2 plus TurkishTest2
