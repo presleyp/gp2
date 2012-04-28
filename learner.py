@@ -6,19 +6,24 @@ from featuredict import FeatureDict
 #THINGS TO WATCH OUT FOR:
     # delete the saved input file if you change the input making code
     # implement tableau making if you give it a file with ungrammatical mappings
-#TODO graphs - error rate
 #TODO make non_boundaries dict in FeatureDict and make it read "boundary" from feature names
 #TODO Faithfulness: delete a change that's being reversed? make sure there's a faithful mapping?
 #TODO time random.sample vs numpy.random.sample
 #TODO copy problem in diff_ngrams
 # keep in mind: tiers can mess up alignment
-#FIXME GEN: if the same operation happens to a candidate more than once, that will be lost bc of set representation.
 
 #TODO think about using losers to help guide constraint induction. if you make a constraint, you want it to privilege cw over gw, but you
 # also want cw to win over losers. could this help?
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
 
 #TODO test after each training iteration
+#TODO figure out why no trigrams - is that happening with larger words?
+
+#TODO thanks to Gaja: maybe randomly choose between inducing markedness and faithfulness,
+# start by making general constraints, save the most specified version of it,
+# when making the same or the opposite, compare to most specified version and
+# figure out how to make it more specific in a helpful way. most specified
+# version should probably include 1 segment on either side.
 
 #Profiler:
 # import cProfile, learner, pstats
@@ -175,7 +180,8 @@ class Gen:
         closest_phone = None
         differences = None
         new_segment = None
-        num_to_change = numpy.random.geometric(p = .5, size = 1)[0]
+        #num_to_change = numpy.random.geometric(p = .5, size = 1)[0]
+        num_to_change = numpy.random.zipf(2)
         if num_to_change > len(segment):
             num_to_change = random.sample(range(1, len(segment) + 1), 1)[0]
         for phone in self.non_boundaries.values():
@@ -264,7 +270,7 @@ class Markedness:
     def pick_gram(self, winners):
         lengths = [len(winner) for winner in winners] + [3]
         ceiling = min(lengths)
-        self.gram = numpy.random.randint(1, ceiling)
+        self.gram = numpy.random.randint(1, ceiling + 1)
 
     def decide_tier(self, winners):
         """Randomly decide whether to have a tier constraint. If yes, call
@@ -382,8 +388,12 @@ class MarkednessAligned(Markedness):
                 break
         assert self.constraint != None
         for i in range(len(pattern)):
-            if len(pattern[i]) > 1:
-                pattern[i] = set(random.sample(pattern[i], numpy.random.randint(1, len(pattern[i]))))
+            length = len(pattern[i])
+            if length > 1:
+                num_features = numpy.random.zipf(2)
+                if num_features > length:
+                    num_features = numpy.random.randint(1, length)
+                pattern[i] = set(random.sample(pattern[i], num_features))
         assert type(pattern[position]) == set
         pattern[position].add(protected_feature)
         self.constraint = pattern
@@ -477,6 +487,8 @@ class Faithfulness:
                 process_type = item
                 if process_type == 'change':
                     process_type = 'Ident'
+        if type(process_type) != str:
+            print 'process type', process_type, type(process_type)
         assert type(process_type) == str, 'change not str'
         #segment_type.sort()
         if feature:
@@ -572,8 +584,9 @@ class Learn:
         self.accuracy = []
         self.all_errors = []
         self.output = str(datetime.datetime.now())
-        self.run_HGGLA(traininput)
-        self.test_HGGLA(testinput)
+        for i in range(num_trainings):
+            self.run_HGGLA(traininput, i)
+            self.test_HGGLA(testinput, i)
         self.report()
 
     def report(self):
@@ -608,28 +621,39 @@ class Learn:
         pyplot.clf()
         pyplot.subplots_adjust(left = .15)
         p1 = pyplot.plot(self.all_errors)
-        p2 = pyplot.plot(self.num_constraints)
+        #p2 = pyplot.plot(self.num_constraints)
         pyplot.xlabel('Iteration')
         pyplot.title('Errors and Constraints per Iteration')
-        pyplot.legend( (p1[0], p2[0]), ('Training Errors', 'Total Constraints'), loc = 0 )
-        pyplot.savefig('Errors-' + self.output + '.png')
+        #pyplot.legend( (p1[0], p2[0]), ('Training Errors', 'Total Constraints'), loc = 0 )
+        #pyplot.savefig('Errors-' + self.output + '.png')
 
-    def run_HGGLA(self, inputs):
-        assert self.alg.con.constraints == []
-        self.num_constraints = []
-        for i in range(self.num_trainings):
-            errors = self.alg.train(inputs)
-            sum_errors = sum(errors)
-            self.all_errors.append(sum_errors)
-            self.num_constraints.append(len(self.alg.con.constraints))
-            with open(self.output, 'a') as f:
-                f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum_errors)]))
-                f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
-                if sum_errors != 0:
-                    f.write('\nerrors: ' + str(errors))
-                f.write('\nall errors: ' + str(self.all_errors))
+    def run_HGGLA(self, inputs, i):
+        #assert self.alg.con.constraints == []
+        #self.num_constraints = []
+        #for i in range(self.num_trainings):
+        errors = self.alg.train(inputs) # change so it returns the mappings that errors were made on
+        sum_errors = sum(errors) # change to count
+        self.all_errors.append(sum_errors)
+        #self.num_constraints.append(len(self.alg.con.constraints))
+        with open('Output-' + self.output + '.txt', 'a') as f:
+            f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum_errors)]))
+            f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
+            if sum_errors != 0:
+                f.write('\nerrors: ' + str(errors))
+            f.write('\nall errors: ' + str(self.all_errors))
+        error_count = 0
+        j = 0
+        #error_graph = []
+        #for j, error in enumerate(errors):
+            #error_count += error
+            #if not j % 300:
+                #error_graph.append(error_count)
+                #error_count = 0
+        #pyplot.plot(error_graph)
+        #pyplot.show()
+        #pyplot.clf()
 
-    def test_HGGLA(self, testinput):
+    def test_HGGLA(self, testinput, i):
         for tableau in testinput:
             winner = self.alg.test(tableau)
             if winner.grammatical:
@@ -690,8 +714,9 @@ if __name__ == '__main__':
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
     #learnTurkish = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput3.csv',
-                         #, num_trainings = 3, max_changes = 5, num_negatives = 15, tier_freq = 5, processes = '[self.change_feature_value]')
+                         #num_trainings = 3, max_changes = 5, num_negatives = 15, tier_freq = 5, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
+    #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
