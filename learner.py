@@ -577,28 +577,76 @@ class HGGLA:
         return computed_winner
 
 class Learn:
-    def __init__(self, feature_chart, input_file, algorithm = HGGLA, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
+    def __init__(self, feature_chart, input_file, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
                  processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
                  epenthetics = ['e', '?'], aligned = True, tier_freq = 5):
-        feature_dict = FeatureDict(feature_chart)
-        inputs = Input(feature_dict, input_file, num_negatives, max_changes, processes, epenthetics)
-        allinput = inputs.allinputs
-        test_size = int(len(allinput)/10)
-        numpy.random.shuffle(allinput)
-        testinput = allinput[:test_size]
-        traininput = allinput[test_size:]
-        self.alg = algorithm(learning_rate, feature_dict, aligned, tier_freq)
+        self.feature_dict = FeatureDict(feature_chart)
+        self.input_file = input_file
+        self.num_negatives = num_negatives
+        self.max_changes = max_changes
+        self.processes = processes
+        self.epenthetics = epenthetics
+
+        self.learning_rate = learning_rate
         self.num_trainings = num_trainings
+        self.aligned = aligned
+        self.tier_freq = tier_freq
+
+        self.all_input = None
+        self.train_input = None
+        self.test_input = None
+
+    def test_parameter(self, parameter, values):
+        """If parameter is an input parameter, redo input for each value of the
+        parameter. If parameter is an algorithm parameter, make and divide the
+        input once, and then run the algorithm with each value of the
+        parameter."""
+        if parameter in ['feature_dict', 'input_file', 'num_negatives', 'max_changes', 'processes', 'epenthetics']:
+            param = eval(parameter)
+            for value in values:
+                self.param = value
+                self.make_input()
+                self.divide_input()
+                self.run()
+        elif parameter in ['learning_rate', 'num_trainings', 'aligned', 'tier_freq']:
+            param = eval(parameter)
+            self.make_input()
+            self.divide_input()
+            for value in values:
+                self.param = value
+                self.run()
+        else:
+            raise AssertionError, 'Update parameter lists.'
+
+    def test_performance(self, num_runs):
+        """Make the input once, and then run several times with a new division into training and testing sets each time. Get average accuracy values."""
+        self.make_input()
+        for i in range(num_runs):
+            self.divide_input()
+            self.run()
+
+    def run(self):
+        self.alg = HGGLA(self.learning_rate, self.feature_dict, self.aligned, self.tier_freq)
         self.accuracy = []
         self.training_errors = []
         self.testing_errors = []
         self.output = str(datetime.datetime.now())
         self.num_constraints = []
-        for i in range(num_trainings):
-            self.run_HGGLA(traininput, i)
+        for i in range(self.num_trainings):
+            self.train_HGGLA(self.traininput, i)
             self.num_constraints.append(len(self.alg.con.constraints))
-            self.test_HGGLA(testinput, i)
+            self.test_HGGLA(self.testinput, i)
         self.report()
+
+    def make_input(self):
+        inputs = Input(self.feature_dict, self.input_file, self.num_negatives, self.max_changes, self.processes, self.epenthetics)
+        self.all_input = inputs.allinputs
+
+    def divide_input(self):
+        test_size = int(len(self.all_input)/10)
+        numpy.random.shuffle(self.all_input)
+        self.testinput = self.all_input[:test_size]
+        self.traininput = self.all_input[test_size:]
 
     def report(self):
         constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
@@ -642,9 +690,7 @@ class Learn:
         pyplot.show()
         #pyplot.savefig('Errors-' + self.output + '.png')
 
-    def run_HGGLA(self, inputs, i):
-        #assert self.alg.con.constraints == []
-        #for i in range(self.num_trainings):
+    def train_HGGLA(self, inputs, i):
         errors = self.alg.train(inputs) # change so it returns the mappings that errors were made on
         self.training_errors.append(numpy.mean(errors))
         with open('Output-' + self.output + '.txt', 'a') as f:
@@ -653,8 +699,8 @@ class Learn:
             if sum(errors) != 0:
                 f.write('\nerrors: ' + str(errors))
             f.write('\nall errors: ' + str(self.training_errors))
-        error_count = 0
-        j = 0
+        #error_count = 0
+        #j = 0
         #error_graph = []
         #for j, error in enumerate(errors):
             #error_count += error
@@ -718,6 +764,14 @@ class CrossValidate(Learn):
                 self.accuracy.append(1)
             else:
                 self.accuracy.append(0)
+
+def test_parameter(parameter, values):
+    if parameter not in [feature_dict, input_file, num_negatives, max_changes, processes, epenthetics]:
+        for value in values:
+            Learn('TurkishFeaturesWithNA.csv', 'TurkishInput3.csv', num_trainings =
+                5, num_negatives = 20, tier_freq = 5, processes =
+                '[self.change_feature_value]', parameter = value)
+
 
 if __name__ == '__main__':
     import os
