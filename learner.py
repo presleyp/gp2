@@ -16,8 +16,8 @@ from featuredict import FeatureDict
 # also want cw to win over losers. could this help?
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
 
-#TODO test after each training iteration
 #TODO move classes into different files? extract polarity functions and get ngrams?
+#TODO add parameters, continue fixing output
 
 #TODO thanks to Gaja: maybe randomly choose between inducing markedness and faithfulness,
 # start by making general constraints, save the most specified version of it,
@@ -590,19 +590,24 @@ class Learn:
         self.alg = algorithm(learning_rate, feature_dict, aligned, tier_freq)
         self.num_trainings = num_trainings
         self.accuracy = []
-        self.all_errors = []
+        self.training_errors = []
+        self.testing_errors = []
         self.output = str(datetime.datetime.now())
+        self.num_constraints = []
         for i in range(num_trainings):
             self.run_HGGLA(traininput, i)
+            self.num_constraints.append(len(self.alg.con.constraints))
             self.test_HGGLA(testinput, i)
         self.report()
 
     def report(self):
-        for c in self.alg.con.constraints:
-            print c
-        num_con = len(self.alg.con.constraints)
-        print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
-               'number of constraints', num_con)
+        constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
+        num_con = len(constraints)
+        weights = self.alg.con.weights
+        constraint_list = zip(weights, constraints)
+        constraint_list.sort()
+        print('errors per training', self.training_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
+               'number of constraints', num_con - 1)
               #sep = '\n') # file = filename for storing output
         with open('Output-' + self.output + '.txt', 'a') as f:
             f.write('\n'.join(['\n\nmean testing accuracy',
@@ -610,47 +615,44 @@ class Learn:
                                'number of constraints',
                                str(num_con),
                                'constraints',
-                               '\n'.join([str(c) for c in self.alg.con.constraints])
+                               '\n'.join([str(c) for c in constraint_list])
                               ]))
-        constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
-        weights = self.alg.con.weights
-        data = zip(constraints, weights)
-        data.sort()
-        data = zip(*data)
-        ind = numpy.arange(num_con + 1)
+        constraint_list = zip(*constraint_list)
+        #ind = numpy.arange(num_con)
+        ind = numpy.arange(20) if num_con > 20 else numpy.arange(num_con)
         height = .35
         #colors = ['r' if isinstance(c, Faithfulness) else 'y' for c in self.alg.con.constraints]
-        pyplot.barh(ind, data[1]) #, color = colors
+        pyplot.barh(ind, constraint_list[0][0:20]) #, color = colors
         pyplot.xlabel('Weights')
         pyplot.title('Constraint Weights')
-        pyplot.yticks(ind+height/2., data[0])
+        pyplot.yticks(ind+height/2., constraint_list[1][0:20])
         pyplot.subplots_adjust(left = .5) # make room for constraint names
         #pyplot.xticks(np.arange(0,81,10))
         #pyplot.legend( (p1[0], p2[0]), ('Markedness', 'Faithfulness') )
-        pyplot.savefig('Constraints-' + self.output + '.png')
-        pyplot.clf()
+        #pyplot.savefig('Constraints-' + self.output + '.png')
+        #pyplot.clf()
+        pyplot.show()
         pyplot.subplots_adjust(left = .15)
-        p1 = pyplot.plot(self.all_errors)
-        #p2 = pyplot.plot(self.num_constraints)
+        p1 = pyplot.plot(self.training_errors)
+        p2 = pyplot.plot(self.testing_errors)
+        #p3 = pyplot.plot(self.num_constraints)
         pyplot.xlabel('Iteration')
         pyplot.title('Errors and Constraints per Iteration')
-        #pyplot.legend( (p1[0], p2[0]), ('Training Errors', 'Total Constraints'), loc = 0 )
+        pyplot.legend( (p1[0], p2[0]), ('Training Errors', 'Testing Errors'), loc = 0 )
+        pyplot.show()
         #pyplot.savefig('Errors-' + self.output + '.png')
 
     def run_HGGLA(self, inputs, i):
         #assert self.alg.con.constraints == []
-        #self.num_constraints = []
         #for i in range(self.num_trainings):
         errors = self.alg.train(inputs) # change so it returns the mappings that errors were made on
-        sum_errors = sum(errors) # change to count
-        self.all_errors.append(sum_errors)
-        #self.num_constraints.append(len(self.alg.con.constraints))
+        self.training_errors.append(numpy.mean(errors))
         with open('Output-' + self.output + '.txt', 'a') as f:
-            f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum_errors)]))
+            f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum(errors))]))
             f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
-            if sum_errors != 0:
+            if sum(errors) != 0:
                 f.write('\nerrors: ' + str(errors))
-            f.write('\nall errors: ' + str(self.all_errors))
+            f.write('\nall errors: ' + str(self.training_errors))
         error_count = 0
         j = 0
         #error_graph = []
@@ -664,12 +666,16 @@ class Learn:
         #pyplot.clf()
 
     def test_HGGLA(self, testinput, i):
+        errors = []
         for tableau in testinput:
             winner = self.alg.test(tableau)
             if winner.grammatical:
                 self.accuracy.append(1)
+                errors.append(0)
             else:
                 self.accuracy.append(0)
+                errors.append(1)
+        self.testing_errors.append(numpy.mean(errors))
 
 class CrossValidate(Learn):
     """Train the algorithm on every possible set of all but one data point
@@ -695,7 +701,7 @@ class CrossValidate(Learn):
             training_set = tableaux[:i] + tableaux[i + 1:]
             for i in range(self.num_trainings):
                 errors = self.alg.train(training_set)
-                self.all_errors.append(sum(errors))
+                self.training_errors.append(sum(errors))
             # test
             desired = None
             test_tableau = []
