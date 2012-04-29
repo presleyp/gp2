@@ -254,7 +254,7 @@ class Con:
 class Markedness:
     def __init__(self, feature_dict, tier_freq, winners):
         """For a given output, make a constraint against one, two,
-        or three adjacent natural classes. 1/tier_freq of the time, the
+        or three adjacent natural classes. tier_freq of the time, the
         constraint is tier-based."""
         winners = [winner.sr for winner in winners]
         self.constraint = None
@@ -281,7 +281,7 @@ class Markedness:
         at least two), then decide not to use a tier after all. If the winners
         are not different, decide not to use a tier. If the
         winners have different lengths, decide not to use a tier.""" #change that when not using MarkednessAligned anymore
-        if numpy.random.randint(1, self.tier_freq + 1) == self.tier_freq:
+        if numpy.random.random() <= self.tier_freq:
             tier_winners = [self.get_tier(winner) for winner in winners]
             tier_winners = [winner for winner in tier_winners if len(winner) != 0]
             #tier_winners = [winner for winner in tier_winners if winner != []]
@@ -503,13 +503,14 @@ class Faithfulness:
             return ' '.join([process_type]) #, str(segment_type)])
 
 class HGGLA:
-    def __init__(self, learning_rate, feature_dict, aligned, tier_freq):
+    def __init__(self, learning_rate, feature_dict, aligned, tier_freq, induction_freq):
         """Takes processed input and learns on it one tableau at a time.
         The constraints are updated by the difference in violation vectors
         between the computed winner and the desired winner,
         multiplied by the learning rate."""
         self.learning_rate = learning_rate
         self.con = Con(feature_dict, tier_freq, aligned)
+        self.induction_freq = induction_freq
 
     def evaluate(self, tableau):
         """Use constraints to find mappings violations
@@ -557,7 +558,7 @@ class HGGLA:
                 self.errors.append(1)
                 self.train_tableau(tableau)
         else:
-            if numpy.random.randint(0, 10) == 9:
+            if numpy.random.random() <= self.induction_freq:
                 self.con.induce([grammatical_winner, computed_winner[0]])
                 self.train_tableau(tableau)
             else:
@@ -567,7 +568,7 @@ class HGGLA:
     def test(self, tableau):
         computed_winner = None
         harmonies = []
-        for mapping in tableau: # iteration over nonsequence when testing
+        for mapping in tableau:
             self.con.get_violations(mapping)
             mapping.harmony = numpy.dot(self.con.weights, mapping.violations)
             harmonies.append(mapping.harmony)
@@ -578,8 +579,8 @@ class HGGLA:
 
 class Learn:
     def __init__(self, feature_chart, input_file, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
-                 processes = '[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], aligned = True, tier_freq = 5):
+                 processes = '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
+                 epenthetics = ['e', '?'], aligned = True, tier_freq = .2, induction_freq = .1):
         self.feature_dict = FeatureDict(feature_chart)
         self.input_file = input_file
         self.num_negatives = num_negatives
@@ -591,10 +592,60 @@ class Learn:
         self.num_trainings = num_trainings
         self.aligned = aligned
         self.tier_freq = tier_freq
+        self.induction_freq = induction_freq
 
         self.all_input = None
         self.train_input = None
         self.test_input = None
+
+    def make_input(self):
+        """Use Input class to convert input file to data structure or access previously saved data structure."""
+        inputs = Input(self.feature_dict, self.input_file, self.num_negatives,
+                       self.max_changes, self.processes, self.epenthetics)
+        self.all_input = inputs.allinputs
+
+    def divide_input(self):
+        """Choose training set and test set."""
+        test_size = int(len(self.all_input)/10)
+        numpy.random.shuffle(self.all_input)
+        self.testinput = self.all_input[:test_size]
+        self.traininput = self.all_input[test_size:]
+
+    def run(self):
+        """Initialize HGGLA and do all training and testing iterations for this run."""
+        self.alg = HGGLA(self.learning_rate, self.feature_dict, self.aligned, self.tier_freq, self.induction_freq)
+        self.accuracy = []
+        self.training_errors = []
+        self.testing_errors = []
+        self.output = str(datetime.datetime.now())
+        self.num_constraints = []
+        for i in range(self.num_trainings):
+            self.train_HGGLA(self.traininput, i)
+            self.num_constraints.append(len(self.alg.con.constraints))
+            self.test_HGGLA(self.testinput, i)
+        self.report()
+
+    def train_HGGLA(self, inputs, i):
+        errors = self.alg.train(inputs) # change so it returns the mappings that errors were made on
+        self.training_errors.append(numpy.mean(errors))
+        with open('Output-' + self.output + '.txt', 'a') as f:
+            f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum(errors))]))
+            f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
+            if sum(errors) != 0:
+                f.write('\nerrors: ' + str(errors))
+            f.write('\nall errors: ' + str(self.training_errors))
+
+    def test_HGGLA(self, testinput, i):
+        errors = []
+        for tableau in testinput:
+            winner = self.alg.test(tableau)
+            if winner.grammatical:
+                self.accuracy.append(1)
+                errors.append(0)
+            else:
+                self.accuracy.append(0)
+                errors.append(1)
+        self.testing_errors.append(numpy.mean(errors))
 
     def test_parameter(self, parameter, values):
         """If parameter is an input parameter, redo input for each value of the
@@ -619,34 +670,13 @@ class Learn:
             raise AssertionError, 'Update parameter lists.'
 
     def test_performance(self, num_runs):
-        """Make the input once, and then run several times with a new division into training and testing sets each time. Get average accuracy values."""
+        """Make the input once, and then run several times with a new division
+        into training and testing sets each time. Get average accuracy
+        values."""
         self.make_input()
         for i in range(num_runs):
             self.divide_input()
             self.run()
-
-    def run(self):
-        self.alg = HGGLA(self.learning_rate, self.feature_dict, self.aligned, self.tier_freq)
-        self.accuracy = []
-        self.training_errors = []
-        self.testing_errors = []
-        self.output = str(datetime.datetime.now())
-        self.num_constraints = []
-        for i in range(self.num_trainings):
-            self.train_HGGLA(self.traininput, i)
-            self.num_constraints.append(len(self.alg.con.constraints))
-            self.test_HGGLA(self.testinput, i)
-        self.report()
-
-    def make_input(self):
-        inputs = Input(self.feature_dict, self.input_file, self.num_negatives, self.max_changes, self.processes, self.epenthetics)
-        self.all_input = inputs.allinputs
-
-    def divide_input(self):
-        test_size = int(len(self.all_input)/10)
-        numpy.random.shuffle(self.all_input)
-        self.testinput = self.all_input[:test_size]
-        self.traininput = self.all_input[test_size:]
 
     def report(self):
         constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
@@ -690,39 +720,6 @@ class Learn:
         pyplot.show()
         #pyplot.savefig('Errors-' + self.output + '.png')
 
-    def train_HGGLA(self, inputs, i):
-        errors = self.alg.train(inputs) # change so it returns the mappings that errors were made on
-        self.training_errors.append(numpy.mean(errors))
-        with open('Output-' + self.output + '.txt', 'a') as f:
-            f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum(errors))]))
-            f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
-            if sum(errors) != 0:
-                f.write('\nerrors: ' + str(errors))
-            f.write('\nall errors: ' + str(self.training_errors))
-        #error_count = 0
-        #j = 0
-        #error_graph = []
-        #for j, error in enumerate(errors):
-            #error_count += error
-            #if not j % 300:
-                #error_graph.append(error_count)
-                #error_count = 0
-        #pyplot.plot(error_graph)
-        #pyplot.show()
-        #pyplot.clf()
-
-    def test_HGGLA(self, testinput, i):
-        errors = []
-        for tableau in testinput:
-            winner = self.alg.test(tableau)
-            if winner.grammatical:
-                self.accuracy.append(1)
-                errors.append(0)
-            else:
-                self.accuracy.append(0)
-                errors.append(1)
-        self.testing_errors.append(numpy.mean(errors))
-
 class CrossValidate(Learn):
     """Train the algorithm on every possible set of all but one data point
     and test on the leftover data point.
@@ -764,14 +761,6 @@ class CrossValidate(Learn):
                 self.accuracy.append(1)
             else:
                 self.accuracy.append(0)
-
-def test_parameter(parameter, values):
-    if parameter not in [feature_dict, input_file, num_negatives, max_changes, processes, epenthetics]:
-        for value in values:
-            Learn('TurkishFeaturesWithNA.csv', 'TurkishInput3.csv', num_trainings =
-                5, num_negatives = 20, tier_freq = 5, processes =
-                '[self.change_feature_value]', parameter = value)
-
 
 if __name__ == '__main__':
     import os
