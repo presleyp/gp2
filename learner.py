@@ -17,7 +17,7 @@ from featuredict import FeatureDict
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
 
 #TODO test after each training iteration
-#TODO figure out why no trigrams - is that happening with larger words?
+#TODO move classes into different files? extract polarity functions and get ngrams?
 
 #TODO thanks to Gaja: maybe randomly choose between inducing markedness and faithfulness,
 # start by making general constraints, save the most specified version of it,
@@ -216,11 +216,13 @@ class Con:
         cannot be found within 15 tries."""
         #print self.i
         assert len(self.weights) == len(self.constraints) + 1
-        self.make_constraint(Faithfulness, winners, self.feature_dict)
-        if self.aligned:
-            self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
+        if random.random() < .5:
+            self.make_constraint(Faithfulness, winners, self.feature_dict)
         else:
-            self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
+            if self.aligned:
+                self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
+            else:
+                self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
         assert len(self.weights) == len(self.constraints) + 1
         self.i += 1
 
@@ -281,7 +283,8 @@ class Markedness:
         winners have different lengths, decide not to use a tier.""" #change that when not using MarkednessAligned anymore
         if numpy.random.randint(1, self.tier_freq + 1) == self.tier_freq:
             tier_winners = [self.get_tier(winner) for winner in winners]
-            tier_winners = [winner for winner in tier_winners if winner != []]
+            tier_winners = [winner for winner in tier_winners if len(winner) != 0]
+            #tier_winners = [winner for winner in tier_winners if winner != []]
             desired_number = 1 if len(winners) == 1 else 2
             try:
                 if len(tier_winners) >= desired_number and (tier_winners[0] - tier_winners[1]).any():
@@ -537,24 +540,29 @@ class HGGLA:
         self.con.weights += difference * self.learning_rate
 
     def train(self, inputs):
-        errors = []
+        self.errors = []
         for tableau in inputs:
             random.shuffle(tableau)
-            (grammatical_winner, computed_winner, correct) = self.evaluate(tableau)
-            if correct:
-                if len(computed_winner) == 1:
-                    errors.append(0)
-                else:
-                    computed_winner.remove(grammatical_winner)
-                    self.con.induce([grammatical_winner, computed_winner[0]])
-                    errors.append(1)
+            self.train_tableau(tableau)
+        return self.errors
+
+    def train_tableau(self, tableau):
+        (grammatical_winner, computed_winner, correct) = self.evaluate(tableau)
+        if correct:
+            if len(computed_winner) == 1:
+                self.errors.append(0)
             else:
-                if numpy.random.randint(0, 10) == 9:
-                    self.con.induce([grammatical_winner, computed_winner[0]])
-                else:
-                    self.update(grammatical_winner, computed_winner[0])
-                errors.append(1)
-        return errors
+                computed_winner.remove(grammatical_winner)
+                self.con.induce([grammatical_winner, computed_winner[0]])
+                self.errors.append(1)
+                self.train_tableau(tableau)
+        else:
+            if numpy.random.randint(0, 10) == 9:
+                self.con.induce([grammatical_winner, computed_winner[0]])
+                self.train_tableau(tableau)
+            else:
+                self.update(grammatical_winner, computed_winner[0])
+            self.errors.append(1)
 
     def test(self, tableau):
         computed_winner = None
@@ -590,6 +598,8 @@ class Learn:
         self.report()
 
     def report(self):
+        for c in self.alg.con.constraints:
+            print c
         num_con = len(self.alg.con.constraints)
         print('errors per training', self.all_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
                'number of constraints', num_con)
