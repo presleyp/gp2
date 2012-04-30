@@ -3,6 +3,7 @@ import csv, copy, numpy, random, cPickle, datetime
 import matplotlib.pyplot as pyplot
 from mapping import Mapping
 from featuredict import FeatureDict
+from matplotlib.backends.backend_pdf import PdfPages
 #THINGS TO WATCH OUT FOR:
     # delete the saved input file if you change the input making code
     # implement tableau making if you give it a file with ungrammatical mappings
@@ -551,19 +552,20 @@ class HGGLA:
         (grammatical_winner, computed_winner, correct) = self.evaluate(tableau)
         if correct:
             if len(computed_winner) == 1:
-                self.errors.append(0)
+                pass
+                #self.errors.append(0)
             else:
                 computed_winner.remove(grammatical_winner)
                 self.con.induce([grammatical_winner, computed_winner[0]])
-                self.errors.append(1)
-                self.train_tableau(tableau)
+                self.errors.append(''.join([str(grammatical_winner), '~t~', str(computed_winner)]))
+                #self.train_tableau(tableau) # if you use this, think about error counting
         else:
             if numpy.random.random() <= self.induction_freq:
                 self.con.induce([grammatical_winner, computed_winner[0]])
-                self.train_tableau(tableau)
+                #self.train_tableau(tableau)
             else:
                 self.update(grammatical_winner, computed_winner[0])
-            self.errors.append(1)
+            self.errors.append(''.join([str(grammatical_winner), '~', str(computed_winner)]))
 
     def test(self, tableau):
         computed_winner = None
@@ -578,9 +580,11 @@ class HGGLA:
         return computed_winner
 
 class Learn:
-    def __init__(self, feature_chart, input_file, learning_rate = 0.1, num_trainings = 10, num_negatives = 10, max_changes = 10,
+    def __init__(self, feature_chart, input_file, num_negatives = 10, max_changes = 10,
                  processes = '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], aligned = True, tier_freq = .2, induction_freq = .1):
+                 epenthetics = ['e', '?'], learning_rate = 0.1, num_trainings = 10,
+                 aligned = True, tier_freq = .2, induction_freq = .1, constraint_parts = ['voi', 'son', 'word', 'round', 'back']):
+        # input parameters
         self.feature_dict = FeatureDict(feature_chart)
         self.input_file = input_file
         self.num_negatives = num_negatives
@@ -588,15 +592,31 @@ class Learn:
         self.processes = processes
         self.epenthetics = epenthetics
 
+        # algorithm parameters
         self.learning_rate = learning_rate
         self.num_trainings = num_trainings
         self.aligned = aligned
         self.tier_freq = tier_freq
         self.induction_freq = induction_freq
 
+        # input data
         self.all_input = None
         self.train_input = None
         self.test_input = None
+
+        # output data
+        time = str(datetime.datetime.now())
+        self.figs = PdfPages('Output-' + time + '.pdf')
+        self.report = 'Output-' + time + '.txt'
+        self.training_runs = []
+        self.testing_runs = []
+        self.num_constraints_runs = []
+        self.constraint_parts = constraint_parts
+        with open(self.report, 'a') as f:
+            f.write('\n'.join(['Feature Chart: ' + feature_chart, 'Input File: ' + input_file, '# Ungrammatical Candidates Generated: ' + str(num_negatives),
+                               'Max Changes to Candidates: ' + str(max_changes), 'GEN processes: ' + processes, 'Epenthetic Segments: ' + str(epenthetics),
+                               'Learning Rate: ' + str(learning_rate), 'Aligned Markedness Constraints: ' + str(aligned), 'Frequency of Tier Constraints: ' +
+                               str(tier_freq), 'Frequency of Induction Upon Error: ' + str(induction_freq)]))
 
     def make_input(self):
         """Use Input class to convert input file to data structure or access previously saved data structure."""
@@ -608,44 +628,58 @@ class Learn:
         """Choose training set and test set."""
         test_size = int(len(self.all_input)/10)
         numpy.random.shuffle(self.all_input)
-        self.testinput = self.all_input[:test_size]
-        self.traininput = self.all_input[test_size:]
+        self.test_input = self.all_input[:test_size]
+        self.train_input = self.all_input[test_size:]
+
+    def refresh_input(self, inputs):
+        for tableau in inputs:
+            for mapping in tableau:
+                mapping.violations = numpy.array([1])
+                mapping.harmony = None
+
+    def refresh_con(self):
+        self.alg.con.constraints = []
+        self.alg.con.weights = numpy.array([0])
 
     def run(self):
         """Initialize HGGLA and do all training and testing iterations for this run."""
         self.alg = HGGLA(self.learning_rate, self.feature_dict, self.aligned, self.tier_freq, self.induction_freq)
-        self.accuracy = []
+        self.refresh_input(self.train_input)
+        self.refresh_input(self.test_input)
+        self.refresh_con()
         self.training_errors = []
         self.testing_errors = []
-        self.output = str(datetime.datetime.now())
         self.num_constraints = []
         for i in range(self.num_trainings):
-            self.train_HGGLA(self.traininput, i)
-            self.num_constraints.append(len(self.alg.con.constraints))
-            self.test_HGGLA(self.testinput, i)
-        self.report()
+            self.train_HGGLA(i)
+            self.test_HGGLA(i)
+        self.training_runs.append(self.training_errors)
+        self.testing_runs.append(self.testing_errors)
+        self.num_constraints_runs.append(self.num_constraints)
+        self.check_constraints()
+        self.plot_constraints()
 
-    def train_HGGLA(self, inputs, i):
-        errors = self.alg.train(inputs) # change so it returns the mappings that errors were made on
-        self.training_errors.append(numpy.mean(errors))
-        with open('Output-' + self.output + '.txt', 'a') as f:
-            f.write(''.join(['\nsum of errors for training #', str(i), ': ', str(sum(errors))]))
-            f.write(''.join(['\nnumber of constraints for training #', str(i), ': ', str(len(self.alg.con.constraints))]))
-            if sum(errors) != 0:
-                f.write('\nerrors: ' + str(errors))
-            f.write('\nall errors: ' + str(self.training_errors))
+    def train_HGGLA(self, i):
+        """Do one iteration through the training data."""
+        errors = self.alg.train(self.train_input)
+        self.training_errors.append(len(errors)/len(self.train_input))
+        constraints_added = self.alg.con.constraints[self.num_constraints[-1]:] if i else self.alg.con.constraints
+        self.num_constraints.append(len(self.alg.con.constraints))
+        with open(self.report, 'a') as f:
+            f.write(''.join(['\nErrors in training #', str(i), ': ', str(len(errors)), '\n'.join([error for error in errors])]))
+            f.write(''.join(['\nConstraints added in training #', str(i), ': ',
+                             str(len(constraints_added)), '\n'.join([str(c) for c in self.alg.con.constraints])]))
 
-    def test_HGGLA(self, testinput, i):
+    def test_HGGLA(self, i):
+        """Do one iteration through the testing data."""
         errors = []
-        for tableau in testinput:
+        for tableau in self.test_input:
             winner = self.alg.test(tableau)
-            if winner.grammatical:
-                self.accuracy.append(1)
-                errors.append(0)
-            else:
-                self.accuracy.append(0)
-                errors.append(1)
-        self.testing_errors.append(numpy.mean(errors))
+            if winner.grammatical == False:
+                errors.append(str(winner))
+        self.testing_errors.append(len(errors)/len(self.test_input))
+        with open(self.report, 'a') as f:
+            f.write(''.join(['\nErrors in testing #', str(i), ': ', str(len(errors)), '\n'.join([error for error in errors])]))
 
     def test_parameter(self, parameter, values):
         """If parameter is an input parameter, redo input for each value of the
@@ -668,33 +702,37 @@ class Learn:
                 self.run()
         else:
             raise AssertionError, 'Update parameter lists.'
+        print ('tested ', parameter, 'on ', values, '\n')
+        print('error percentage on last test of each run', [run[-1] for run in self.testing_runs],
+              '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs])
+        self.plot_errors(parameter = parameter, values = values)
+        self.figs.close()
 
-    def test_performance(self, num_runs):
+    def test_performance(self, num_runs = 5):
         """Make the input once, and then run several times with a new division
         into training and testing sets each time. Get average accuracy
         values."""
         self.make_input()
         for i in range(num_runs):
             self.divide_input()
+            with open(self.report, 'a') as f:
+                f.write('--------Run ' + str(i) + '--------')
             self.run()
+        print('ran program ', num_runs, ' times')
+        print('error percentage on last test of each run', [run[-1] for run in self.testing_runs],
+              '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs])
+        self.plot_errors()
+        self.figs.close()
 
-    def report(self):
-        constraints = ['intercept'] + [str(c) for c in self.alg.con.constraints]
+    def plot_constraints(self):
+        """Plot the 20 highest weighted constraints and write all of them to a
+        file with their weights, in descending order of weight."""
+        constraints = [str(c) for c in self.alg.con.constraints]
         num_con = len(constraints)
-        weights = self.alg.con.weights
-        constraint_list = zip(weights, constraints)
+        constraint_list = zip(self.alg.con.weights, constraints)
         constraint_list.sort()
-        print('errors per training', self.training_errors, 'mean accuracy on test', numpy.mean(self.accuracy),
-               'number of constraints', num_con - 1)
-              #sep = '\n') # file = filename for storing output
-        with open('Output-' + self.output + '.txt', 'a') as f:
-            f.write('\n'.join(['\n\nmean testing accuracy',
-                               str(numpy.mean(self.accuracy)),
-                               'number of constraints',
-                               str(num_con),
-                               'constraints',
-                               '\n'.join([str(c) for c in constraint_list])
-                              ]))
+        with open(self.report, 'a') as f:
+            f.write('\n'.join([str(w) + '\t' + str(c) for (w, c) in constraint_list]))
         constraint_list = zip(*constraint_list)
         #ind = numpy.arange(num_con)
         ind = numpy.arange(20) if num_con > 20 else numpy.arange(num_con)
@@ -707,33 +745,48 @@ class Learn:
         pyplot.subplots_adjust(left = .5) # make room for constraint names
         #pyplot.xticks(np.arange(0,81,10))
         #pyplot.legend( (p1[0], p2[0]), ('Markedness', 'Faithfulness') )
-        #pyplot.savefig('Constraints-' + self.output + '.png')
         #pyplot.clf()
-        pyplot.show()
+        #pyplot.show()
+        self.figs.savefig()
+        pyplot.clf()
+
+    def plot_errors(self, parameter = None, values = None):
+        """Make two plots, one for training and one for testing. Each has
+        iterations on the x axis and error percentage on the y axis. Plot a line
+        for each run."""
         pyplot.subplots_adjust(left = .15)
-        p1 = pyplot.plot(self.training_errors)
-        p2 = pyplot.plot(self.testing_errors)
-        #p3 = pyplot.plot(self.num_constraints)
-        pyplot.xlabel('Iteration')
-        pyplot.title('Errors and Constraints per Iteration')
-        pyplot.legend( (p1[0], p2[0]), ('Training Errors', 'Testing Errors'), loc = 0 )
-        pyplot.show()
-        #pyplot.savefig('Errors-' + self.output + '.png')
+        for item in [self.training_runs, self.testing_runs]:
+            plots = []
+            for run in item:
+                plots.append(pyplot.plot(run))
+            pyplot.xlabel('Iteration')
+            pyplot.ylabel('Percent of Inputs Mapped to Incorrect Outputs')
+            kind = 'Training' if item == self.training_runs else 'Testing'
+            pyplot.title(kind + ' Error Rates')
+            labels = [parameter + ' = ' + str(value) for value in values] if parameter else range(len(item))
+            pyplot.legend(plots, labels, loc = 0)
+            #pyplot.show()
+            self.figs.savefig()
+            pyplot.clf()
+
+    def check_constraints(self):
+        constraints_found = []
+        with open(self.report, 'r') as f:
+            text = f.readlines()
+            for line in text:
+                if line.startswith(('-','+')):
+                    for part in self.constraint_parts: #there must be a better way than a double loop
+                        if part in line:
+                            constraints_found.append(line)
+                            break
+        #print constraints_found
+        with open(self.report, 'a') as f:
+            f.write('\n'.join(constraints_found))
 
 class CrossValidate(Learn):
     """Train the algorithm on every possible set of all but one data point
     and test on the leftover data point.
     Look at the average accuracy across tests."""
-
-    def refresh_input(self, inputs):
-        for tableau in inputs:
-            for mapping in tableau:
-                mapping.violations = numpy.array([1])
-                mapping.harmony = None
-
-    def refresh_con(self):
-        self.alg.con.constraints = []
-        self.alg.con.constraints.weights = numpy.array([0])
 
     def run_HGGLA(self, inputs):
         tableaux = self.make_tableaux(inputs)
@@ -769,13 +822,14 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    learn2 = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 50, tier_freq = 5)
+    learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 50)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    #learnTurkish = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput3.csv',
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput3.csv',
                          #num_trainings = 3, max_changes = 5, num_negatives = 15, tier_freq = 5, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
+    learner.test_performance()
