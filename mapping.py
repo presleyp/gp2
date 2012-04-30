@@ -54,6 +54,8 @@ class Mapping:
         self.sr = numpy.hstack((boundary, self.sr, boundary))
 
     def __eq__(self, other):
+        if len(self.sr) != len(other.sr):
+            print 'self', self, 'other', other
         return numpy.equal(self.sr, other.sr).all()
 
     def __str__(self):

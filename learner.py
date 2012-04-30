@@ -288,7 +288,7 @@ class Markedness:
             #tier_winners = [winner for winner in tier_winners if winner != []]
             desired_number = 1 if len(winners) == 1 else 2
             try:
-                if len(tier_winners) >= desired_number and (tier_winners[0] - tier_winners[1]).any():
+                if len(tier_winners) >= desired_number and (tier_winners[0] - tier_winners[1]).any() and len(tier_winners[0]) == len(tier_winners[1]):
                     winners = tier_winners
                 else:
                     self.tier = None
@@ -390,6 +390,8 @@ class MarkednessAligned(Markedness):
                 self.constraint = pattern
                 position = position_in_ngram
                 break
+        if self.constraint == None:
+            print 'gram', self.gram, 'base', base, 'protected seg', protected_segment, 'winners', winners[0], winners[1], 'tier', self.tier
         assert self.constraint != None
         for i in range(len(pattern)):
             length = len(pattern[i])
@@ -551,10 +553,7 @@ class HGGLA:
     def train_tableau(self, tableau):
         (grammatical_winner, computed_winner, correct) = self.evaluate(tableau)
         if correct:
-            if len(computed_winner) == 1:
-                pass
-                #self.errors.append(0)
-            else:
+            if len(computed_winner) != 1:
                 computed_winner.remove(grammatical_winner)
                 self.con.induce([grammatical_winner, computed_winner[0]])
                 self.errors.append(''.join([str(grammatical_winner), '~t~', str(computed_winner)]))
@@ -702,9 +701,8 @@ class Learn:
                 self.run()
         else:
             raise AssertionError, 'Update parameter lists.'
-        print ('tested ', parameter, 'on ', values, '\n')
-        print('error percentage on last test of each run', [run[-1] for run in self.testing_runs],
-              '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs])
+        print 'tested ', parameter, 'on ', values, '\n'
+        print 'error percentage on last test of each run', [run[-1] for run in self.testing_runs], '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs]
         self.plot_errors(parameter = parameter, values = values)
         self.figs.close()
 
@@ -718,9 +716,8 @@ class Learn:
             with open(self.report, 'a') as f:
                 f.write('--------Run ' + str(i) + '--------')
             self.run()
-        print('ran program ', num_runs, ' times')
-        print('error percentage on last test of each run', [run[-1] for run in self.testing_runs],
-              '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs])
+        print 'ran program ', num_runs, ' times'
+        print 'error percentage on last test of each run', [run[-1] for run in self.testing_runs], '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs]
         self.plot_errors()
         self.figs.close()
 
@@ -759,6 +756,7 @@ class Learn:
             plots = []
             for run in item:
                 plots.append(pyplot.plot(run))
+            pyplot.ylim(-.1, g1.1)
             pyplot.xlabel('Iteration')
             pyplot.ylabel('Percent of Inputs Mapped to Incorrect Outputs')
             kind = 'Training' if item == self.training_runs else 'Testing'
