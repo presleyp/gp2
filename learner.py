@@ -756,7 +756,7 @@ class Learn:
             plots = []
             for run in item:
                 plots.append(pyplot.plot(run))
-            pyplot.ylim(-.1, g1.1)
+            pyplot.ylim(-.1, 1.1)
             pyplot.xlabel('Iteration')
             pyplot.ylabel('Percent of Inputs Mapped to Incorrect Outputs')
             kind = 'Training' if item == self.training_runs else 'Testing'
