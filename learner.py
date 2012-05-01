@@ -693,7 +693,7 @@ class Learn:
                 with open(self.report, 'a') as f:
                     f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
                 self.run(i)
-        elif parameter in ['self.learning_rate', 'self.num_trainings', 'self.aligned', 'self.tier_freq']:
+        elif parameter in ['self.learning_rate', 'self.num_trainings', 'self.aligned', 'self.tier_freq', 'self.induction_freq']:
             param = eval(parameter)
             self.make_input()
             self.divide_input()
@@ -730,10 +730,11 @@ class Learn:
         constraints = [str(c) for c in self.alg.con.constraints]
         num_con = len(constraints)
         constraint_list = zip(self.alg.con.weights, constraints)
-        constraint_list.sort()
+        constraint_list.sort(reverse = True)
+        self.constraint_lines = [str(w) + '\t' + c for (w, c) in constraint_list]
         with open(self.report, 'a') as f:
             f.write('\n\nTotal Constraints, Sorted by Weight\n')
-            f.write('\n'.join([str(w) + '\t' + str(c) for (w, c) in constraint_list]))
+            f.write('\n'.join(self.constraint_lines))
         constraint_list = zip(*constraint_list)
         #ind = numpy.arange(num_con)
         ind = numpy.arange(20) if num_con > 20 else numpy.arange(num_con)
@@ -744,10 +745,6 @@ class Learn:
         pyplot.title('Constraint Weights')
         pyplot.yticks(ind+height/2., constraint_list[1][0:20])
         pyplot.subplots_adjust(left = .5) # make room for constraint names
-        #pyplot.xticks(np.arange(0,81,10))
-        #pyplot.legend( (p1[0], p2[0]), ('Markedness', 'Faithfulness') )
-        #pyplot.clf()
-        #pyplot.show()
         self.figs.savefig()
         pyplot.clf()
 
@@ -762,7 +759,9 @@ class Learn:
                 plots.append(pyplot.plot(run))
             pyplot.ylim(-.1, 1.1)
             pyplot.xlabel('Iteration')
+            pyplot.xticks(numpy.arange(self.num_trainings))
             pyplot.ylabel('Percent of Inputs Mapped to Incorrect Outputs')
+            pyplot.yticks(numpy.arange(-.1, 1.1, .1))
             kind = 'Training' if item == self.training_runs else 'Testing'
             pyplot.title(kind + ' Error Rates')
             labels = [parameter + ' = ' + str(value) for value in values] if parameter else range(len(item))
@@ -773,17 +772,14 @@ class Learn:
 
     def check_constraints(self):
         constraints_found = []
-        with open(self.report, 'r') as f:
-            text = f.readlines()
-            for line in text: #FIXME reading same constraints over and over, and not necessarily from the right run
-                if line.startswith(('-','+')):
-                    for part in self.constraint_parts: #there must be a better way than a double loop
-                        if part in line:
-                            constraints_found.append(line)
-                            break
+        for line in self.constraint_lines:
+            for part in self.constraint_parts: #there must be a better way than a double loop
+                if part in line:
+                    constraints_found.append(line)
+                    break
         #print constraints_found
         with open(self.report, 'a') as f:
-            f.write('\n\nConstraints With Expected Features\n' + ''.join(constraints_found))
+            f.write('\n\nConstraints With Expected Features\n' + '\n'.join(constraints_found))
 
 class CrossValidate(Learn):
     """Train the algorithm on every possible set of all but one data point
@@ -836,4 +832,4 @@ if __name__ == '__main__':
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
     #learner.test_performance()
     #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2])
-    learner.test_parameter('self.induction_freq', [.1, .2, .4])
+    learner.test_parameter('self.induction_freq', [.1, .2, .3, .4, .5])
