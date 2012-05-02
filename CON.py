@@ -1,4 +1,11 @@
 import numpy, random, copy
+#FIXME getting duplicate constraints (faith at least) - think it was a reporting problem, should be fixed
+# was a reporting problem but also duplicate faith. no evidence for mark yet.
+# Faith.__eq__ wasn't working, so I changed the duplicate test, which should fix
+# it.
+#TODO stem faith or suffix mark
+#TODO privilege constraints where grams have same features, maybe also where values are the same
+#FIXME somehow getting faith constraints on +word - added an assertion to test this
 
 class Con:
     def __init__(self, feature_dict, tier_freq, aligned):
@@ -34,7 +41,7 @@ class Con:
                 break
             duplicate = False
             for constraint in self.constraints:
-                if new_constraint == constraint:
+                if new_constraint.constraint == constraint.constraint:
                     duplicate = True
                     break
             if not duplicate:
@@ -251,18 +258,19 @@ class Faithfulness:
         for change in base:
             if base.count(change) > winners[0].changes.count(change):
                 self.constraint = change
+                assert 19 not in self.constraint, 'word boundary feature is in Faithfulness constraint'
                 if numpy.random.random() > .5:
                     polarity = self.constraint & set(['+', '-'])
                     self.constraint -= polarity
-                    v_base = 0
-                    v_other = 0
+                    violations_base = 0
+                    violations_other = 0
                     for change in base:
                         if self.constraint <= change:
-                            v_base += 1
+                            violations_base += 1
                     for change in winners[0].changes:
                         if self.constraint <= change:
-                            v_other += 1
-                    if v_base <= v_other:
+                            violations_other += 1
+                    if violations_base <= violations_other:
                         self.constraint |= polarity
                 break
 
@@ -274,7 +282,7 @@ class Faithfulness:
                 violation -= 1
         return violation
 
-    def __eq__(self, other):
+    def __eq__(self, other): # not working, don't know why
         self.constraint == other.constraint
 
     def __str__(self):

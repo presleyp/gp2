@@ -19,16 +19,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 # also want cw to win over losers. could this help?
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
 
-#TODO move classes into different files? extract polarity functions and get ngrams?
-
-#FIXME somehow getting faith constraints on +word
-#TODO fix testing of input parameters so it remakes input
-#TODO add graphs of number of constraints over time
-#FIXME getting duplicate constraints (faith at least)
-#TODO stem faith or suffix mark
-#TODO privilege constraints where grams have same features, maybe also where values are the same
-#TODO always have faithful cand
-#TODO compare to input with only faithful cand and one with the processes studied
 
 #TODO thanks to Gaja: maybe randomly choose between inducing markedness and faithfulness,
 # start by making general constraints, save the most specified version of it,
@@ -190,7 +180,7 @@ class Learn:
                 self.alg.induction_freq = 0
                 self.train_HGGLA(j)
             else:
-                self.alg.induction_freq = .5
+                self.alg.induction_freq = self.induction_freq
                 self.train_HGGLA(j)
             self.test_HGGLA(j)
         self.training_runs.append(self.training_errors)
@@ -208,7 +198,7 @@ class Learn:
         with open(self.report, 'a') as f:
             f.write(''.join(['\n\nErrors in training #', str(i), ': ', str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
             f.write(''.join(['\n\nConstraints added in training #', str(i), ': ',
-                             str(len(constraints_added)), '\n', '\n'.join([str(c) for c in self.alg.con.constraints])]))
+                             str(len(constraints_added)), '\n', '\n'.join([str(c) for c in constraints_added])]))
 
     def test_HGGLA(self, i):
         """Do one iteration through the testing data."""
@@ -259,7 +249,7 @@ class Learn:
         for i in range(num_runs):
             self.divide_input()
             with open(self.report, 'a') as f:
-                f.write('--------Run ' + str(i) + '--------')
+                f.write('\n\n\n--------Run ' + str(i) + '--------')
             self.run(i)
         print 'ran program ', num_runs, ' times'
         print 'error percentage on last test of each run', [run[-1] for run in self.testing_runs], '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs]
@@ -367,11 +357,11 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    #learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
+    learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv',
-                         num_trainings = 3, max_changes = 5, num_negatives = 15, tier_freq = .25, processes = '[self.change_feature_value]')
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv',
+                         #num_trainings = 3, max_changes = 5, num_negatives = 15, tier_freq = .25, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files

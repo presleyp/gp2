@@ -1,5 +1,8 @@
 import cPickle, csv, copy, numpy, random
 from mapping import Mapping
+#TODO fix testing of input parameters so it remakes input
+#TODO always have faithful cand - done
+#TODO compare to input with only faithful cand and one with the processes studied
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -70,6 +73,10 @@ class Gen:
         """Given a grammatical input-output mapping, create randomly
         ungrammatical mappings with the same input."""
         negatives = []
+        if mapping.ur != mapping.sr:
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.set_ngrams()
+            negatives.append(new_mapping)
         while len(negatives) < self.num_negatives:
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
             for j in range(numpy.random.randint(0, self.max_changes + 1)):
