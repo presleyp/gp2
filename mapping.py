@@ -1,4 +1,5 @@
 import numpy
+#TODO put affixes in input file
 
 class Mapping:
     def __init__(self, feature_dict, line):
@@ -11,36 +12,46 @@ class Mapping:
         self.ur = line[1]
         self.sr = line[2]
         self.changes = line[3]
+        self.stem = line[4] if len(line) == 5 else None
         self.violations = numpy.array([1]) # intercept
         self.harmony = None
-        self.meaning = line[4] if len(line) == 5 else None
+        #self.meaning = line[4] if len(line) == 5 else None
         self.feature_dict = feature_dict
         self.ngrams = None
+        self.stem_indices = None
 
     def to_data(self):
         self.grammatical = bool(int(self.grammatical))
         self.ur = self.feature_dict.get_features_word(self.ur)
         self.sr = self.feature_dict.get_features_word(self.sr)
+        self.stem = self.ur[0:-2] #FIXME
         if self.changes == 'none':
             self.changes = []
         else:
             self.changes = self.changes.split(';')
             for i in range(len(self.changes)):
+                change = Change()
                 changeparts = self.changes[i].split(' ')
-                segment = changeparts.pop()
-                #changeparts += self.feature_dict.major_features(self.feature_dict.get_features_seg(segment))
-                if changeparts[0] == 'metathesize':
-                    segment2 = changeparts.pop(-4)
-                    #segment2 = self.feature_dict.major_features(self.feature_dict.get_features_seg(segment2))
-                    #segment2 = [''.join([2, f]) for f in segment2]
-                    #changeparts += segment2
-                if changeparts[0] == 'change':
-                    value = changeparts.pop()
-                    polarity = '+' if value == 1 else '-'
-                    feature = changeparts.pop()
-                    feature = self.feature_dict.feature_names.index(feature)
-                    changeparts += [polarity, feature]
-                self.changes[i] = set(changeparts)
+                change.stem = self.changes[0] #FIXME, for all attributes
+                change.change_type = self.changes[1]
+                change.feature = self.changes[2]
+                change.value = self.changes[3]
+                change.make_set()
+                self.changes[i] = change
+                #segment = changeparts.pop()
+                ##changeparts += self.feature_dict.major_features(self.feature_dict.get_features_seg(segment))
+                #if changeparts[0] == 'metathesize':
+                    #segment2 = changeparts.pop(-4)
+                    ##segment2 = self.feature_dict.major_features(self.feature_dict.get_features_seg(segment2))
+                    ##segment2 = [''.join([2, f]) for f in segment2]
+                    ##changeparts += segment2
+                #if changeparts[0] == 'change':
+                    #value = changeparts.pop()
+                    #polarity = '+' if value == 1 else '-'
+                    #feature_name = changeparts.pop()
+                    #feature = self.feature_dict.get_feature_number(feature_name)
+                    #changeparts += [polarity, feature]
+                #self.changes[i] = set(changeparts)
 
     def split(self, feature):
         if feature < 0:
@@ -49,7 +60,7 @@ class Mapping:
             return ['+', feature]
 
     def add_boundaries(self):
-        boundary = self.feature_dict.fd['|']
+        boundary = self.feature_dict.get_features_seg('|')
         self.ur = numpy.hstack((boundary, self.ur, boundary))
         self.sr = numpy.hstack((boundary, self.sr, boundary))
 
@@ -61,7 +72,7 @@ class Mapping:
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))
         sr = ''.join(self.feature_dict.get_segments(self.sr))
-        return ', '.join([str(self.grammatical), ur, sr, str(self.changes)])
+        return ', '.join([str(self.grammatical), ur, sr, str(self.changes, context = 'change')])
 
     def set_ngrams(self):
         self.ngrams = [self.get_ngrams(self.sr, 1), self.get_ngrams(self.sr, 2), self.get_ngrams(self.sr, 3)]
@@ -70,4 +81,32 @@ class Mapping:
         starting_positions = range(len(word) + 1 - n)
         ngrams_in_word = [word[i:i + n] for i in starting_positions]
         return ngrams_in_word
+
+class Change: #TODO maybe I should just make it inherit from set
+    def __init__(self):
+        self.change_type = None
+        self.stem = ''
+        self.feature = ''
+        self.value = ''
+        self.change_to_faith = {'change': 'Ident', 'epenthesize': 'Dep', 'delete': 'Max', 'metathesize': 'Lin'}
+
+    def make_set(self):
+        self.set = set([self.change_type, self.stem, self.feature, self.value])
+
+    def __str__(self, context = 'change'):
+        change_type = self.change_type if context == 'change' else self.change_to_faith[self.change_type]
+        return ''.join([self.stem, change_type, self.feature, self.value])
+
+    def __eq__(self, other):
+        return self.set == other.set
+
+    def __le__(self, other):
+        return self.set <= other.set
+
+    def __ge__(self, other):
+        return self.set >= other.set
+
+    def __del__(self, to_delete): # TODO find out what the method really is called
+        self.set -= to_delete
+
 

@@ -1,11 +1,9 @@
 import numpy, random, copy
-#FIXME getting duplicate constraints (faith at least) - think it was a reporting problem, should be fixed
-# was a reporting problem but also duplicate faith. no evidence for mark yet.
-# Faith.__eq__ wasn't working, so I changed the duplicate test, which should fix
-# it.
 #TODO stem faith or suffix mark
 #TODO privilege constraints where grams have same features, maybe also where values are the same
-#FIXME somehow getting faith constraints on +word - added an assertion to test this
+#FIXME somehow getting faith constraints on +word - added an assertion to test
+#this - only getting these on - or plain word, but the question is where the
+#evidence comes from to increase their weight
 
 class Con:
     def __init__(self, feature_dict, tier_freq, aligned):
@@ -41,7 +39,7 @@ class Con:
                 break
             duplicate = False
             for constraint in self.constraints:
-                if new_constraint.constraint == constraint.constraint:
+                if new_constraint == constraint:
                     duplicate = True
                     break
             if not duplicate:
@@ -118,12 +116,12 @@ class Markedness:
             if occurrences.count(occurrences[0]) != len(occurrences):
                 return numpy.asarray(ngram)
 
-    def dont_care(self, ngram):
-        self.dontcares = [random.sample(range(self.num_features), numpy.random.randint(0, self.num_features)) for segment in ngram]
-        self.cares = []
-        for segment in self.dontcares:
-            for feature in segment:
-                ngram[segment][feature] = 0
+    #def dont_care(self, ngram):
+        #self.dontcares = [random.sample(range(self.num_features), numpy.random.randint(0, self.num_features)) for segment in ngram]
+        #self.cares = []
+        #for segment in self.dontcares:
+            #for feature in segment:
+                #ngram[segment][feature] = 0
 
     def make_care(self, pattern):
         segment = numpy.random.randint(0, self.gram)
@@ -237,42 +235,42 @@ class MarkednessAligned(Markedness):
         segments = []
         for segment in self.constraint:
             #natural_class = [k for k, v in self.feature_dict.fd.iteritems() if segment <= v]
-            natural_class = [self.polarity(feature) + self.feature_dict.feature_names[numpy.absolute(feature)] for feature in segment]
+            natural_class = [self.polarity(feature) + self.feature_dict.get_feature_name(feature) for feature in segment]
             natural_class = ''.join(['{', ','.join(natural_class), '}'])
             segments.append(natural_class)
         if self.tier:
-            return ''.join([self.feature_dict.feature_names[self.tier], ' tier ', polarity, str(segments)])
+            return ''.join([self.feature_dict.get_feature_name(self.tier), ' tier ', polarity, str(segments)])
         else:
             return ''.join([self.polarity(self.violation)] + [segment for segment in segments])
 
 class Faithfulness:
-    def __init__(self, winners, feature_dict):
+    def __init__(self, winners, feature_dict): #TODO sometimes delete 'stem'
         """Find a change that exists in only one winner. Abstract away from some
         of its feature values, but not so much that it becomes equivalent to a
         change in the other winner. Make this a faithfulness constraint."""
         self.feature_dict = feature_dict
         self.constraint = None
-        base = copy.copy(winners[1].changes)
-        assert type(base) == list
-        random.shuffle(base)
-        for change in base:
-            if base.count(change) > winners[0].changes.count(change):
+        self.base = copy.copy(winners[1].changes)
+        self.other = winners[0].changes
+        assert type(self.base) == list
+        random.shuffle(self.base)
+        for change in self.base:
+            if self.base.count(change) > self.other.count(change):
                 self.constraint = change
-                assert 19 not in self.constraint, 'word boundary feature is in Faithfulness constraint'
-                if numpy.random.random() > .5:
-                    polarity = self.constraint & set(['+', '-'])
-                    self.constraint -= polarity
-                    violations_base = 0
-                    violations_other = 0
-                    for change in base:
-                        if self.constraint <= change:
-                            violations_base += 1
-                    for change in winners[0].changes:
-                        if self.constraint <= change:
-                            violations_other += 1
-                    if violations_base <= violations_other:
-                        self.constraint |= polarity
+                for item in ['change.value', 'change.stem']:
+                    self.remove_specific(change, item)
                 break
+
+    def remove_specific(self, change, item):
+        """Remove a source of specificity unless it makes the constraint
+        incapable of distinguishing between the computed and grammatical
+        winners."""
+        if numpy.random.random() > .5:
+            self.constraint.set -= eval(item)
+            violations_base = self.get_violation(self.base)
+            violations_other = self.get_violation(self.other)
+            if violations_base >= violations_other:
+                self.constraint.set |= eval(item)
 
     def get_violation(self, mapping):
         """Finds the number of times the change referred to by the constraint occurs in the input-output pair."""
@@ -283,31 +281,35 @@ class Faithfulness:
         return violation
 
     def __eq__(self, other): # not working, don't know why
-        self.constraint == other.constraint
+        return self.constraint == other.constraint
 
     def __str__(self):
+        str(self.constraint(context = 'faith')) #TODO do I return this?
         #segment_type = []
-        value = None
-        feature = None
-        process_type = None
-        for item in self.constraint:
-            if item in ('-', '+'):
-                value = item
-            elif type(item) == str:
-                process_type = item
-                if process_type == 'change':
-                    process_type = 'Ident'
-            else:
-                feature = self.feature_dict.feature_names[-item]
-        if type(process_type) != str:
-            print 'process type', process_type, type(process_type)
-        assert type(process_type) == str, 'change not str'
-        #segment_type.sort()
-        if feature:
-            if value:
-                return ''.join([process_type, ' ', value, feature]) #, 'in', str(segment_type)])
-            else:
-                return ' '.join([process_type, feature]) #, 'in', str(segment_type)])
-        else:
-            return ' '.join([process_type]) #, str(segment_type)])
+        #value = None
+        #feature = None
+        #process_type = None
+        #stem = ''
+        #for item in self.constraint:
+            #if item == 'stem':
+                #stem = 'Stem '
+            #if item in ('-', '+'):
+                #value = item
+            #elif type(item) == str:
+                #process_type = item
+                #if process_type == 'change':
+                    #process_type = 'Ident'
+            #else:
+                #feature = self.feature_dict.get_feature_name(item) # use to use -item as an index, I think it was a mistake
+        #if type(process_type) != str:
+            #print 'process type', process_type, type(process_type)
+        #assert type(process_type) == str, 'change not str'
+        ##segment_type.sort()
+        #if feature:
+            #if value:
+                #return ''.join([stem, process_type, ' ', value, feature]) #, 'in', str(segment_type)])
+            #else:
+                #return ''.join([stem, process_type, ' ', feature]) #, 'in', str(segment_type)])
+        #else:
+            #return ''.join([stem, process_type]) #, str(segment_type)])
 

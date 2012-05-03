@@ -1,7 +1,6 @@
 import cPickle, csv, copy, numpy, random
 from mapping import Mapping
 #TODO fix testing of input parameters so it remakes input
-#TODO always have faithful cand - done
 #TODO compare to input with only faithful cand and one with the processes studied
 
 class Input:
@@ -11,13 +10,13 @@ class Input:
     underlying form to surface form.  Ungrammatical mappings are optional; if
     you include them, the second line must be ungrammatical."""
     def __init__(self, feature_dict, infile, num_negatives, max_changes, processes,
-        epenthetics):
+        epenthetics, affixes):
         """Convert lines of input to mapping objects.  Generate
         ungrammatical input-output pairs if they were not already present in the
         input file."""
         print 'calling Input'
         self.feature_dict = feature_dict
-        self.gen_args = [num_negatives, max_changes, processes, epenthetics]
+        self.gen_args = [num_negatives, max_changes, processes, epenthetics, affixes]
         try:
             saved_file = open('save-' + infile, 'rb')
             self.allinputs = cPickle.load(saved_file)
@@ -28,6 +27,15 @@ class Input:
             cPickle.dump(self.allinputs, saved_file)
         saved_file.close()
         print 'done making input'
+
+    def find_stem(self):
+        for i, affix in enumerate(self.affixes):
+            for j, position in enumerate(affix):
+                segment_class = []
+                for segment in position:
+                    segment_class.add(self.feature_dict.get_features_seg(segment))
+                if len(segment_class) > 1:
+                    self.affixes[i][j] = segment_class[0].intersection(*segment_class[1:])
 
     def make_input(self, infile):
         """Based on file of lines of the form "1,underlyingform,surfaceform,changes"
@@ -59,13 +67,14 @@ class Input:
 
 class Gen:
     """Generates input-output mappings."""
-    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics):
+    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics, affixes):
         self.feature_dict = feature_dict
         #self.major_features = self.feature_dict.major_features
         self.num_negatives = num_negatives
         self.max_changes = max_changes
         self.processes = eval(processes)
         self.epenthetics = epenthetics
+        self.affixes = affixes
         self.non_boundaries = copy.deepcopy(self.feature_dict.fd)
         del self.non_boundaries['|']
 
@@ -75,6 +84,7 @@ class Gen:
         negatives = []
         if mapping.ur != mapping.sr:
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.add_boundaries()
             new_mapping.set_ngrams()
             negatives.append(new_mapping)
         while len(negatives) < self.num_negatives:
@@ -150,31 +160,65 @@ class Gen:
         feature change is recorded in rule format: 'change
         feature-index new-feature-value
         major-features-of-original-segment'."""
+        # decide what to change
         locus = numpy.random.randint(0, len(mapping.sr))
         segment = mapping.sr[locus]
-        #major_features = self.major_features(segment)
-        closest_num = None
-        closest_phone = None
-        differences = None
-        new_segment = None
-        #num_to_change = numpy.random.geometric(p = .5, size = 1)[0]
+        # decide how many features to change
         num_to_change = numpy.random.zipf(2)
         if num_to_change > len(segment):
-            num_to_change = random.sample(range(1, len(segment) + 1), 1)[0]
+            num_to_change = numpy.random.randint(1, len(segment) + 1)
+        # pick a segment to change to with that many different features
+        closest_num = None
+        new_segment = None
+        changed_features = None
         for phone in self.non_boundaries.values():
-            differences = segment - phone # FIXME not sure this makes sense
-            num_different = len(differences)
+            difference = segment - phone
+            num_different = len(changed_features)
             if num_different == num_to_change:
                 new_segment = phone
+                changed_features = difference
+                break
             else:
                 if num_different != 0 and (closest_num == None or numpy.absolute(num_different - num_to_change) < numpy.absolute(closest_num - num_to_change)):
                     closest_num = num_different
-                    closest_phone = phone
-        if not new_segment:
-            new_segment = closest_phone
+                    new_segment = phone
+                    changed_features = difference
+        # change the segment
         mapping.sr[locus] = new_segment
-        changed_features = segment - new_segment
         assert changed_features, 'no change made'
-        #TODO major features as tuple or frozen set?
-        mapping.changes = [set(['change'] + mapping.split(feature)) for feature in changed_features]
+        for feature in changed_features:
+            change = Change()
+            change.change_type = 'change'
+            change.stem = 'stem' if locus in mapping.stem else ''
+            change.feature = numpy.absolute(feature)
+            change.value = '+' if feature > 0 else '-'
+            change.make_set()
+            mapping.changes.append(change)
+        #mapping.changes = [set([stem, 'change'] + mapping.split(feature)) for feature in changed_features]
+
+class DeterministicGen(Gen):
+    def ungrammaticalize(self, mapping):
+        """Given a grammatical input-output mapping, create randomly
+        ungrammatical mappings with the same input."""
+        negatives = []
+        # make faithful candidate
+        if mapping.ur != mapping.sr:
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.set_ngrams()
+            negatives.append(new_mapping)
+        # make devoicing candidate - FIXME not the right thing to do
+        voice = self.feature_dict.get_features_seg('voi')
+        if voice in mapping.sr[-1]:
+            new_sr = copy.deepcopy(mapping.ur)
+            new_sr[-1] -= voice
+            new_sr[-1] |= -voice
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, ['change voi -']]) # FIXME how do I write changes?
+        # make vowel harmony candidate
+        #TODO
+
+        new_mapping.add_boundaries()
+        new_mapping.set_ngrams()
+        negatives.append(new_mapping)
+        return negatives
+
 

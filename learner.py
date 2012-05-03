@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import csv, copy, numpy, random, cPickle, datetime
 import matplotlib.pyplot as pyplot
-from mapping import Mapping
+from mapping import Mapping, Change
 from featuredict import FeatureDict
-from GEN import Input, Gen
+from GEN import Input, Gen, DeterministicGen
 from CON import Con, Markedness, MarkednessAligned, Faithfulness
 from matplotlib.backends.backend_pdf import PdfPages
 #THINGS TO WATCH OUT FOR:
@@ -108,8 +108,8 @@ class HGGLA:
 class Learn:
     def __init__(self, feature_chart, input_file, num_negatives = 10, max_changes = 10,
                  processes = '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], learning_rate = 0.1, num_trainings = 10,
-                 aligned = True, tier_freq = .2, induction_freq = .1, constraint_parts = ['voi', 'son', '+word', 'round', 'back']):
+                 epenthetics = ['e', '?'], affixes = [[set(['i','y','u','w']), set(['m'])]], learning_rate = 0.1, num_trainings = 2,
+                 aligned = True, tier_freq = .2, induction_freq = .1, constraint_parts = ['voi', '+word', 'round', 'back']):
         # input parameters
         self.feature_dict = FeatureDict(feature_chart)
         self.input_file = input_file
@@ -117,6 +117,7 @@ class Learn:
         self.max_changes = max_changes
         self.processes = processes
         self.epenthetics = epenthetics
+        self.affixes = affixes
 
         # algorithm parameters
         self.learning_rate = learning_rate
@@ -147,7 +148,7 @@ class Learn:
     def make_input(self):
         """Use Input class to convert input file to data structure or access previously saved data structure."""
         inputs = Input(self.feature_dict, self.input_file, self.num_negatives,
-                       self.max_changes, self.processes, self.epenthetics)
+                       self.max_changes, self.processes, self.epenthetics, self.affixes)
         self.all_input = inputs.allinputs
 
     def divide_input(self):
@@ -310,7 +311,7 @@ class Learn:
     def check_constraints(self):
         constraints_found = []
         for line in self.constraint_lines:
-            for part in self.constraint_parts: #there must be a better way than a double loop
+            for part in self.constraint_parts:
                 if part in line:
                     constraints_found.append(line)
                     break
@@ -357,18 +358,18 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
+    #learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
     #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
     #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv',
-                         #num_trainings = 3, max_changes = 5, num_negatives = 15, tier_freq = .25, processes = '[self.change_feature_value]')
+    learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv',
+                         max_changes = 5, num_negatives = 15, tier_freq = .25, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
-    learner.test_performance(3)
+    #learner.test_performance(5)
     #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2, .3, .4, .5])
     #learner.test_parameter('self.induction_freq', [.1, .2, .3, .4, .5, .6, .7, .8])
     #learner.test_parameter('self.max_changes', [2, 5, 10])
-    #learner.test_parameter('self.tier_freq', [.1, .2, .3, .4])
+    learner.test_parameter('self.tier_freq', [.1, .2, .3, .4, .5])
