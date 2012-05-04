@@ -1,6 +1,5 @@
 import cPickle, csv, copy, numpy, random
 from mapping import Mapping
-#TODO fix testing of input parameters so it remakes input
 #TODO compare to input with only faithful cand and one with the processes studied
 
 class Input:
@@ -9,33 +8,34 @@ class Input:
     then surface form in segments, then semicolon-delimited list of changes from
     underlying form to surface form.  Ungrammatical mappings are optional; if
     you include them, the second line must be ungrammatical."""
-    def __init__(self, feature_dict, infile, num_negatives, max_changes, processes,
-        epenthetics, affixes):
+    def __init__(self, feature_dict, infile, remake_input, num_negatives, max_changes, processes,
+        epenthetics):
         """Convert lines of input to mapping objects.  Generate
         ungrammatical input-output pairs if they were not already present in the
         input file."""
         print 'calling Input'
         self.feature_dict = feature_dict
-        self.gen_args = [num_negatives, max_changes, processes, epenthetics, affixes]
+        self.gen_args = [num_negatives, max_changes, processes, epenthetics]
         try:
+            assert remake_input == False
             saved_file = open('save-' + infile, 'rb')
             self.allinputs = cPickle.load(saved_file)
             print 'read from file'
-        except IOError:
+        except (IOError, AssertionError):
             self.allinputs = self.make_input(infile)
             saved_file = open('save-' + infile, 'wb')
             cPickle.dump(self.allinputs, saved_file)
         saved_file.close()
         print 'done making input'
 
-    def find_stem(self):
-        for i, affix in enumerate(self.affixes):
+    def find_stem(self, affixes):
+        for i, affix in enumerate(affixes):
             for j, position in enumerate(affix):
                 segment_class = []
                 for segment in position:
                     segment_class.add(self.feature_dict.get_features_seg(segment))
                 if len(segment_class) > 1:
-                    self.affixes[i][j] = segment_class[0].intersection(*segment_class[1:])
+                    affixes[i][j] = segment_class[0].intersection(*segment_class[1:])
 
     def make_input(self, infile):
         """Based on file of lines of the form "1,underlyingform,surfaceform,changes"
@@ -67,14 +67,13 @@ class Input:
 
 class Gen:
     """Generates input-output mappings."""
-    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics, affixes):
+    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics):
         self.feature_dict = feature_dict
         #self.major_features = self.feature_dict.major_features
         self.num_negatives = num_negatives
         self.max_changes = max_changes
         self.processes = eval(processes)
         self.epenthetics = epenthetics
-        self.affixes = affixes
         self.non_boundaries = copy.deepcopy(self.feature_dict.fd)
         del self.non_boundaries['|']
 
@@ -189,7 +188,7 @@ class Gen:
         for feature in changed_features:
             change = Change()
             change.change_type = 'change'
-            change.stem = 'stem' if locus in mapping.stem else ''
+            change.stem = 'stem' if mapping.in_stem(locus) else ''
             change.feature = numpy.absolute(feature)
             change.value = '+' if feature > 0 else '-'
             change.make_set()

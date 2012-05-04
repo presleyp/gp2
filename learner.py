@@ -106,18 +106,18 @@ class HGGLA:
         return computed_winner
 
 class Learn:
-    def __init__(self, feature_chart, input_file, num_negatives = 10, max_changes = 10,
+    def __init__(self, feature_chart, input_file, remake_input = False, num_negatives = 10, max_changes = 10,
                  processes = '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], affixes = [[set(['i','y','u','w']), set(['m'])]], learning_rate = 0.1, num_trainings = 2,
+                 epenthetics = ['e', '?'], learning_rate = 0.1, num_trainings = 2,
                  aligned = True, tier_freq = .2, induction_freq = .1, constraint_parts = ['voi', '+word', 'round', 'back']):
         # input parameters
         self.feature_dict = FeatureDict(feature_chart)
         self.input_file = input_file
+        self.remake_input = remake_input
         self.num_negatives = num_negatives
         self.max_changes = max_changes
         self.processes = processes
         self.epenthetics = epenthetics
-        self.affixes = affixes
 
         # algorithm parameters
         self.learning_rate = learning_rate
@@ -147,8 +147,8 @@ class Learn:
 
     def make_input(self):
         """Use Input class to convert input file to data structure or access previously saved data structure."""
-        inputs = Input(self.feature_dict, self.input_file, self.num_negatives,
-                       self.max_changes, self.processes, self.epenthetics, self.affixes)
+        inputs = Input(self.feature_dict, self.input_file, self.remake_input, self.num_negatives,
+                       self.max_changes, self.processes, self.epenthetics)
         self.all_input = inputs.allinputs
 
     def divide_input(self):
@@ -221,6 +221,7 @@ class Learn:
             param = eval(parameter)
             for i, value in enumerate(values):
                 self.param = value
+                self.remake_input = True
                 self.make_input()
                 self.divide_input()
                 with open(self.report, 'a') as f:

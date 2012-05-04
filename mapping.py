@@ -1,5 +1,4 @@
 import numpy
-#TODO put affixes in input file
 
 class Mapping:
     def __init__(self, feature_dict, line):
@@ -12,7 +11,6 @@ class Mapping:
         self.ur = line[1]
         self.sr = line[2]
         self.changes = line[3]
-        self.stem = line[4] if len(line) == 5 else None
         self.violations = numpy.array([1]) # intercept
         self.harmony = None
         #self.meaning = line[4] if len(line) == 5 else None
@@ -22,9 +20,13 @@ class Mapping:
 
     def to_data(self):
         self.grammatical = bool(int(self.grammatical))
-        self.ur = self.feature_dict.get_features_word(self.ur)
-        self.sr = self.feature_dict.get_features_word(self.sr)
-        self.stem = self.ur[0:-2] #FIXME
+        morphemes = self.ur.split('+')
+        beginning = len(morphemes[0])
+        end = beginning + len(morphemes[1])
+        self.stem = (beginning, end)
+        self.ur = ''.join(morphemes)
+        for item in (self.ur, self.sr):
+            item = self.feature_dict.get_features_word(item)
         if self.changes == 'none':
             self.changes = []
         else:
@@ -52,6 +54,9 @@ class Mapping:
                     #feature = self.feature_dict.get_feature_number(feature_name)
                     #changeparts += [polarity, feature]
                 #self.changes[i] = set(changeparts)
+
+    def in_stem(self, locus):
+        return True if self.stem[0] < locus < self.stem[1] else False
 
     def split(self, feature):
         if feature < 0:
