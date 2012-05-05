@@ -63,7 +63,7 @@ class Markedness:
         winners = [winner.sr for winner in winners]
         self.constraint = None
         self.feature_dict = feature_dict
-        self.num_features = self.feature_dict.num_features
+        #self.num_features = self.feature_dict.num_features
         self.tier_freq = tier_freq
         self.tier = None
         winners = self.decide_tier(winners)
@@ -225,7 +225,11 @@ class MarkednessAligned(Markedness):
             return '+'
 
     def __eq__(self, other):
-        if len(self.constraint) != len(other.constraint):
+        if isinstance(other, Faithfulness):
+            return False
+        elif other == None:
+            return True if not self.constraint.any() else False
+        elif len(self.constraint) != len(other.constraint):
             return False
         else:
             return (numpy.equal(self.constraint, other.constraint)).all()
@@ -244,33 +248,35 @@ class MarkednessAligned(Markedness):
             return ''.join([self.polarity(self.violation)] + [segment for segment in segments])
 
 class Faithfulness:
-    def __init__(self, winners, feature_dict): #TODO sometimes delete 'stem'
+    def __init__(self, winners, feature_dict):
         """Find a change that exists in only one winner. Abstract away from some
         of its feature values, but not so much that it becomes equivalent to a
         change in the other winner. Make this a faithfulness constraint."""
         self.feature_dict = feature_dict
         self.constraint = None
-        self.base = copy.copy(winners[1].changes)
+        self.base = copy.deepcopy(winners[1].changes)
         self.other = winners[0].changes
         assert type(self.base) == list
         random.shuffle(self.base)
         for change in self.base:
-            if self.base.count(change) > self.other.count(change):
+            if self.base.count(change) > self.other.count(change): #FIXME will this work?
+                #print self.base.count(change), self.other.count(change)
+                #print winners[1].changes, winners[0].changes
                 self.constraint = change
-                for item in ['change.value', 'change.stem']:
-                    self.remove_specific(change, item)
+                for item in [change.value, change.stem]:
+                    self.remove_specific(change, item, winners)
                 break
 
-    def remove_specific(self, change, item):
+    def remove_specific(self, change, item, winners):
         """Remove a source of specificity unless it makes the constraint
         incapable of distinguishing between the computed and grammatical
         winners."""
         if numpy.random.random() > .5:
-            self.constraint.set -= eval(item)
-            violations_base = self.get_violation(self.base)
-            violations_other = self.get_violation(self.other)
+            self.constraint.set.discard(item)
+            violations_base = self.get_violation(winners[1])
+            violations_other = self.get_violation(winners[0])
             if violations_base >= violations_other:
-                self.constraint.set |= eval(item)
+                self.constraint.add(item)
 
     def get_violation(self, mapping):
         """Finds the number of times the change referred to by the constraint occurs in the input-output pair."""
@@ -280,11 +286,17 @@ class Faithfulness:
                 violation -= 1
         return violation
 
-    def __eq__(self, other): # not working, don't know why
-        return self.constraint == other.constraint
+    def __eq__(self, other):
+        if other == None:
+            return self.constraint == None
+        elif isinstance(other, Markedness):
+            return False
+        else:
+            return self.constraint == other.constraint
 
     def __str__(self):
-        str(self.constraint(context = 'faith')) #TODO do I return this?
+        self.constraint.context = 'faith'
+        return str(self.constraint)
         #segment_type = []
         #value = None
         #feature = None

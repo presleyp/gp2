@@ -16,7 +16,7 @@ class Mapping:
         #self.meaning = line[4] if len(line) == 5 else None
         self.feature_dict = feature_dict
         self.ngrams = None
-        self.stem_indices = None
+        self.stem = None
 
     def to_data(self):
         self.grammatical = bool(int(self.grammatical))
@@ -25,8 +25,9 @@ class Mapping:
         end = beginning + len(morphemes[1])
         self.stem = (beginning, end)
         self.ur = ''.join(morphemes)
-        for item in (self.ur, self.sr):
-            item = self.feature_dict.get_features_word(item)
+        #for item in (self.ur, self.sr):
+        self.ur = self.feature_dict.get_features_word(self.ur)
+        self.sr = self.feature_dict.get_features_word(self.sr)
         if self.changes == 'none':
             self.changes = []
         else:
@@ -34,10 +35,14 @@ class Mapping:
             for i in range(len(self.changes)):
                 change = Change()
                 changeparts = self.changes[i].split(' ')
-                change.stem = self.changes[0] #FIXME, for all attributes
-                change.change_type = self.changes[1]
-                change.feature = self.changes[2]
-                change.value = self.changes[3]
+                change.stem = changeparts.pop(0) if changeparts[0] == 'stem' else ''
+                change.change_type = changeparts.pop(0)
+                change.segment = changeparts.pop()
+                try:
+                    change.feature = changeparts.pop(0)
+                    change.value = changeparts.pop(0)
+                except IndexError:
+                    pass
                 change.make_set()
                 self.changes[i] = change
                 #segment = changeparts.pop()
@@ -77,7 +82,8 @@ class Mapping:
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))
         sr = ''.join(self.feature_dict.get_segments(self.sr))
-        return ', '.join([str(self.grammatical), ur, sr, str(self.changes, context = 'change')])
+        changes = [str(change) for change in self.changes]
+        return ', '.join([str(self.grammatical), ur, sr, str(changes)])
 
     def set_ngrams(self):
         self.ngrams = [self.get_ngrams(self.sr, 1), self.get_ngrams(self.sr, 2), self.get_ngrams(self.sr, 3)]
@@ -87,23 +93,29 @@ class Mapping:
         ngrams_in_word = [word[i:i + n] for i in starting_positions]
         return ngrams_in_word
 
-class Change: #TODO maybe I should just make it inherit from set
-    def __init__(self):
+class Change:
+    def __init__(self): #TODO change to *kwargs and make make_set part of init?
         self.change_type = None
         self.stem = ''
         self.feature = ''
         self.value = ''
+        self.segment = ''
+        self.context = 'change'
         self.change_to_faith = {'change': 'Ident', 'epenthesize': 'Dep', 'delete': 'Max', 'metathesize': 'Lin'}
 
     def make_set(self):
         self.set = set([self.change_type, self.stem, self.feature, self.value])
+        self.set.discard('')
 
-    def __str__(self, context = 'change'):
-        change_type = self.change_type if context == 'change' else self.change_to_faith[self.change_type]
-        return ''.join([self.stem, change_type, self.feature, self.value])
+    def __str__(self):
+        change_type = self.change_type if self.context == 'change' else self.change_to_faith[self.change_type]
+        return ' '.join([self.stem, change_type, str(self.feature), self.value]) # TODO fix so I don't get double spaces
 
     def __eq__(self, other):
-        return self.set == other.set
+        if other == None:
+            return self.set == None
+        else:
+            return self.set == other.set
 
     def __le__(self, other):
         return self.set <= other.set
@@ -111,7 +123,10 @@ class Change: #TODO maybe I should just make it inherit from set
     def __ge__(self, other):
         return self.set >= other.set
 
-    def __del__(self, to_delete): # TODO find out what the method really is called
-        self.set -= to_delete
+    def remove(self, to_delete):
+        self.set.remove(to_delete)
+
+    def add(self, other):
+        self.set.add(other)
 
 

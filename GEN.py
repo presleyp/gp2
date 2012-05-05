@@ -1,6 +1,7 @@
 import cPickle, csv, copy, numpy, random
-from mapping import Mapping
+from mapping import Mapping, Change
 #TODO compare to input with only faithful cand and one with the processes studied
+#TODO need better solution for context of Change instance
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -81,19 +82,21 @@ class Gen:
         """Given a grammatical input-output mapping, create randomly
         ungrammatical mappings with the same input."""
         negatives = []
-        if mapping.ur != mapping.sr:
+        if mapping.ur.all() != mapping.sr.all():
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.stem = copy.copy(mapping.stem)
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()
             negatives.append(new_mapping)
         while len(negatives) < self.num_negatives:
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.stem = copy.copy(mapping.stem)
             for j in range(numpy.random.randint(0, self.max_changes + 1)):
                 process = random.choice(self.processes)
                 process(new_mapping)
             # Don't add a mapping if it's the same as the grammatical one.
             try:
-                if numpy.equal(new_mapping.sr, mapping.sr).all():
+                if new_mapping == mapping:
                     continue
             except ValueError: # they're not the same length
                 pass
@@ -172,7 +175,7 @@ class Gen:
         changed_features = None
         for phone in self.non_boundaries.values():
             difference = segment - phone
-            num_different = len(changed_features)
+            num_different = len(difference)
             if num_different == num_to_change:
                 new_segment = phone
                 changed_features = difference
