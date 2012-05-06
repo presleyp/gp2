@@ -1,4 +1,5 @@
 import csv, numpy, copy
+
 class FeatureDict:
     def __init__(self, feature_chart):
         """The attributes are: fd, a dictionary with strings as keys (segments) and 1D arrays of 1 and -1 as values (feature vectors).

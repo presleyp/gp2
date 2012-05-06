@@ -10,7 +10,7 @@ from matplotlib.backends.backend_pdf import PdfPages
     # delete the saved input file if you change the input making code
     # implement tableau making if you give it a file with ungrammatical mappings
 #TODO make non_boundaries dict in FeatureDict and make it read "boundary" from feature names
-#TODO Faithfulness: delete a change that's being reversed? make sure there's a faithful mapping?
+#TODO Faithfulness: delete a change that's being reversed?
 #TODO time random.sample vs numpy.random.sample
 #TODO copy problem in diff_ngrams
 # keep in mind: tiers can mess up alignment

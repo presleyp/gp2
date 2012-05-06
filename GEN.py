@@ -2,6 +2,7 @@ import cPickle, csv, copy, numpy, random
 from mapping import Mapping, Change
 #TODO compare to input with only faithful cand and one with the processes studied
 #TODO need better solution for context of Change instance
+#TODO my Ident +/- feature may be backwards - should mean don't change this value, but instead means don't change to that value
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -83,11 +84,7 @@ class Gen:
         ungrammatical mappings with the same input."""
         negatives = []
         if mapping.ur.all() != mapping.sr.all():
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
-            new_mapping.stem = copy.copy(mapping.stem)
-            new_mapping.add_boundaries()
-            new_mapping.set_ngrams()
-            negatives.append(new_mapping)
+            negatives.append(self.make_faithful_cand(mapping))
         while len(negatives) < self.num_negatives:
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
             new_mapping.stem = copy.copy(mapping.stem)
@@ -115,6 +112,13 @@ class Gen:
                 new_mapping.set_ngrams()
                 negatives.append(new_mapping)
         return negatives
+
+    def make_faithful_cand(self, mapping):
+        new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+        new_mapping.stem = copy.copy(mapping.stem)
+        new_mapping.add_boundaries()
+        new_mapping.set_ngrams()
+        return new_mapping
 
     def epenthesize(self, mapping):
         """Map a ur to an sr with one more segment."""
@@ -204,23 +208,55 @@ class DeterministicGen(Gen):
         ungrammatical mappings with the same input."""
         negatives = []
         # make faithful candidate
-        if mapping.ur != mapping.sr:
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+        if mapping.ur.all() != mapping.sr.all():
+            negatives.append(self.make_faithful_cand(mapping))
+        # make candidate with changed voicing
+        voice = self.feature_dict.get_feature_number('voi')
+        for item in mapping.sr[-1]:
+            if item == voice:
+                pass
+            elif item == -voice:
+                voice = -voice
+            else:
+                continue
+            new_sr = copy.deepcopy(mapping.ur)
+            new_sr[-1].remove(voice)
+            new_sr[-1].add(-voice)
+            change = Change()
+            change.change_type = 'change'
+            change.feature = numpy.absolute(voice)
+            change.value = '-' if voice > 0 else '+'
+            change.stem = mapping.in_stem(len(mapping.sr) - 1)
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, [change]])
+            new_mapping.add_boundaries()
             new_mapping.set_ngrams()
             negatives.append(new_mapping)
-        # make devoicing candidate - FIXME not the right thing to do
-        voice = self.feature_dict.get_features_seg('voi')
-        if voice in mapping.sr[-1]:
-            new_sr = copy.deepcopy(mapping.ur)
-            new_sr[-1] -= voice
-            new_sr[-1] |= -voice
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, ['change voi -']]) # FIXME how do I write changes?
         # make vowel harmony candidate
-        #TODO
-
-        new_mapping.add_boundaries()
-        new_mapping.set_ngrams()
-        negatives.append(new_mapping)
+        vocalic = self.feature_dict.get_feature_number('voc')
+        back = self.feature_dict.get_feature_number('back')
+        roundness = self.feature_dict.get_feature_number('round')
+        last_vowel = None
+        for i in range(len(mapping.ur)).reverse():
+            if vocalic in mapping.ur[i]:
+                last_vowel = i
+                back = mapping.ur[i] & set([back, -back])
+                roundness = mapping.ur[i] & set([roundness, -roundness])
+                break
+        for i in [[back], [roundness], [back, roundness]]:
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.sr[i] -= set(i)
+            j = [-x for x in i]
+            new_mapping.sr[i] |= set(j)
+            for feature in i:
+                change = Change()
+                change.change_type = 'change'
+                change.stem = mapping.ur.in_stem(last_vowel)
+                change.feature = numpy.absolute(feature)
+                change.value = '+' if feature < 0 else '-'
+                new_mapping.changes.append(change)
+            new_mapping.add_boundaries()
+            new_mapping.set_ngrams()
+            negatives.append(new_mapping)
         return negatives
 
 

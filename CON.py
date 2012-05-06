@@ -1,5 +1,4 @@
 import numpy, random, copy
-#TODO stem faith or suffix mark
 #TODO privilege constraints where grams have same features, maybe also where values are the same
 #FIXME somehow getting faith constraints on +word - added an assertion to test
 #this - only getting these on - or plain word, but the question is where the
@@ -228,7 +227,7 @@ class MarkednessAligned(Markedness):
         if isinstance(other, Faithfulness):
             return False
         elif other == None:
-            return True if not self.constraint.any() else False
+            return self.constraint == None
         elif len(self.constraint) != len(other.constraint):
             return False
         else:
