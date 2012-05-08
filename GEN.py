@@ -1,7 +1,5 @@
 import cPickle, csv, copy, numpy, random
 from mapping import Mapping, Change
-#TODO need better solution for context of Change instance
-#TODO my Ident +/- feature may be backwards - should mean don't change this value, but instead means don't change to that value
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -192,14 +190,8 @@ class Gen:
         mapping.sr[locus] = new_segment
         assert changed_features, 'no change made'
         for feature in changed_features:
-            change = Change(self.feature_dict)
-            change.change_type = 'change'
-            change.stem = 'stem' if mapping.in_stem(locus) else ''
-            change.feature = numpy.absolute(feature)
-            change.value = '+' if feature > 0 else '-'
-            change.make_set()
+            change = Change(self.feature_dict, feature = feature, mapping = mapping, locus = locus)
             mapping.changes.append(change)
-        #mapping.changes = [set([stem, 'change'] + mapping.split(feature)) for feature in changed_features]
 
 class DeterministicGen(Gen):
     def ungrammaticalize(self, mapping):
@@ -211,21 +203,16 @@ class DeterministicGen(Gen):
             negatives.append(self.make_faithful_cand(mapping))
         # make candidate with changed voicing
         voice = self.feature_dict.get_feature_number('voi')
+        voicing = None
         for item in mapping.sr[-1]:
-            if item == voice:
-                pass
-            elif item == -voice:
-                voice = -voice
-            else:
-                continue
+            if numpy.absolute(item) == voice:
+                voicing = item
+        if voicing:
             new_sr = copy.deepcopy(mapping.ur)
-            new_sr[-1].remove(voice)
-            new_sr[-1].add(-voice)
-            change = Change(self.feature_dict)
-            change.change_type = 'change'
-            change.feature = numpy.absolute(voice)
-            change.value = '+' if voice > 0 else '-'
-            change.stem = mapping.in_stem(len(mapping.sr) - 1)
+            locus = len(mapping.sr) - 1
+            new_sr[locus].remove(voicing)
+            new_sr[locus].add(-voicing)
+            change = Change(self.feature_dict, change_type = 'change', feature = voicing, mapping = mapping, locus = locus)
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, [change]])
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()
@@ -247,11 +234,7 @@ class DeterministicGen(Gen):
             j = [-x for x in i]
             new_mapping.sr[i] |= set(j)
             for feature in i:
-                change = Change(self.feature_dict)
-                change.change_type = 'change'
-                change.stem = mapping.ur.in_stem(last_vowel)
-                change.feature = numpy.absolute(feature)
-                change.value = '+' if feature > 0 else '-'
+                change = Change(self.feature_dict, mapping = mapping, locus = last_vowel, feature = feature)
                 new_mapping.changes.append(change)
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()

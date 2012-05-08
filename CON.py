@@ -1,8 +1,5 @@
 import numpy, random, copy
 #TODO privilege constraints where grams have same features, maybe also where values are the same
-#FIXME somehow getting faith constraints on +word - added an assertion to test
-#this - only getting these on - or plain word, but the question is where the
-#evidence comes from to increase their weight
 
 class Con:
     def __init__(self, feature_dict, tier_freq, aligned):
@@ -271,7 +268,7 @@ class Faithfulness:
         incapable of distinguishing between the computed and grammatical
         winners."""
         if numpy.random.random() > .5:
-            self.constraint.set.discard(item)
+            self.constraint.discard(item)
             violations_base = self.get_violation(winners[1])
             violations_other = self.get_violation(winners[0])
             if violations_base >= violations_other:
@@ -293,37 +290,10 @@ class Faithfulness:
         else:
             return self.constraint == other.constraint
 
-    def __contains(self, element):
-        return element in self.contraint
+    def __contains__(self, element):
+        return element in self.constraint
 
     def __str__(self):
         self.constraint.context = 'faith'
         return str(self.constraint)
-        #segment_type = []
-        #value = None
-        #feature = None
-        #process_type = None
-        #stem = ''
-        #for item in self.constraint:
-            #if item == 'stem':
-                #stem = 'Stem '
-            #if item in ('-', '+'):
-                #value = item
-            #elif type(item) == str:
-                #process_type = item
-                #if process_type == 'change':
-                    #process_type = 'Ident'
-            #else:
-                #feature = self.feature_dict.get_feature_name(item) # use to use -item as an index, I think it was a mistake
-        #if type(process_type) != str:
-            #print 'process type', process_type, type(process_type)
-        #assert type(process_type) == str, 'change not str'
-        ##segment_type.sort()
-        #if feature:
-            #if value:
-                #return ''.join([stem, process_type, ' ', value, feature]) #, 'in', str(segment_type)])
-            #else:
-                #return ''.join([stem, process_type, ' ', feature]) #, 'in', str(segment_type)])
-        #else:
-            #return ''.join([stem, process_type]) #, str(segment_type)])
 

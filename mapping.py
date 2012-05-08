@@ -1,4 +1,5 @@
 import numpy
+    #TODO change input file to -voi instead of voi -1 format
 
 class Mapping:
     def __init__(self, feature_dict, line):
@@ -32,14 +33,14 @@ class Mapping:
         else:
             self.changes = self.changes.split(';')
             for i in range(len(self.changes)):
-                change = Change(self.feature_dict)
                 changeparts = self.changes[i].split(' ')
-                change.stem = changeparts.pop(0) if changeparts[0] == 'stem' else ''
-                change.change_type = changeparts.pop(0)
-                change.segment = changeparts.pop()
+                stem = changeparts.pop(0) if changeparts[0] == 'stem' else ''
+                change = Change(self.feature_dict, change_type = changeparts[0])
+                change.stem = stem
+                segment = changeparts.pop()
                 try:
-                    change.feature = changeparts.pop(0)
-                    change.feature = self.feature_dict.get_feature_number(change.feature)
+                    feature = changeparts.pop(0)
+                    change.feature = self.feature_dict.get_feature_number(feature)
                     change.value = changeparts.pop(0)
                 except IndexError:
                     pass
@@ -82,7 +83,10 @@ class Mapping:
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))
         sr = ''.join(self.feature_dict.get_segments(self.sr))
-        changes = [str(change) for change in self.changes]
+        changes = []
+        for change in self.changes:
+            change.context = 'change'
+            changes.append(str(change))
         return ', '.join([str(self.grammatical), ur, sr, str(changes)])
 
     def set_ngrams(self):
@@ -94,13 +98,25 @@ class Mapping:
         return ngrams_in_word
 
 class Change:
-    def __init__(self, feature_dict): #TODO change to *kwargs and make make_set part of init?
+    def __init__(self, feature_dict, change_type = 'change', feature = '', mapping = '', locus = ''):
         self.feature_dict = feature_dict
-        self.change_type = None
-        self.stem = ''
+        self.change_type = change_type
         self.feature = ''
         self.value = ''
-        self.segment = ''
+        if feature:
+            self.feature = numpy.absolute(feature)
+            self.value = '+' if feature > 0 else '-'
+            self.change_type = 'change'
+        else:
+            self.feature = feature
+            self.value = feature
+            self.change_type = change_type
+        self.stem = ''
+        if mapping:
+            if mapping.in_stem(locus):
+                self.stem = 'stem'
+        self.set = set([self.change_type, self.stem, self.feature, self.value])
+        self.set.discard('')
         self.context = 'change'
         self.change_to_faith = {'change': 'Ident', 'epenthesize': 'Dep', 'delete': 'Max', 'metathesize': 'Lin'}
 
@@ -128,8 +144,8 @@ class Change:
     def __contains__(self, element):
         return element in self.set
 
-    def remove(self, to_delete):
-        self.set.remove(to_delete)
+    def discard(self, to_delete):
+        self.set.discard(to_delete)
 
     def add(self, other):
         self.set.add(other)
