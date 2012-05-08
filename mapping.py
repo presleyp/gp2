@@ -25,7 +25,6 @@ class Mapping:
         end = beginning + len(morphemes[1])
         self.stem = (beginning, end)
         self.ur = ''.join(morphemes)
-        #for item in (self.ur, self.sr):
         self.ur = self.feature_dict.get_features_word(self.ur)
         self.sr = self.feature_dict.get_features_word(self.sr)
         if self.changes == 'none':
@@ -33,13 +32,14 @@ class Mapping:
         else:
             self.changes = self.changes.split(';')
             for i in range(len(self.changes)):
-                change = Change()
+                change = Change(self.feature_dict)
                 changeparts = self.changes[i].split(' ')
                 change.stem = changeparts.pop(0) if changeparts[0] == 'stem' else ''
                 change.change_type = changeparts.pop(0)
                 change.segment = changeparts.pop()
                 try:
                     change.feature = changeparts.pop(0)
+                    change.feature = self.feature_dict.get_feature_number(change.feature)
                     change.value = changeparts.pop(0)
                 except IndexError:
                     pass
@@ -94,7 +94,8 @@ class Mapping:
         return ngrams_in_word
 
 class Change:
-    def __init__(self): #TODO change to *kwargs and make make_set part of init?
+    def __init__(self, feature_dict): #TODO change to *kwargs and make make_set part of init?
+        self.feature_dict = feature_dict
         self.change_type = None
         self.stem = ''
         self.feature = ''
@@ -109,7 +110,8 @@ class Change:
 
     def __str__(self):
         change_type = self.change_type if self.context == 'change' else self.change_to_faith[self.change_type]
-        return ' '.join([self.stem, change_type, str(self.feature), self.value]) # TODO fix so I don't get double spaces
+        feature = self.feature_dict.get_feature_name(self.feature)
+        return ''.join([change_type, ' ', self.stem, ' ', self.value, feature]) # TODO fix so I don't get double spaces
 
     def __eq__(self, other):
         if other == None:
@@ -122,6 +124,9 @@ class Change:
 
     def __ge__(self, other):
         return self.set >= other.set
+
+    def __contains__(self, element):
+        return element in self.set
 
     def remove(self, to_delete):
         self.set.remove(to_delete)

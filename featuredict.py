@@ -26,6 +26,10 @@ class FeatureDict:
         return self.feature_names.index(feature_name)
 
     def get_feature_name(self, feature_number):
+        try:
+            numpy.absolute(feature_number)
+        except:
+            print feature_number, type(feature_number)
         return self.feature_names[numpy.absolute(feature_number)]
 
     def get_features_seg(self, segment):

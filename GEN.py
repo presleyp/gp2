@@ -1,6 +1,5 @@
 import cPickle, csv, copy, numpy, random
 from mapping import Mapping, Change
-#TODO compare to input with only faithful cand and one with the processes studied
 #TODO need better solution for context of Change instance
 #TODO my Ident +/- feature may be backwards - should mean don't change this value, but instead means don't change to that value
 
@@ -193,7 +192,7 @@ class Gen:
         mapping.sr[locus] = new_segment
         assert changed_features, 'no change made'
         for feature in changed_features:
-            change = Change()
+            change = Change(self.feature_dict)
             change.change_type = 'change'
             change.stem = 'stem' if mapping.in_stem(locus) else ''
             change.feature = numpy.absolute(feature)
@@ -222,10 +221,10 @@ class DeterministicGen(Gen):
             new_sr = copy.deepcopy(mapping.ur)
             new_sr[-1].remove(voice)
             new_sr[-1].add(-voice)
-            change = Change()
+            change = Change(self.feature_dict)
             change.change_type = 'change'
             change.feature = numpy.absolute(voice)
-            change.value = '-' if voice > 0 else '+'
+            change.value = '+' if voice > 0 else '-'
             change.stem = mapping.in_stem(len(mapping.sr) - 1)
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, [change]])
             new_mapping.add_boundaries()
@@ -248,11 +247,11 @@ class DeterministicGen(Gen):
             j = [-x for x in i]
             new_mapping.sr[i] |= set(j)
             for feature in i:
-                change = Change()
+                change = Change(self.feature_dict)
                 change.change_type = 'change'
                 change.stem = mapping.ur.in_stem(last_vowel)
                 change.feature = numpy.absolute(feature)
-                change.value = '+' if feature < 0 else '-'
+                change.value = '+' if feature > 0 else '-'
                 new_mapping.changes.append(change)
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()

@@ -293,6 +293,9 @@ class Faithfulness:
         else:
             return self.constraint == other.constraint
 
+    def __contains(self, element):
+        return element in self.contraint
+
     def __str__(self):
         self.constraint.context = 'faith'
         return str(self.constraint)

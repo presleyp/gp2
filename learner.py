@@ -19,7 +19,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 # also want cw to win over losers. could this help?
 #TODO look at Jason Riggle's GEN and think about using CON to make GEN.
 
-
 #TODO thanks to Gaja: maybe randomly choose between inducing markedness and faithfulness,
 # start by making general constraints, save the most specified version of it,
 # when making the same or the opposite, compare to most specified version and
