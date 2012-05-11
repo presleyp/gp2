@@ -357,18 +357,15 @@ if __name__ == '__main__':
     #localpath = os.getcwd() + '/' + '/'.join(sys.argv[0].split('/')[:-1]) #don't use
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
-    #learn1 = Learn('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
-    #xval1 = CrossValidate('feature_chart3.csv', ['input3.csv'], tier_freq = 10)
-    #xval2 = CrossValidate('feature_chart3.csv', ['input4.csv'], tier_freq = 10)
-    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv',
-                         #max_changes = 5, num_negatives = 15, tier_freq = .25, processes = '[self.change_feature_value]')
+    #learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
+    learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 3, learning_rate = .1,
+                         max_changes = 5, num_negatives = 15, tier_freq = .25, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
-    learner.test_performance(2)
+    learner.test_performance(3)
     #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2, .3, .4, .5])
     #learner.test_parameter('self.induction_freq', [.1, .2, .3, .4, .5, .6, .7, .8])
     #learner.test_parameter('self.max_changes', [2, 5, 10])

@@ -39,27 +39,13 @@ class Mapping:
                 change.stem = stem
                 segment = changeparts.pop()
                 try:
-                    feature = changeparts.pop(0)
+                    feature = changeparts.pop(1)
                     change.feature = self.feature_dict.get_feature_number(feature)
-                    change.value = changeparts.pop(0)
+                    change.value = changeparts.pop(1)
                 except IndexError:
                     pass
                 change.make_set()
                 self.changes[i] = change
-                #segment = changeparts.pop()
-                ##changeparts += self.feature_dict.major_features(self.feature_dict.get_features_seg(segment))
-                #if changeparts[0] == 'metathesize':
-                    #segment2 = changeparts.pop(-4)
-                    ##segment2 = self.feature_dict.major_features(self.feature_dict.get_features_seg(segment2))
-                    ##segment2 = [''.join([2, f]) for f in segment2]
-                    ##changeparts += segment2
-                #if changeparts[0] == 'change':
-                    #value = changeparts.pop()
-                    #polarity = '+' if value == 1 else '-'
-                    #feature_name = changeparts.pop()
-                    #feature = self.feature_dict.get_feature_number(feature_name)
-                    #changeparts += [polarity, feature]
-                #self.changes[i] = set(changeparts)
 
     def in_stem(self, locus):
         return True if self.stem[0] < locus < self.stem[1] else False
@@ -115,8 +101,6 @@ class Change:
         if mapping:
             if mapping.in_stem(locus):
                 self.stem = 'stem'
-        self.set = set([self.change_type, self.stem, self.feature, self.value])
-        self.set.discard('')
         self.context = 'change'
         self.change_to_faith = {'change': 'Ident', 'epenthesize': 'Dep', 'delete': 'Max', 'metathesize': 'Lin'}
 

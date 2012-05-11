@@ -191,6 +191,7 @@ class Gen:
         assert changed_features, 'no change made'
         for feature in changed_features:
             change = Change(self.feature_dict, feature = feature, mapping = mapping, locus = locus)
+            change.make_set()
             mapping.changes.append(change)
 
 class DeterministicGen(Gen):
@@ -213,6 +214,7 @@ class DeterministicGen(Gen):
             new_sr[locus].remove(voicing)
             new_sr[locus].add(-voicing)
             change = Change(self.feature_dict, change_type = 'change', feature = voicing, mapping = mapping, locus = locus)
+            change.make_set()
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, [change]])
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()
@@ -235,6 +237,7 @@ class DeterministicGen(Gen):
             new_mapping.sr[i] |= set(j)
             for feature in i:
                 change = Change(self.feature_dict, mapping = mapping, locus = last_vowel, feature = feature)
+                change.make_set()
                 new_mapping.changes.append(change)
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()
