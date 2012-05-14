@@ -1,5 +1,5 @@
 import cPickle, csv, copy, numpy, random
-from mapping import Mapping, Change
+from mapping import Mapping, Change, ChangeNoStem
 
 class Input:
     """Give input in the form of a csv file where each line is a mapping, with 0
@@ -8,13 +8,14 @@ class Input:
     underlying form to surface form.  Ungrammatical mappings are optional; if
     you include them, the second line must be ungrammatical."""
     def __init__(self, feature_dict, infile, remake_input, num_negatives, max_changes, processes,
-        epenthetics):
+        epenthetics, stem):
         """Convert lines of input to mapping objects.  Generate
         ungrammatical input-output pairs if they were not already present in the
         input file."""
         print 'calling Input'
         self.feature_dict = feature_dict
-        self.gen_args = [num_negatives, max_changes, processes, epenthetics]
+        Operation = Change if stem else ChangeNoStem
+        self.gen_args = [num_negatives, max_changes, processes, epenthetics, Operation]
         try:
             assert remake_input == False
             saved_file = open('save-' + infile, 'rb')
@@ -66,7 +67,7 @@ class Input:
 
 class Gen:
     """Generates input-output mappings."""
-    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics):
+    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics, Operation):
         self.feature_dict = feature_dict
         #self.major_features = self.feature_dict.major_features
         self.num_negatives = num_negatives
@@ -190,7 +191,7 @@ class Gen:
         mapping.sr[locus] = new_segment
         assert changed_features, 'no change made'
         for feature in changed_features:
-            change = Change(self.feature_dict, feature = feature, mapping = mapping, locus = locus)
+            change = Operation(self.feature_dict, feature = feature, mapping = mapping, locus = locus)
             change.make_set()
             mapping.changes.append(change)
 
@@ -213,7 +214,7 @@ class DeterministicGen(Gen):
             locus = len(mapping.sr) - 1
             new_sr[locus].remove(voicing)
             new_sr[locus].add(-voicing)
-            change = Change(self.feature_dict, change_type = 'change', feature = voicing, mapping = mapping, locus = locus)
+            change = Operation(self.feature_dict, change_type = 'change', feature = voicing, mapping = mapping, locus = locus)
             change.make_set()
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, [change]])
             new_mapping.add_boundaries()
@@ -236,7 +237,7 @@ class DeterministicGen(Gen):
             j = [-x for x in i]
             new_mapping.sr[i] |= set(j)
             for feature in i:
-                change = Change(self.feature_dict, mapping = mapping, locus = last_vowel, feature = feature)
+                change = Operation(self.feature_dict, mapping = mapping, locus = last_vowel, feature = feature)
                 change.make_set()
                 new_mapping.changes.append(change)
             new_mapping.add_boundaries()

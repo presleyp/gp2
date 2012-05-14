@@ -111,7 +111,9 @@ class Change:
     def __str__(self):
         change_type = self.change_type if self.context == 'change' else self.change_to_faith[self.change_type]
         feature = self.feature_dict.get_feature_name(self.feature)
-        return ''.join([change_type, ' ', self.stem, ' ', self.value, feature]) # TODO fix so I don't get double spaces
+        stem = self.stem if self.stem in self.set else ''
+        value = self.value if self.value in self.set else ''
+        return ''.join([change_type, ' ', stem, ' ', value, feature]) # TODO fix so I don't get double spaces
 
     def __eq__(self, other):
         if other == None:
@@ -134,4 +136,7 @@ class Change:
     def add(self, other):
         self.set.add(other)
 
-
+class ChangeNoStem(Change):
+    def make_set(self):
+        self.set = set([self.change_type, self.feature, self.value])
+        self.set.discard('')

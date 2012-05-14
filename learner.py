@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import csv, copy, numpy, random, cPickle, datetime
 import matplotlib.pyplot as pyplot
-from mapping import Mapping, Change
+from mapping import Mapping, Change, ChangeNoStem
 from featuredict import FeatureDict
 from GEN import Input, Gen, DeterministicGen
 from CON import Con, Markedness, MarkednessAligned, Faithfulness
@@ -30,6 +30,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 # cProfile.run("learner.Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]')", 'learnerprofile.txt')
 # p = pstats.Stats('learnerprofile.txt')
 # p.sort_stats('cumulative').print_stats(30)
+
+# tests:
+    # different tier frequencies
+    # with and without stem constraints
+    # with and without zipfian distribution in constraint making
+    # random gen vs deterministic gen
 
 class HGGLA:
     def __init__(self, learning_rate, feature_dict, aligned, tier_freq, induction_freq):
@@ -71,18 +77,20 @@ class HGGLA:
 
     def train(self, inputs):
         self.errors = []
-        for tableau in inputs:
+        self.error_numbers = []
+        for i, tableau in enumerate(inputs):
             random.shuffle(tableau)
-            self.train_tableau(tableau)
-        return self.errors
+            self.train_tableau(tableau, i)
+        return (self.errors, self.error_numbers)
 
-    def train_tableau(self, tableau):
+    def train_tableau(self, tableau, i):
         (grammatical_winner, computed_winner, correct) = self.evaluate(tableau)
         if correct:
             if len(computed_winner) != 1:
                 computed_winner.remove(grammatical_winner)
                 self.con.induce([grammatical_winner, computed_winner[0]])
-                self.errors.append(''.join([str(grammatical_winner), '~t~', str([str(cw) for cw in computed_winner])]))
+                self.errors.append(''.join([str(i), ': ', str(grammatical_winner), '~t~', str([str(cw) for cw in computed_winner])]))
+                self.error_numbers.append(i)
                 #self.train_tableau(tableau) # if you use this, think about error counting
         else:
             if numpy.random.random() <= self.induction_freq:
@@ -105,10 +113,10 @@ class HGGLA:
         return computed_winner
 
 class Learn:
-    def __init__(self, feature_chart, input_file, remake_input = False, num_negatives = 10, max_changes = 10,
+    def __init__(self, feature_chart, input_file, remake_input = False, num_negatives = 15, max_changes = 5,
                  processes = '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], learning_rate = 0.1, num_trainings = 2,
-                 aligned = True, tier_freq = .2, induction_freq = .1, constraint_parts = ['voi', '+word', 'round', 'back']):
+                 epenthetics = ['e', '?'], learning_rate = 0.1, num_trainings = 3,
+                 aligned = True, tier_freq = .2, stem = True, induction_freq = .1, constraint_parts = ['voi', '+word', 'round', 'back']):
         # input parameters
         self.feature_dict = FeatureDict(feature_chart)
         self.input_file = input_file
@@ -117,6 +125,7 @@ class Learn:
         self.max_changes = max_changes
         self.processes = processes
         self.epenthetics = epenthetics
+        self.stem = stem
 
         # algorithm parameters
         self.learning_rate = learning_rate
@@ -134,9 +143,9 @@ class Learn:
         time = str(datetime.datetime.now())
         self.figs = PdfPages('Output-' + time + '.pdf')
         self.report = 'Output-' + time + '.txt'
-        self.training_runs = []
-        self.testing_runs = []
-        self.num_constraints_runs = []
+        self.training_errors = []
+        self.testing_errors = []
+        self.num_constraints = []
         self.constraint_parts = constraint_parts
         with open(self.report, 'a') as f:
             f.write('\n'.join(['Feature Chart: ' + feature_chart, 'Input File: ' + input_file, '# Ungrammatical Candidates Generated: ' + str(num_negatives),
@@ -147,7 +156,7 @@ class Learn:
     def make_input(self):
         """Use Input class to convert input file to data structure or access previously saved data structure."""
         inputs = Input(self.feature_dict, self.input_file, self.remake_input, self.num_negatives,
-                       self.max_changes, self.processes, self.epenthetics)
+                       self.max_changes, self.processes, self.epenthetics, self.stem)
         self.all_input = inputs.allinputs
 
     def divide_input(self):
@@ -155,7 +164,7 @@ class Learn:
         test_size = int(len(self.all_input)/10)
         numpy.random.shuffle(self.all_input)
         self.test_input = self.all_input[:test_size]
-        self.train_input = self.all_input[test_size:]
+        self.train_input = self.all_input[test_size:test_size * 2]
 
     def refresh(self):
         for inputs in (self.train_input, self.test_input):
@@ -171,34 +180,31 @@ class Learn:
         self.alg = HGGLA(self.learning_rate, self.feature_dict, self.aligned, self.tier_freq, self.induction_freq)
         if i:
             self.refresh()
-        self.training_errors = []
-        self.testing_errors = []
-        self.num_constraints = []
+        for log in [self.training_errors, self.num_constraints, self.testing_errors]:
+            log.append([])
+            assert log[i] == []
         for j in range(self.num_trainings):
-            #self.train_HGGLA(j)
-            if j % 2:
-                self.alg.induction_freq = 0
-                self.train_HGGLA(j)
-            else:
-                self.alg.induction_freq = self.induction_freq
-                self.train_HGGLA(j)
-            self.test_HGGLA(j)
-        self.training_runs.append(self.training_errors)
-        self.testing_runs.append(self.testing_errors)
-        self.num_constraints_runs.append(self.num_constraints)
+            (training_errors, num_constraints) = self.train_HGGLA(j)
+            self.training_errors[i].append(training_errors)
+            self.num_constraints[i].append(num_constraints)
+            self.testing_errors[i].append(self.test_HGGLA(j))
+        #self.training_runs.append(self.training_errors)
+        #self.testing_runs.append(self.testing_errors)
+        #self.num_constraints_runs.append(self.num_constraints)
         self.plot_constraints()
         self.check_constraints()
 
     def train_HGGLA(self, i):
         """Do one iteration through the training data."""
-        errors = self.alg.train(self.train_input)
-        self.training_errors.append(float(len(errors))/float(len(self.train_input)))
-        constraints_added = self.alg.con.constraints[self.num_constraints[-1]:] if i else self.alg.con.constraints
-        self.num_constraints.append(len(self.alg.con.constraints))
+        errors, error_numbers = self.alg.train(self.train_input)
+        #self.training_errors.append(float(len(errors))/float(len(self.train_input)))
+        constraints_added = self.alg.con.constraints[self.num_constraints[-1][-1]:] if i else self.alg.con.constraints
+        #self.num_constraints.append(len(self.alg.con.constraints))
         with open(self.report, 'a') as f:
             f.write(''.join(['\n\nErrors in training #', str(i), ': ', str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
             f.write(''.join(['\n\nConstraints added in training #', str(i), ': ',
                              str(len(constraints_added)), '\n', '\n'.join([str(c) for c in constraints_added])]))
+        return (float(len(errors))/float(len(self.train_input)), len(self.alg.con.constraints))
 
     def test_HGGLA(self, i):
         """Do one iteration through the testing data."""
@@ -207,16 +213,17 @@ class Learn:
             winner = self.alg.test(tableau)
             if winner.grammatical == False:
                 errors.append(str(winner))
-        self.testing_errors.append(float(len(errors))/float(len(self.test_input)))
+        #self.testing_errors.append(float(len(errors))/float(len(self.test_input)))
         with open(self.report, 'a') as f:
             f.write(''.join(['\n\nErrors in testing #', str(i), ': ', str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
+        return float(len(errors))/float(len(self.test_input))
 
     def test_parameter(self, parameter, values):
         """If parameter is an input parameter, redo input for each value of the
         parameter. If parameter is an algorithm parameter, make and divide the
         input once, and then run the algorithm with each value of the
         parameter."""
-        if parameter in ['self.feature_dict', 'self.input_file', 'self.num_negatives', 'self.max_changes', 'self.processes', 'self.epenthetics']:
+        if parameter in ['self.feature_dict', 'self.input_file', 'self.num_negatives', 'self.max_changes', 'self.processes', 'self.epenthetics', 'self.stem']:
             param = eval(parameter)
             for i, value in enumerate(values):
                 self.param = value
@@ -238,7 +245,7 @@ class Learn:
         else:
             raise AssertionError, 'Update parameter lists.'
         print 'tested ', parameter, 'on ', values, '\n'
-        print 'error percentage on last test of each run', [run[-1] for run in self.testing_runs], '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs]
+        print 'error percentage on last test of each run', [run[-1] for run in self.testing_errors], '\nnumber of constraints', [run[-1] for run in self.num_constraints]
         self.plot_errors(parameter = parameter, values = values)
         self.figs.close()
 
@@ -253,7 +260,7 @@ class Learn:
                 f.write('\n\n\n--------Run ' + str(i) + '--------')
             self.run(i)
         print 'ran program ', num_runs, ' times'
-        print 'error percentage on last test of each run', [run[-1] for run in self.testing_runs], '\nnumber of constraints', [run[-1] for run in self.num_constraints_runs]
+        print 'error percentage on last test of each run', [run[-1] for run in self.testing_errors], '\nnumber of constraints', [run[-1] for run in self.num_constraints]
         self.plot_errors()
         self.figs.close()
 
@@ -287,17 +294,17 @@ class Learn:
         iterations on the x axis and error percentage on the y axis. Plot a line
         for each run."""
         pyplot.subplots_adjust(left = .15)
-        for item in [self.training_runs, self.testing_runs, self.num_constraints_runs]:
+        for item in [self.training_errors, self.testing_errors, self.num_constraints]:
             plots = []
             for run in item:
                 plots.append(pyplot.plot(run))
             pyplot.xlabel('Iteration')
             pyplot.xticks(numpy.arange(self.num_trainings))
-            if item != self.num_constraints_runs:
+            if item != self.num_constraints:
                 pyplot.ylim(-.1, 1.1)
                 pyplot.ylabel('Percent of Inputs Mapped to Incorrect Outputs')
                 pyplot.yticks(numpy.arange(-.1, 1.1, .1))
-                kind = 'Training' if item == self.training_runs else 'Testing'
+                kind = 'Training' if item == self.training_errors else 'Testing'
                 pyplot.title(kind + ' Error Rates')
             else:
                 pyplot.ylabel('Number of Constraints')
@@ -358,15 +365,15 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
-    learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 3, learning_rate = .1,
-                         max_changes = 5, num_negatives = 15, tier_freq = .25, processes = '[self.change_feature_value]')
+    learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         max_changes = 5, num_negatives = 15, tier_freq = 0, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
-    learner.test_performance(3)
+    #learner.test_performance(2)
     #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2, .3, .4, .5])
-    #learner.test_parameter('self.induction_freq', [.1, .2, .3, .4, .5, .6, .7, .8])
+    #learner.test_parameter('self.induction_freq', [0, .1, .2, .3, .4, .5, .6, .7, .8])
     #learner.test_parameter('self.max_changes', [2, 5, 10])
-    #learner.test_parameter('self.tier_freq', [.1, .2, .3, .4, .5])
+    learner.test_parameter('self.tier_freq', [0, .1, .2, .3, .4, .5])
