@@ -7,7 +7,7 @@ class Input:
     then surface form in segments, then semicolon-delimited list of changes from
     underlying form to surface form.  Ungrammatical mappings are optional; if
     you include them, the second line must be ungrammatical."""
-    def __init__(self, feature_dict, infile, remake_input, num_negatives, max_changes, processes,
+    def __init__(self, feature_dict, input_file, remake_input, num_negatives, max_changes, processes,
         epenthetics, stem, gen_type):
         """Convert lines of input to mapping objects.  Generate
         ungrammatical input-output pairs if they were not already present in the
@@ -19,12 +19,12 @@ class Input:
         self.gen_args = [num_negatives, max_changes, processes, epenthetics, Operation]
         try:
             assert remake_input == False
-            saved_file = open('save-' + infile, 'rb')
+            saved_file = open('save-' + input_file, 'rb')
             self.allinputs = cPickle.load(saved_file)
             print 'read from file'
         except (IOError, AssertionError):
-            self.allinputs = self.make_input(infile)
-            saved_file = open('save-' + infile, 'wb')
+            self.allinputs = self.make_input(input_file)
+            saved_file = open('save-' + input_file, 'wb')
             cPickle.dump(self.allinputs, saved_file)
         saved_file.close()
         print 'done making input'

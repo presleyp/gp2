@@ -1,14 +1,11 @@
 #!/usr/bin/env python
-import csv, copy, numpy, random, cPickle, datetime
+import copy, numpy, random, datetime
 import matplotlib.pyplot as pyplot
-from mapping import Mapping, Change, ChangeNoStem
+#from mapping import Mapping, Change, ChangeNoStem
 from featuredict import FeatureDict
-from GEN import Input, Gen, DeterministicGen
-from CON import Con, Markedness, MarkednessAligned, Faithfulness
+from GEN import Input#, Gen, DeterministicGen
+from CON import Con#, Markedness, MarkednessAligned, Faithfulness
 from matplotlib.backends.backend_pdf import PdfPages
-#THINGS TO WATCH OUT FOR:
-    # delete the saved input file if you change the input making code
-    # implement tableau making if you give it a file with ungrammatical mappings
 #TODO make non_boundaries dict in FeatureDict and make it read "boundary" from feature names
 #TODO Faithfulness: delete a change that's being reversed?
 #TODO time random.sample vs numpy.random.sample
@@ -38,7 +35,7 @@ from matplotlib.backends.backend_pdf import PdfPages
     # random gen vs deterministic gen
 
 class HGGLA:
-    def __init__(self, learning_rate, feature_dict, aligned, tier_freq, induction_freq):
+    def __init__(self, feature_dict, learning_rate, aligned, tier_freq, induction_freq):
         """Takes processed input and learns on it one tableau at a time.
         The constraints are updated by the difference in violation vectors
         between the computed winner and the desired winner,
@@ -113,27 +110,40 @@ class HGGLA:
         return computed_winner
 
 class Learn:
-    def __init__(self, feature_chart, input_file, remake_input = False, num_negatives = 15, max_changes = 5,
-                 processes = '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], stem = True, gen_type = 'random', learning_rate = 0.1, num_trainings = 3,
-                 aligned = True, tier_freq = .2, induction_freq = .1, constraint_parts = ['voi', '+word', 'round', 'back']):
+    def __init__(self, feature_chart, input_file, remake_input = False,
+                 num_negatives = 15, max_changes = 5, processes =
+                 '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
+                 epenthetics = ['e', '?'], stem = True, gen_type = 'random',
+                 learning_rate = 0.1, num_trainings = 5, aligned = True,
+                 tier_freq = .25, induction_freq = .1,
+                 constraint_parts = ['voi', '+word', 'round', 'back']):
         # input parameters
-        self.feature_dict = FeatureDict(feature_chart)
-        self.input_file = input_file
-        self.remake_input = remake_input
-        self.num_negatives = num_negatives
-        self.max_changes = max_changes
-        self.processes = processes
-        self.epenthetics = epenthetics
-        self.stem = stem
-        self.gen_type = gen_type
+        feature_dict = FeatureDict(feature_chart)
+        self.input_args = {'feature_dict': feature_dict, 'input_file':
+                           input_file, 'remake_input': remake_input,
+                           'num_negatives': num_negatives, 'max_changes':
+                           max_changes, 'processes': processes, 'epenthetics':
+                           epenthetics, 'stem': stem, 'gen_type': gen_type}
+        self.algorithm_args = {'feature_dict': feature_dict, 'learning_rate':
+                               learning_rate, 'aligned': aligned, 'tier_freq': tier_freq,
+                               'induction_freq': induction_freq}
+        self.num_trainings = num_trainings
+        self.constraint_parts = constraint_parts
+        #self.input_file = input_file
+        #self.remake_input = remake_input
+        #self.num_negatives = num_negatives
+        #self.max_changes = max_changes
+        #self.processes = processes
+        #self.epenthetics = epenthetics
+        #self.stem = stem
+        #self.gen_type = gen_type
 
         # algorithm parameters
-        self.learning_rate = learning_rate
-        self.num_trainings = num_trainings
-        self.aligned = aligned
-        self.tier_freq = tier_freq
-        self.induction_freq = induction_freq
+        #self.learning_rate = learning_rate
+        #self.num_trainings = num_trainings
+        #self.aligned = aligned
+        #self.tier_freq = tier_freq
+        #self.induction_freq = induction_freq
 
         # input data
         self.all_input = None
@@ -148,16 +158,30 @@ class Learn:
         self.testing_errors = []
         self.num_constraints = []
         self.constraint_parts = constraint_parts
+        intros = ['Feature Chart:', 'Input File:', 'Remake Input?', '# Ungrammatical Candidates Generated:',
+                  'Max Changes to Candidates:', 'GEN processes:',
+                  'Epenthetic Segments:', 'Used Stem Constraints?', 'GEN type:',
+                  'Learning Rate:', 'Aligned Markedness Constraints?',
+                  'Frequency of Tier Constraints:', 'Frequency of Induction Upon Error:']
+        parameters = self.input_args.values() + self.algorithm_args.values()[1:]
+        assert len(intros) == len(parameters), "List of intros doesn't match list of parameters."
+        parameter_report = zip(intros, parameters)
+        parameter_report = [' '.join([intro, str(value)]) for (intro, value) in parameter_report]
+        parameter_report = '\n'.join(parameter_report)
         with open(self.report, 'a') as f:
-            f.write('\n'.join(['Feature Chart: ' + feature_chart, 'Input File: ' + input_file, '# Ungrammatical Candidates Generated: ' + str(num_negatives),
-                               'Max Changes to Candidates: ' + str(max_changes), 'GEN processes: ' + processes, 'Epenthetic Segments: ' + str(epenthetics),
-                               'Learning Rate: ' + str(learning_rate), 'Aligned Markedness Constraints: ' + str(aligned), 'Frequency of Tier Constraints: ' +
-                               str(tier_freq), 'Frequency of Induction Upon Error: ' + str(induction_freq)]))
+            f.write(parameter_report)
+                #'\n'.join(['Feature Chart: ' + feature_chart, 'Input File: ' + input_file, 'Remake Input? ' + str(remake_input),
+                #'# Ungrammatical Candidates Generated: ' + str(num_negatives),
+                               #'Max Changes to Candidates: ' + str(max_changes), 'GEN processes: ' + processes, 'Epenthetic Segments: ' + str(epenthetics),
+                               #'Used Stem Constraints? ' + str(stem), 'GEN type: ' + gen_type,
+                               #'Learning Rate: ' + str(learning_rate), 'Aligned Markedness Constraints: ' + str(aligned), 'Frequency of Tier Constraints: ' +
+                               #str(tier_freq), 'Frequency of Induction Upon Error: ' + str(induction_freq)]))
 
     def make_input(self):
         """Use Input class to convert input file to data structure or access previously saved data structure."""
-        inputs = Input(self.feature_dict, self.input_file, self.remake_input, self.num_negatives,
-                       self.max_changes, self.processes, self.epenthetics, self.stem, self.gen_type)
+        inputs = Input(**self.input_args)
+        #self.feature_dict, self.input_file, self.remake_input, self.num_negatives,
+                       #self.max_changes, self.processes, self.epenthetics, self.stem, self.gen_type)
         self.all_input = inputs.allinputs
 
     def divide_input(self):
@@ -178,7 +202,8 @@ class Learn:
 
     def run(self, i):
         """Initialize HGGLA and do all training and testing iterations for this run."""
-        self.alg = HGGLA(self.learning_rate, self.feature_dict, self.aligned, self.tier_freq, self.induction_freq)
+        #self.alg = HGGLA(self.feature_dict, self.learning_rate, self.aligned, self.tier_freq, self.induction_freq)
+        self.alg = HGGLA(**self.algorithm_args)
         if i:
             self.refresh()
         for log in [self.training_errors, self.num_constraints, self.testing_errors]:
@@ -189,9 +214,6 @@ class Learn:
             self.training_errors[i].append(training_errors)
             self.num_constraints[i].append(num_constraints)
             self.testing_errors[i].append(self.test_HGGLA(j))
-        #self.training_runs.append(self.training_errors)
-        #self.testing_runs.append(self.testing_errors)
-        #self.num_constraints_runs.append(self.num_constraints)
         self.plot_constraints()
         self.check_constraints()
 
@@ -216,30 +238,37 @@ class Learn:
                 errors.append(str(winner))
         #self.testing_errors.append(float(len(errors))/float(len(self.test_input)))
         with open(self.report, 'a') as f:
-            f.write(''.join(['\n\nErrors in testing #', str(i), ': ', str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
-        return float(len(errors))/float(len(self.test_input))
+            f.write(''.join(['\n\nErrors in testing #', str(i), ': ',
+                             str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
+            return float(len(errors))/float(len(self.test_input))
 
     def test_parameter(self, parameter, values):
         """If parameter is an input parameter, redo input for each value of the
         parameter. If parameter is an algorithm parameter, make and divide the
         input once, and then run the algorithm with each value of the
         parameter."""
-        if parameter in ['self.feature_dict', 'self.input_file', 'self.num_negatives', 'self.max_changes', 'self.processes', 'self.epenthetics', 'self.stem', 'self.gen_type']:
-            param = eval(parameter)
+        #if parameter in ['self.feature_dict', 'self.input_file',
+        #'self.num_negatives', 'self.max_changes', 'self.processes',
+        #'self.epenthetics', 'self.stem', 'self.gen_type']:
+        if parameter in self.input_args:
+            #param = eval(parameter)
             for i, value in enumerate(values):
-                self.param = value
+                #self.param = value
+                self.input_args[parameter] = value
                 self.remake_input = True
                 self.make_input()
                 self.divide_input()
                 with open(self.report, 'a') as f:
                     f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
                 self.run(i)
-        elif parameter in ['self.learning_rate', 'self.num_trainings', 'self.aligned', 'self.tier_freq', 'self.induction_freq']:
-            param = eval(parameter)
+        #elif parameter in ['self.learning_rate', 'self.num_trainings', 'self.aligned', 'self.tier_freq', 'self.induction_freq']:
+        elif parameter in self.algorithm_args:
+            #param = eval(parameter)
             self.make_input()
             self.divide_input()
             for i, value in enumerate(values):
-                self.param = value
+                #self.param = value
+                self.algorithm_args[parameter] = value
                 with open(self.report, 'a') as f:
                     f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
                 self.run(i)
@@ -296,6 +325,10 @@ class Learn:
         for each run."""
         pyplot.subplots_adjust(left = .15)
         for item in [self.training_errors, self.testing_errors, self.num_constraints]:
+            final_iterations = [run[-1] for run in item]
+            with open(self.report, 'a') as f: # to make it easier to do stats later
+                f.write('\n'.join([str(item), '\nAverage of final iteration across runs: ' +
+                        str(numpy.mean(final_iterations)), 'Standard Deviation: ' + str(numpy.std(final_iterations)), str(item)]))
             plots = []
             for run in item:
                 plots.append(pyplot.plot(run))
@@ -373,8 +406,8 @@ if __name__ == '__main__':
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
-    #learner.test_performance(2)
+    learner.test_performance(2)
     #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2, .3, .4, .5])
     #learner.test_parameter('self.induction_freq', [0, .1, .2, .3, .4, .5, .6, .7, .8])
     #learner.test_parameter('self.max_changes', [2, 5, 10])
-    learner.test_parameter('self.tier_freq', [0, .1, .2, .3, .4, .5])
+    #learner.test_parameter('tier_freq', [0, .1, .2, .3, .4, .5])
