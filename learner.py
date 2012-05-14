@@ -117,7 +117,7 @@ class Learn:
                  learning_rate = 0.1, num_trainings = 5, aligned = True,
                  tier_freq = .25, induction_freq = .1,
                  constraint_parts = ['voi', '+word', 'round', 'back']):
-        # input parameters
+        # parameters
         feature_dict = FeatureDict(feature_chart)
         self.input_args = {'feature_dict': feature_dict, 'input_file':
                            input_file, 'remake_input': remake_input,
@@ -128,22 +128,6 @@ class Learn:
                                learning_rate, 'aligned': aligned, 'tier_freq': tier_freq,
                                'induction_freq': induction_freq}
         self.num_trainings = num_trainings
-        self.constraint_parts = constraint_parts
-        #self.input_file = input_file
-        #self.remake_input = remake_input
-        #self.num_negatives = num_negatives
-        #self.max_changes = max_changes
-        #self.processes = processes
-        #self.epenthetics = epenthetics
-        #self.stem = stem
-        #self.gen_type = gen_type
-
-        # algorithm parameters
-        #self.learning_rate = learning_rate
-        #self.num_trainings = num_trainings
-        #self.aligned = aligned
-        #self.tier_freq = tier_freq
-        #self.induction_freq = induction_freq
 
         # input data
         self.all_input = None
@@ -158,38 +142,34 @@ class Learn:
         self.testing_errors = []
         self.num_constraints = []
         self.constraint_parts = constraint_parts
-        intros = ['Feature Chart:', 'Input File:', 'Remake Input?', '# Ungrammatical Candidates Generated:',
-                  'Max Changes to Candidates:', 'GEN processes:',
-                  'Epenthetic Segments:', 'Used Stem Constraints?', 'GEN type:',
-                  'Learning Rate:', 'Aligned Markedness Constraints?',
-                  'Frequency of Tier Constraints:', 'Frequency of Induction Upon Error:']
-        parameters = self.input_args.values() + self.algorithm_args.values()[1:]
-        assert len(intros) == len(parameters), "List of intros doesn't match list of parameters."
-        parameter_report = zip(intros, parameters)
-        parameter_report = [' '.join([intro, str(value)]) for (intro, value) in parameter_report]
-        parameter_report = '\n'.join(parameter_report)
+
+        # reporting
         with open(self.report, 'a') as f:
-            f.write(parameter_report)
-                #'\n'.join(['Feature Chart: ' + feature_chart, 'Input File: ' + input_file, 'Remake Input? ' + str(remake_input),
-                #'# Ungrammatical Candidates Generated: ' + str(num_negatives),
-                               #'Max Changes to Candidates: ' + str(max_changes), 'GEN processes: ' + processes, 'Epenthetic Segments: ' + str(epenthetics),
-                               #'Used Stem Constraints? ' + str(stem), 'GEN type: ' + gen_type,
-                               #'Learning Rate: ' + str(learning_rate), 'Aligned Markedness Constraints: ' + str(aligned), 'Frequency of Tier Constraints: ' +
-                               #str(tier_freq), 'Frequency of Induction Upon Error: ' + str(induction_freq)]))
+            f.write('\n'.join(['Feature Chart: ' + feature_chart,
+                               'Input File: ' + input_file,
+                               'Remake Input? ' + str(remake_input),
+                               '# Ungrammatical Candidates Generated: ' + str(num_negatives),
+                               'Max Changes to Candidates: ' + str(max_changes),
+                               'GEN processes: ' + processes,
+                               'Epenthetic Segments: ' + str(epenthetics),
+                               'Used Stem Constraints? ' + str(stem),
+                               'GEN type: ' + gen_type,
+                               'Learning Rate: ' + str(learning_rate),
+                               'Aligned Markedness Constraints: ' + str(aligned),
+                               'Frequency of Tier Constraints: ' + str(tier_freq),
+                               'Frequency of Induction Upon Error: ' + str(induction_freq)]))
 
     def make_input(self):
         """Use Input class to convert input file to data structure or access previously saved data structure."""
         inputs = Input(**self.input_args)
-        #self.feature_dict, self.input_file, self.remake_input, self.num_negatives,
-                       #self.max_changes, self.processes, self.epenthetics, self.stem, self.gen_type)
         self.all_input = inputs.allinputs
 
     def divide_input(self):
         """Choose training set and test set."""
-        test_size = int(len(self.all_input)/10)
+        one_tenth = int(len(self.all_input)/10)
         numpy.random.shuffle(self.all_input)
-        self.test_input = self.all_input[:test_size]
-        self.train_input = self.all_input[test_size:test_size * 2]
+        self.train_input = self.all_input[:one_tenth]
+        self.test_input = self.all_input[one_tenth:]
 
     def refresh(self):
         for inputs in (self.train_input, self.test_input):
@@ -202,7 +182,6 @@ class Learn:
 
     def run(self, i):
         """Initialize HGGLA and do all training and testing iterations for this run."""
-        #self.alg = HGGLA(self.feature_dict, self.learning_rate, self.aligned, self.tier_freq, self.induction_freq)
         self.alg = HGGLA(**self.algorithm_args)
         if i:
             self.refresh()
@@ -220,9 +199,7 @@ class Learn:
     def train_HGGLA(self, i):
         """Do one iteration through the training data."""
         errors, error_numbers = self.alg.train(self.train_input)
-        #self.training_errors.append(float(len(errors))/float(len(self.train_input)))
         constraints_added = self.alg.con.constraints[self.num_constraints[-1][-1]:] if i else self.alg.con.constraints
-        #self.num_constraints.append(len(self.alg.con.constraints))
         with open(self.report, 'a') as f:
             f.write(''.join(['\n\nErrors in training #', str(i), ': ', str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
             f.write(''.join(['\n\nConstraints added in training #', str(i), ': ',
@@ -236,24 +213,18 @@ class Learn:
             winner = self.alg.test(tableau)
             if winner.grammatical == False:
                 errors.append(str(winner))
-        #self.testing_errors.append(float(len(errors))/float(len(self.test_input)))
         with open(self.report, 'a') as f:
             f.write(''.join(['\n\nErrors in testing #', str(i), ': ',
                              str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
-            return float(len(errors))/float(len(self.test_input))
+        return float(len(errors))/float(len(self.test_input))
 
     def test_parameter(self, parameter, values):
         """If parameter is an input parameter, redo input for each value of the
         parameter. If parameter is an algorithm parameter, make and divide the
         input once, and then run the algorithm with each value of the
         parameter."""
-        #if parameter in ['self.feature_dict', 'self.input_file',
-        #'self.num_negatives', 'self.max_changes', 'self.processes',
-        #'self.epenthetics', 'self.stem', 'self.gen_type']:
         if parameter in self.input_args:
-            #param = eval(parameter)
             for i, value in enumerate(values):
-                #self.param = value
                 self.input_args[parameter] = value
                 self.remake_input = True
                 self.make_input()
@@ -261,21 +232,19 @@ class Learn:
                 with open(self.report, 'a') as f:
                     f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
                 self.run(i)
-        #elif parameter in ['self.learning_rate', 'self.num_trainings', 'self.aligned', 'self.tier_freq', 'self.induction_freq']:
         elif parameter in self.algorithm_args:
-            #param = eval(parameter)
             self.make_input()
             self.divide_input()
             for i, value in enumerate(values):
-                #self.param = value
                 self.algorithm_args[parameter] = value
                 with open(self.report, 'a') as f:
                     f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
                 self.run(i)
         else:
             raise AssertionError, 'Update parameter lists.'
-        print 'tested ', parameter, 'on ', values, '\n'
-        print 'error percentage on last test of each run', [run[-1] for run in self.testing_errors], '\nnumber of constraints', [run[-1] for run in self.num_constraints]
+        print 'tested ', parameter, 'on ', values
+        print 'error percentage on last test of each run', [run[-1] for run in self.testing_errors]
+        print 'number of constraints', [run[-1] for run in self.num_constraints]
         self.plot_errors(parameter = parameter, values = values)
         self.figs.close()
 
@@ -289,8 +258,11 @@ class Learn:
             with open(self.report, 'a') as f:
                 f.write('\n\n\n--------Run ' + str(i) + '--------')
             self.run(i)
-        print 'ran program ', num_runs, ' times'
-        print 'error percentage on last test of each run', [run[-1] for run in self.testing_errors], '\nnumber of constraints', [run[-1] for run in self.num_constraints]
+        print('ran program ', num_runs, ' times')
+        print('error percentage on last test of each run', [run[-1] for run in
+                                                            self.testing_errors],
+              '\nnumber of constraints', [run[-1] for run in
+                                          self.num_constraints])
         self.plot_errors()
         self.figs.close()
 
@@ -324,28 +296,32 @@ class Learn:
         iterations on the x axis and error percentage on the y axis. Plot a line
         for each run."""
         pyplot.subplots_adjust(left = .15)
-        for item in [self.training_errors, self.testing_errors, self.num_constraints]:
+        for (name, item) in [('Training', self.training_errors), ('Testing', self.testing_errors), ('Constraints', self.num_constraints)]:
+
+            # report arrays
             final_iterations = [run[-1] for run in item]
             with open(self.report, 'a') as f: # to make it easier to do stats later
-                f.write('\n'.join([str(item), '\nAverage of final iteration across runs: ' +
+                f.write('\n'.join(['\n\n', name, 'Average of final iteration across runs: ' +
                         str(numpy.mean(final_iterations)), 'Standard Deviation: ' + str(numpy.std(final_iterations)), str(item)]))
+
+            # make plots
             plots = []
             for run in item:
                 plots.append(pyplot.plot(run))
             pyplot.xlabel('Iteration')
             pyplot.xticks(numpy.arange(self.num_trainings))
-            if item != self.num_constraints:
+            # error plots
+            if name != 'Constraints':
                 pyplot.ylim(-.1, 1.1)
-                pyplot.ylabel('Percent of Inputs Mapped to Incorrect Outputs')
+                pyplot.ylabel('Proportion of Inputs Mapped to Incorrect Outputs')
                 pyplot.yticks(numpy.arange(-.1, 1.1, .1))
-                kind = 'Training' if item == self.training_errors else 'Testing'
-                pyplot.title(kind + ' Error Rates')
+                pyplot.title(name + ' Error Rates')
+            # constraint plot
             else:
                 pyplot.ylabel('Number of Constraints')
                 pyplot.title('Running Count of Constraints')
             labels = [parameter + ' = ' + str(value) for value in values] if parameter else range(len(item))
             pyplot.legend(plots, labels, loc = 0)
-            #pyplot.show()
             self.figs.savefig()
             pyplot.clf()
 
@@ -356,7 +332,6 @@ class Learn:
                 if part in line:
                     constraints_found.append(line)
                     break
-        #print constraints_found
         with open(self.report, 'a') as f:
             f.write('\n\nConstraints With Expected Features\n' + '\n'.join(constraints_found))
 

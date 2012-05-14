@@ -184,13 +184,17 @@ class MarkednessAligned(Markedness):
         random.shuffle(positions)
         position = None
         for position_in_ngram in positions:
-            pattern = copy.copy(base[protected_segment - position_in_ngram:protected_segment + self.gram - position_in_ngram])
+            pattern = copy.copy(base[protected_segment -
+                                     position_in_ngram:protected_segment +
+                                     self.gram - position_in_ngram])
             if len(pattern) == self.gram:
                 self.constraint = pattern
                 position = position_in_ngram
                 break
         if self.constraint == None:
-            print 'gram', self.gram, 'base', base, 'protected seg', protected_segment, 'winners', winners[0], winners[1], 'tier', self.tier
+            print('gram', self.gram, 'base', base, 'protected seg',
+                  protected_segment, 'winners', winners[0], winners[1], 'tier',
+                  self.tier)
         assert self.constraint != None
         for i in range(len(pattern)):
             length = len(pattern[i])
@@ -204,8 +208,10 @@ class MarkednessAligned(Markedness):
         self.constraint = pattern
 
     def coinflip(self, winners):
-        """Flip a coin. If heads, the constraint will be made from the grammatical winner and will assign rewards. If tails,
-        it will be made from the computed winner and will assign violations. Return the winner the constraint will be made from,
+        """Flip a coin. If heads, the constraint will be made from the
+        grammatical winner and will assign rewards. If tails, it will be made
+        from the computed winner and will assign violations. Return the winner
+        the constraint will be made from,
         and the difference between it and the other winner."""
         if numpy.random.randint(0,2) == 1:
             self.violation = 1
@@ -235,7 +241,9 @@ class MarkednessAligned(Markedness):
         segments = []
         for segment in self.constraint:
             #natural_class = [k for k, v in self.feature_dict.fd.iteritems() if segment <= v]
-            natural_class = [self.polarity(feature) + self.feature_dict.get_feature_name(feature) for feature in segment]
+            natural_class = [self.polarity(feature) +
+                             self.feature_dict.get_feature_name(feature) for
+                             feature in segment]
             natural_class = ''.join(['{', ','.join(natural_class), '}'])
             segments.append(natural_class)
         if self.tier:
@@ -275,7 +283,8 @@ class Faithfulness:
                 self.constraint.add(item)
 
     def get_violation(self, mapping):
-        """Finds the number of times the change referred to by the constraint occurs in the input-output pair."""
+        """Finds the number of times the change referred to by the constraint
+        occurs in the input-output pair."""
         violation = 0
         for change in mapping.changes:
             if self.constraint <= change:

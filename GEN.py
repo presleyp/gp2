@@ -185,7 +185,9 @@ class Gen:
                 changed_features = difference
                 break
             else:
-                if num_different != 0 and (closest_num == None or numpy.absolute(num_different - num_to_change) < numpy.absolute(closest_num - num_to_change)):
+                if num_different != 0 and (closest_num == None or
+                                           numpy.absolute(num_different - num_to_change) <
+                                           numpy.absolute(closest_num - num_to_change)):
                     closest_num = num_different
                     new_segment = phone
                     changed_features = difference
@@ -193,7 +195,8 @@ class Gen:
         mapping.sr[locus] = new_segment
         assert changed_features, 'no change made'
         for feature in changed_features:
-            change = self.Operation(self.feature_dict, feature = feature, mapping = mapping, locus = locus)
+            change = self.Operation(self.feature_dict, feature = feature,
+                                    mapping = mapping, locus = locus)
             change.make_set()
             mapping.changes.append(change)
 
@@ -216,9 +219,11 @@ class DeterministicGen(Gen):
             locus = len(mapping.sr) - 1
             new_sr[locus].remove(voicing)
             new_sr[locus].add(-voicing)
-            change = self.Operation(self.feature_dict, change_type = 'change', feature = voicing, mapping = mapping, locus = locus)
+            change = self.Operation(self.feature_dict, change_type = 'change',
+                                    feature = voicing, mapping = mapping, locus = locus)
             change.make_set()
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, [change]])
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur),
+                                                      new_sr, [change]])
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()
             negatives.append(new_mapping)
@@ -234,12 +239,16 @@ class DeterministicGen(Gen):
                 roundness = mapping.ur[i] & set([roundness, -roundness])
                 break
         for i in [[back], [roundness], [back, roundness]]:
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping = Mapping(self.feature_dict, [False,
+                                                      copy.deepcopy(mapping.ur),
+                                                      copy.deepcopy(mapping.ur),
+                                                      []])
             new_mapping.sr[i] -= set(i)
             j = [-x for x in i]
             new_mapping.sr[i] |= set(j)
             for feature in i:
-                change = self.Operation(self.feature_dict, mapping = mapping, locus = last_vowel, feature = feature)
+                change = self.Operation(self.feature_dict, mapping = mapping,
+                                        locus = last_vowel, feature = feature)
                 change.make_set()
                 new_mapping.changes.append(change)
             new_mapping.add_boundaries()
