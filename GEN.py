@@ -8,13 +8,14 @@ class Input:
     underlying form to surface form.  Ungrammatical mappings are optional; if
     you include them, the second line must be ungrammatical."""
     def __init__(self, feature_dict, infile, remake_input, num_negatives, max_changes, processes,
-        epenthetics, stem):
+        epenthetics, stem, gen_type):
         """Convert lines of input to mapping objects.  Generate
         ungrammatical input-output pairs if they were not already present in the
         input file."""
         print 'calling Input'
         self.feature_dict = feature_dict
         Operation = Change if stem else ChangeNoStem
+        self.Generator = Gen if gen_type == 'random' else DeterministicGen
         self.gen_args = [num_negatives, max_changes, processes, epenthetics, Operation]
         try:
             assert remake_input == False
@@ -57,7 +58,7 @@ class Input:
                     allinputs.append(mapping)
                     #TODO put into tableaux with dictionary of urs
                 else:
-                    gen = Gen(self.feature_dict, *self.gen_args)
+                    gen = self.Generator(self.feature_dict, *self.gen_args)
                     negatives = gen.ungrammaticalize(mapping)
                     mapping.add_boundaries()
                     mapping.set_ngrams()
@@ -76,6 +77,7 @@ class Gen:
         self.epenthetics = epenthetics
         self.non_boundaries = copy.deepcopy(self.feature_dict.fd)
         del self.non_boundaries['|']
+        self.Operation = Operation
 
     def ungrammaticalize(self, mapping):
         """Given a grammatical input-output mapping, create randomly
@@ -191,7 +193,7 @@ class Gen:
         mapping.sr[locus] = new_segment
         assert changed_features, 'no change made'
         for feature in changed_features:
-            change = Operation(self.feature_dict, feature = feature, mapping = mapping, locus = locus)
+            change = self.Operation(self.feature_dict, feature = feature, mapping = mapping, locus = locus)
             change.make_set()
             mapping.changes.append(change)
 
@@ -214,7 +216,7 @@ class DeterministicGen(Gen):
             locus = len(mapping.sr) - 1
             new_sr[locus].remove(voicing)
             new_sr[locus].add(-voicing)
-            change = Operation(self.feature_dict, change_type = 'change', feature = voicing, mapping = mapping, locus = locus)
+            change = self.Operation(self.feature_dict, change_type = 'change', feature = voicing, mapping = mapping, locus = locus)
             change.make_set()
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), new_sr, [change]])
             new_mapping.add_boundaries()
@@ -237,7 +239,7 @@ class DeterministicGen(Gen):
             j = [-x for x in i]
             new_mapping.sr[i] |= set(j)
             for feature in i:
-                change = Operation(self.feature_dict, mapping = mapping, locus = last_vowel, feature = feature)
+                change = self.Operation(self.feature_dict, mapping = mapping, locus = last_vowel, feature = feature)
                 change.make_set()
                 new_mapping.changes.append(change)
             new_mapping.add_boundaries()

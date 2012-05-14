@@ -115,8 +115,8 @@ class HGGLA:
 class Learn:
     def __init__(self, feature_chart, input_file, remake_input = False, num_negatives = 15, max_changes = 5,
                  processes = '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], learning_rate = 0.1, num_trainings = 3,
-                 aligned = True, tier_freq = .2, stem = True, induction_freq = .1, constraint_parts = ['voi', '+word', 'round', 'back']):
+                 epenthetics = ['e', '?'], stem = True, gen_type = 'random', learning_rate = 0.1, num_trainings = 3,
+                 aligned = True, tier_freq = .2, induction_freq = .1, constraint_parts = ['voi', '+word', 'round', 'back']):
         # input parameters
         self.feature_dict = FeatureDict(feature_chart)
         self.input_file = input_file
@@ -126,6 +126,7 @@ class Learn:
         self.processes = processes
         self.epenthetics = epenthetics
         self.stem = stem
+        self.gen_type = gen_type
 
         # algorithm parameters
         self.learning_rate = learning_rate
@@ -156,7 +157,7 @@ class Learn:
     def make_input(self):
         """Use Input class to convert input file to data structure or access previously saved data structure."""
         inputs = Input(self.feature_dict, self.input_file, self.remake_input, self.num_negatives,
-                       self.max_changes, self.processes, self.epenthetics, self.stem)
+                       self.max_changes, self.processes, self.epenthetics, self.stem, self.gen_type)
         self.all_input = inputs.allinputs
 
     def divide_input(self):
@@ -223,7 +224,7 @@ class Learn:
         parameter. If parameter is an algorithm parameter, make and divide the
         input once, and then run the algorithm with each value of the
         parameter."""
-        if parameter in ['self.feature_dict', 'self.input_file', 'self.num_negatives', 'self.max_changes', 'self.processes', 'self.epenthetics', 'self.stem']:
+        if parameter in ['self.feature_dict', 'self.input_file', 'self.num_negatives', 'self.max_changes', 'self.processes', 'self.epenthetics', 'self.stem', 'self.gen_type']:
             param = eval(parameter)
             for i, value in enumerate(values):
                 self.param = value
