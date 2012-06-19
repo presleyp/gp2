@@ -11,10 +11,12 @@ class FeatureDict:
         feature_indices = None
         with open(feature_chart, 'r') as fc:
             fcd = csv.reader(fc)
+
             for i, line in enumerate(fcd):
                 segment = line.pop(0)
                 if i == 0:
                     self.feature_names = ['placeholder'] + line #this way, indices of feature names are the numbers I assign to them, which don't include 0
+                    assert self.feature_names[0] == 'placeholder'
                     feature_indices = numpy.arange(1, len(line) + 1)
                 if i > 0:
                     line = [int(item) for item in line]
@@ -44,7 +46,11 @@ class FeatureDict:
 
     def get_segment(self, features):
         """Given a feature set, returns a string segment."""
+        #try:
         return [k for k, v in self.fd.iteritems() if numpy.equal(v, features).all()][0]
+        #except IndexError:
+            #print features
+            #return str(features)
 
     def get_segments(self, word):
         """Given a 1D numpy array of feature sets, returns a string word."""

@@ -2,12 +2,13 @@ import numpy, random, copy
 #TODO privilege constraints where grams have same features, maybe also where values are the same
 
 class Con:
-    def __init__(self, feature_dict, tier_freq, aligned):
+    def __init__(self, feature_dict, tier_freq, aligned, stem):
         self.constraints = []
         self.weights = numpy.array([0]) # intercept weight
         self.feature_dict = feature_dict
         self.tier_freq = tier_freq
         self.aligned = aligned
+        self.stem = stem
         self.i = 0
 
     def induce(self, winners):
@@ -17,7 +18,7 @@ class Con:
         #print self.i
         assert len(self.weights) == len(self.constraints) + 1
         if random.random() < .5:
-            self.make_constraint(Faithfulness, winners, self.feature_dict)
+            self.make_constraint(Faithfulness, winners, self.feature_dict, self.stem)
         else:
             if self.aligned:
                 self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
@@ -176,7 +177,7 @@ class MarkednessAligned(Markedness):
         at random. Does not allow the protected feature to become a
         don't-care."""
         (base, difference) = self.coinflip(winners)
-        assert difference.any(), 'duplicates'
+        #assert difference.any(), 'duplicates'
         protected_segment = random.choice(numpy.where(difference)[0])
         protected_feature = random.sample(difference[protected_segment], 1)[0]
         # pick ngram
@@ -252,11 +253,12 @@ class MarkednessAligned(Markedness):
             return ''.join([self.polarity(self.violation)] + [segment for segment in segments])
 
 class Faithfulness:
-    def __init__(self, winners, feature_dict):
+    def __init__(self, winners, feature_dict, stem):
         """Find a change that exists in only one winner. Abstract away from some
         of its feature values, but not so much that it becomes equivalent to a
         change in the other winner. Make this a faithfulness constraint."""
         self.feature_dict = feature_dict
+        self.stem = stem
         self.constraint = None
         self.base = copy.deepcopy(winners[1].changes)
         self.other = winners[0].changes
@@ -267,8 +269,12 @@ class Faithfulness:
                 #print self.base.count(change), self.other.count(change)
                 #print winners[1].changes, winners[0].changes
                 self.constraint = change
-                for item in [change.value, change.stem]:
-                    self.remove_specific(change, item, winners)
+                if not self.stem:
+                    self.constraint.discard('stem')
+                    self.remove_specific(change, change.value, winners)
+                else:
+                    for item in [change.value, change.stem]:
+                        self.remove_specific(change, item, winners)
                 break
 
     def remove_specific(self, change, item, winners):

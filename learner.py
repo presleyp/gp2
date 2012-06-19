@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import copy, numpy, random, datetime
+import copy, numpy, random, datetime, csv
 import matplotlib.pyplot as pyplot
 #from mapping import Mapping, Change, ChangeNoStem
 from featuredict import FeatureDict
@@ -35,13 +35,13 @@ from matplotlib.backends.backend_pdf import PdfPages
     # random gen vs deterministic gen
 
 class HGGLA:
-    def __init__(self, feature_dict, learning_rate, aligned, tier_freq, induction_freq):
+    def __init__(self, feature_dict, learning_rate, aligned, stem, tier_freq, induction_freq):
         """Takes processed input and learns on it one tableau at a time.
         The constraints are updated by the difference in violation vectors
         between the computed winner and the desired winner,
         multiplied by the learning rate."""
         self.learning_rate = learning_rate
-        self.con = Con(feature_dict, tier_freq, aligned)
+        self.con = Con(feature_dict, tier_freq, aligned, stem)
         self.induction_freq = induction_freq
 
     def evaluate(self, tableau):
@@ -113,9 +113,9 @@ class Learn:
     def __init__(self, feature_chart, input_file, remake_input = False,
                  num_negatives = 15, max_changes = 5, processes =
                  '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], stem = True, gen_type = 'random',
+                 epenthetics = ['e', '?'], gen_type = 'random',
                  learning_rate = 0.1, num_trainings = 5, aligned = True,
-                 tier_freq = .25, induction_freq = .1,
+                 tier_freq = .25, induction_freq = .1, stem = False,
                  constraint_parts = ['voi', '+word', 'round', 'back']):
         # parameters
         feature_dict = FeatureDict(feature_chart)
@@ -123,19 +123,20 @@ class Learn:
                            input_file, 'remake_input': remake_input,
                            'num_negatives': num_negatives, 'max_changes':
                            max_changes, 'processes': processes, 'epenthetics':
-                           epenthetics, 'stem': stem, 'gen_type': gen_type}
+                           epenthetics, 'gen_type': gen_type}
         self.algorithm_args = {'feature_dict': feature_dict, 'learning_rate':
-                               learning_rate, 'aligned': aligned, 'tier_freq': tier_freq,
-                               'induction_freq': induction_freq}
+                               learning_rate, 'aligned': aligned, 'stem': stem,
+                               'tier_freq': tier_freq, 'induction_freq': induction_freq}
         self.num_trainings = num_trainings
 
         # input data
         self.all_input = None
-        self.train_input = None
-        self.test_input = None
+        self.train_input = []
+        self.test_input = []
 
         # output data
-        time = str(datetime.datetime.now())
+        time = datetime.datetime.now()
+        time = time.strftime('%Y-%m-%d-%H:%M:%S')
         self.figs = PdfPages('Output-' + time + '.pdf')
         self.report = 'Output-' + time + '.txt'
         self.training_errors = []
@@ -183,8 +184,6 @@ class Learn:
     def run(self, i):
         """Initialize HGGLA and do all training and testing iterations for this run."""
         self.alg = HGGLA(**self.algorithm_args)
-        if i:
-            self.refresh()
         for log in [self.training_errors, self.num_constraints, self.testing_errors]:
             log.append([])
             assert log[i] == []
@@ -225,6 +224,7 @@ class Learn:
         parameter."""
         if parameter in self.input_args:
             for i, value in enumerate(values):
+                print 'run ', i
                 self.input_args[parameter] = value
                 self.remake_input = True
                 self.make_input()
@@ -236,6 +236,7 @@ class Learn:
             self.make_input()
             self.divide_input()
             for i, value in enumerate(values):
+                print 'run ', i
                 self.algorithm_args[parameter] = value
                 with open(self.report, 'a') as f:
                     f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
@@ -247,13 +248,27 @@ class Learn:
         print 'number of constraints', [run[-1] for run in self.num_constraints]
         self.plot_errors(parameter = parameter, values = values)
         self.figs.close()
+        self.all_input = None
+        self.train_input = None
+        self.test_input = None
+        return (self.training_errors, self.testing_errors, self.num_constraints)
 
     def test_performance(self, num_runs = 5):
         """Make the input once, and then run several times with a new division
         into training and testing sets each time. Get average accuracy
         values."""
         self.make_input()
+        #self.training_errors = []
+        #self.testing_errors = []
+        #self.num_constraints = []
+        #time = datetime.datetime.now()
+        #time = time.strftime('%Y-%m-%d-%H:%M:%S')
+        #self.figs = PdfPages('Output-' + time + '.pdf')
+        #self.report = 'Output-' + time + '.txt'
         for i in range(num_runs):
+            if i:
+                self.refresh()
+            print 'run ', i
             self.divide_input()
             with open(self.report, 'a') as f:
                 f.write('\n\n\n--------Run ' + str(i) + '--------')
@@ -265,6 +280,10 @@ class Learn:
                                           self.num_constraints])
         self.plot_errors()
         self.figs.close()
+        self.all_input = None
+        self.train_input = None
+        self.test_input = None
+        return (self.training_errors, self.testing_errors, self.num_constraints)
 
     def plot_constraints(self):
         """Plot the 20 highest weighted constraints and write all of them to a
@@ -321,7 +340,7 @@ class Learn:
                 pyplot.ylabel('Number of Constraints')
                 pyplot.title('Running Count of Constraints')
             labels = [parameter + ' = ' + str(value) for value in values] if parameter else range(len(item))
-            pyplot.legend(plots, labels, loc = 0)
+            #pyplot.legend(plots, labels, loc = 0)
             self.figs.savefig()
             pyplot.clf()
 
@@ -374,15 +393,160 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
-    learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
-                         max_changes = 5, num_negatives = 15, tier_freq = 0, processes = '[self.change_feature_value]')
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, remake_input = True, gen_type = 'deterministic', stem = False, tier_freq = 0, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
-    learner.test_performance(2)
+    #learner.test_performance(20)
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, remake_input = False, gen_type = 'deterministic', stem = True, tier_freq = 0, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, remake_input = False, gen_type = 'deterministic', stem = False, tier_freq = 0.5, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+
+
+
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, remake_input = True, gen_type = 'random', stem = False, tier_freq = 0, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, remake_input = False, gen_type = 'random', stem = True, tier_freq = 0, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, remake_input = False, gen_type = 'random', stem = False, tier_freq = 0.5, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, remake_input = True, gen_type = 'deterministic', stem = True, tier_freq = 0.5, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 3, num_negatives = 30, remake_input = True, gen_type = 'random', stem = False, tier_freq = 0, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 3, num_negatives = 30, remake_input = False, gen_type = 'random', stem = True, tier_freq = 0, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 3, num_negatives = 30, remake_input = False, gen_type = 'random', stem = False, tier_freq = 0.5, processes = '[self.change_feature_value]')
+    #learner.test_performance(20)
     #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2, .3, .4, .5])
     #learner.test_parameter('self.induction_freq', [0, .1, .2, .3, .4, .5, .6, .7, .8])
     #learner.test_parameter('self.max_changes', [2, 5, 10])
     #learner.test_parameter('tier_freq', [0, .1, .2, .3, .4, .5])
+
+#class Experiment():
+    #def __init__(self, a, a_values, b, b_values):
+        #self.a = a # parameter
+        #self.a_values = a_values
+        #self.b = b # parameter
+        #self.b_values = b_values
+        #self.time = str(datetime.datetime.now()) # figure out how to cut off fraction of seconds
+        #self.dataframe = self.time + '_df_' + '_' + self.a + '_' + self.b + '.csv'
+        #for i in self.a_values:#[False, True]:
+            #for j in self.b_values:#[0, .25, .5]:
+                #self.run_experiment(i, j)
+        #self.analyze_experiment(self.dataframe)
+
+    def matrix_to_csv(filename, matrix):
+        with open(filename, 'w') as f:
+            cwrite = csv.writer(f)
+            cwrite.writerows(matrix)
+
+    def matrix_to_dataframe(filename, i, j, matrix):
+        with open(filename, 'a') as f:
+            cwrite = csv.writer(f)
+            #cwrite.writerow([name, 'stem', 'tier', 'Iteration'])
+            for row in matrix:
+                for k, number in enumerate(row):
+                    cwrite.writerow([number, i, j, k])
+
+    #def analyze_experiment(self):
+        #with open(self.dataframe + 'analysis.R', 'w') as f:
+            #f.write('\n'.join(['library(glm)',
+                            #'df = read.csv(' + dataframe + ', header = T, sep = ",")']))
+            #for iteration in range(5):
+                #for type in ['training', 'testing', 'constraints']:
+                    #subscript = '[Iteration == ' + iter + ' & Type == ' + type + ',]'
+                    #f.write('\n'.join(['rega = glm(DV ~ ' + self.a + ', data = df' + subscript + ')',
+                                    #'regb = glm(DV ~ ' + self.b + ', data = df' + subscript + ')',
+                                    #'regab = glm(DV ~ ' + self.a + '+' + self.b + ', data = df' + subscript + ')',
+                                    #'regabint = glm(DV ~ ' + self.a + '*' + self.b + ', data = df' + subscript + ')',
+                                    #'anova(rega, regab)',
+                                    #'anova(regb, regab)',
+                                    #'anova(regab, regabint)',
+                                    #'summary(rega)',
+                                    #'summary(regb)',
+                                    #'summary(regab)'
+                                    #'summary(regabint)'
+                                    #]))
+#Experiment('stem', [False, True], 'tier_freq', [0, .25, .5])
+#Experiment('learning_rate', [.001, 0.01, .1], 'induction_freq', [.1, .5, .9])
+
+    def run_experiment(time, i, j):
+        print 'experiment with ', i, ' and ', j
+        l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', gen_type = 'deterministic', num_trainings = 5, stem = i, tier_freq = j)
+        outputs = l.test_performance(20)
+        for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
+            filename = time +  name + 'stem' + str(i) + 'tier' + str(j) + '.csv'
+            filename2 = time +  name + '_stem_tier.csv'
+            matrix_to_csv(filename, matrix)
+            matrix_to_dataframe(filename2, i, j, matrix)
+        del l
+
+    time = datetime.datetime.now()
+    time = time.strftime('%Y-%m-%d-%H:%M:%S')
+    if len(sys.argv) < 3:
+        for i in [False, True]:
+            for j in [0, .25, .5]:
+                run_experiment(time, i, j)
+    else:
+        i = False
+        if sys.argv[1].lower() == "true":
+            i = True
+        j = float(sys.argv[2])
+        run_experiment(time, i, j)
+
+
+
+    #def matrix_to_csv(filename, matrix):
+        #with open(filename, 'w') as f:
+            #cwrite = csv.writer(f)
+            #cwrite.writerows(matrix)
+
+    #def matrix_to_dataframe(filename, i, j, matrix):
+        #with open(filename, 'a') as f:
+            #cwrite = csv.writer(f)
+            ##cwrite.writerow([name, 'stem', 'tier', 'Iteration'])
+            ##cwrite.writerow([name, 'learningrate', 'inductionfreq', 'iteration'])
+            #for row in matrix:
+                #for k, number in enumerate(row):
+                    #cwrite.writerow([number, i, j, k])
+
+
+
+    #def run_experiment(time, i, j):
+        #print 'experiment with ', i, ' and ', j
+        #l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = i, induction_freq = j)
+        #outputs = l.test_performance(20)
+        #for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
+            #filename = time + name + 'lr' + str(i) + 'induction' + str(j) + '.csv'
+            #filename2 = time + name + '_lr_induction.csv'
+            #matrix_to_csv(filename, matrix)
+            #matrix_to_dataframe(filename2, i, j, matrix)
+        #del l
+
+    #time = datetime.datetime.now()
+    #time = time.strftime('%Y-%m-%d-%H:%M:%S')
+    #if len(sys.argv) < 3:
+        #for i in [0.01, 0.1, 0.25]:
+            #for j in [0.1, 0.5, 0.9]:
+                #run_experiment(time, i, j)
+    #else:
+        #i = float(sys.argv[1])
+        #j = float(sys.argv[2])
+        #run_experiment(time, i, j)
+

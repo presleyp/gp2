@@ -41,7 +41,8 @@ class Mapping:
                 try:
                     feature = changeparts.pop(1)
                     change.feature = self.feature_dict.get_feature_number(feature)
-                    change.value = changeparts.pop(1)
+                    value = changeparts.pop(1)
+                    change.value = '+' if value == 1 else '-'
                 except IndexError:
                     pass
                 change.make_set()
@@ -136,7 +137,7 @@ class Change:
     def add(self, other):
         self.set.add(other)
 
-class ChangeNoStem(Change):
-    def make_set(self):
-        self.set = set([self.change_type, self.feature, self.value])
-        self.set.discard('')
+#class ChangeNoStem(Change):
+    #def make_set(self):
+        #self.set = set([self.change_type, self.feature, self.value])
+        #self.set.discard('')
