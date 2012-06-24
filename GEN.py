@@ -1,4 +1,4 @@
-import cPickle, csv, copy, numpy, random
+import sPickle, csv, copy, numpy, random
 from mapping import Mapping, Change, ChangeNoStem
 
 class Input:
@@ -19,13 +19,13 @@ class Input:
         self.gen_args = [num_negatives, max_changes, processes, epenthetics, Operation]
         try:
             assert remake_input == False
-            saved_file = open('save-' + input_file, 'rb')
-            self.allinputs = cPickle.load(saved_file)
+            saved_file = open('save-' + input_file, 'r')
+            self.allinputs = sPickle.load(saved_file)
             print 'read from file'
         except (IOError, AssertionError):
             self.allinputs = self.make_input(input_file)
-            saved_file = open('save-' + input_file, 'wb')
-            cPickle.dump(self.allinputs, saved_file)
+            saved_file = open('save-' + input_file, 'w')
+            sPickle.dump(self.allinputs, saved_file)
         saved_file.close()
         print 'done making input'
 

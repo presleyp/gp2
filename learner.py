@@ -335,38 +335,6 @@ class Learn:
         with open(self.report, 'a') as f:
             f.write('\n\nConstraints With Expected Features\n' + '\n'.join(constraints_found))
 
-class CrossValidate(Learn):
-    """Train the algorithm on every possible set of all but one data point
-    and test on the leftover data point.
-    Look at the average accuracy across tests."""
-
-    def run_HGGLA(self, inputs):
-        tableaux = self.make_tableaux(inputs)
-        for i, tableau in enumerate(tableaux):
-            self.refresh_input(tableaux)
-            self.refresh_con()
-            assert self.alg.con.constraints == []
-            training_set = tableaux[:i] + tableaux[i + 1:]
-            for i in range(self.num_trainings):
-                errors = self.alg.train(training_set)
-                self.training_errors.append(sum(errors))
-            # test
-            desired = None
-            test_tableau = []
-            for mapping in tableau:
-                if mapping.grammatical:
-                    desired = mapping.sr
-                map_copy = copy.deepcopy(mapping)
-                map_copy.grammatical = 'test'
-                test_tableau.append(map_copy)
-            for m in test_tableau:
-                assert m.harmony == None
-                assert m.violations == numpy.array([1])
-            if self.alg.test(test_tableau).sr == desired:
-                self.accuracy.append(1)
-            else:
-                self.accuracy.append(0)
-
 if __name__ == '__main__':
     import os
     import sys
