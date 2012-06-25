@@ -115,8 +115,7 @@ class Learn:
                  '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
                  epenthetics = ['e', '?'], stem = True, gen_type = 'random',
                  learning_rate = 0.1, num_trainings = 5, aligned = True,
-                 tier_freq = .25, induction_freq = .1,
-                 constraint_parts = ['voi', '+word', 'round', 'back']):
+                 tier_freq = .25, induction_freq = .1):
         # parameters
         feature_dict = FeatureDict(feature_chart)
         self.input_args = {'feature_dict': feature_dict, 'input_file':
@@ -141,7 +140,6 @@ class Learn:
         self.training_errors = []
         self.testing_errors = []
         self.num_constraints = []
-        self.constraint_parts = constraint_parts
 
         # reporting
         with open(self.report, 'a') as f:
@@ -194,7 +192,6 @@ class Learn:
             self.num_constraints[i].append(num_constraints)
             self.testing_errors[i].append(self.test_HGGLA(j))
         self.plot_constraints()
-        self.check_constraints()
 
     def train_HGGLA(self, i):
         """Do one iteration through the training data."""
@@ -217,36 +214,6 @@ class Learn:
             f.write(''.join(['\n\nErrors in testing #', str(i), ': ',
                              str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
         return float(len(errors))/float(len(self.test_input))
-
-    def test_parameter(self, parameter, values):
-        """If parameter is an input parameter, redo input for each value of the
-        parameter. If parameter is an algorithm parameter, make and divide the
-        input once, and then run the algorithm with each value of the
-        parameter."""
-        if parameter in self.input_args:
-            for i, value in enumerate(values):
-                self.input_args[parameter] = value
-                self.remake_input = True
-                self.make_input()
-                self.divide_input()
-                with open(self.report, 'a') as f:
-                    f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
-                self.run(i)
-        elif parameter in self.algorithm_args:
-            self.make_input()
-            self.divide_input()
-            for i, value in enumerate(values):
-                self.algorithm_args[parameter] = value
-                with open(self.report, 'a') as f:
-                    f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
-                self.run(i)
-        else:
-            raise AssertionError, 'Update parameter lists.'
-        print 'tested ', parameter, 'on ', values
-        print 'error percentage on last test of each run', [run[-1] for run in self.testing_errors]
-        print 'number of constraints', [run[-1] for run in self.num_constraints]
-        self.plot_errors(parameter = parameter, values = values)
-        self.figs.close()
 
     def test_performance(self, num_runs = 5):
         """Make the input once, and then run several times with a new division
@@ -324,16 +291,6 @@ class Learn:
             pyplot.legend(plots, labels, loc = 0)
             self.figs.savefig()
             pyplot.clf()
-
-    def check_constraints(self):
-        constraints_found = []
-        for line in self.constraint_lines:
-            for part in self.constraint_parts:
-                if part in line:
-                    constraints_found.append(line)
-                    break
-        with open(self.report, 'a') as f:
-            f.write('\n\nConstraints With Expected Features\n' + '\n'.join(constraints_found))
 
 if __name__ == '__main__':
     import os
