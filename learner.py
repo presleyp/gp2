@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import copy, numpy, random, datetime
+import copy, numpy, random, datetime, csv
 import matplotlib.pyplot as pyplot
 #from mapping import Mapping, Change, ChangeNoStem
 from featuredict import FeatureDict
@@ -164,10 +164,10 @@ class Learn:
 
     def divide_input(self):
         """Choose training set and test set."""
-        one_tenth = int(len(self.all_input)/10)
+        one_fifth = int(len(self.all_input)/5)
         numpy.random.shuffle(self.all_input)
-        self.train_input = self.all_input[:one_tenth]
-        self.test_input = self.all_input[one_tenth:]
+        self.train_input = self.all_input[:one_fifth]
+        self.test_input = self.all_input[one_fifth:]
 
     def refresh(self):
         for inputs in (self.train_input, self.test_input):
@@ -288,7 +288,7 @@ class Learn:
                 pyplot.ylabel('Number of Constraints')
                 pyplot.title('Running Count of Constraints')
             labels = [parameter + ' = ' + str(value) for value in values] if parameter else range(len(item))
-            pyplot.legend(plots, labels, loc = 0)
+            #pyplot.legend(plots, labels, loc = 0)
             self.figs.savefig()
             pyplot.clf()
 
@@ -299,15 +299,50 @@ if __name__ == '__main__':
     localpath = '/'.join(sys.argv[0].split('/')[:-1])
     os.chdir(localpath)
     #learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
-    learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
-                         max_changes = 5, num_negatives = 15, tier_freq = 0, processes = '[self.change_feature_value]')
+    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
+                         #max_changes = 5, num_negatives = 15, tier_freq = 0, processes = '[self.change_feature_value]')
     #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
     #TurkishInput1 is the same but deletion is still in.
     #same pattern for test files
     #TurkishInput3 is TurkishInput2 plus TurkishTest2
     #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
-    learner.test_performance(2)
+    #learner.test_performance(2)
     #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2, .3, .4, .5])
     #learner.test_parameter('self.induction_freq', [0, .1, .2, .3, .4, .5, .6, .7, .8])
     #learner.test_parameter('self.max_changes', [2, 5, 10])
     #learner.test_parameter('tier_freq', [0, .1, .2, .3, .4, .5])
+
+    def matrix_to_dataframe(filename, i, j, matrix):
+        with open(filename, 'a') as f:
+            cwrite = csv.writer(f)
+            #cwrite.writerow([name, 'stem', 'tier', 'Iteration'])
+            for row in matrix:
+                for k, number in enumerate(row):
+                    cwrite.writerow([number, i, j, k])
+
+    def run_experiment(time, i, j):
+        print 'experiment with ', i, ' and ', j
+        l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv',
+                  induction_freq = .7, learning_rate = .3, gen_type =
+                  'deterministic', num_trainings = 5, stem = i, tier_freq = j)
+        outputs = l.test_performance(20)
+        for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
+            filename = time +  name + 'stem' + str(i) + 'tier' + str(j) + '.csv'
+            filename2 = time +  name + '_stem_tier.csv'
+            #matrix_to_csv(filename, matrix)
+            matrix_to_dataframe(filename2, i, j, matrix)
+        del l
+
+    time = datetime.datetime.now()
+    time = time.strftime('%Y-%m-%d-%H:%M:%S')
+    if len(sys.argv) < 3:
+        for i in [False, True]:
+            for j in [0, .25, .5]:
+                run_experiment(time, i, j)
+    else:
+        i = False
+        if sys.argv[1].lower() == "true":
+            i = True
+        j = float(sys.argv[2])
+        run_experiment(time, i, j)
+
