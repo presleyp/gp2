@@ -68,11 +68,12 @@ class Mapping:
             return False
         return numpy.equal(self.sr, other.sr).all()
 
-    def __contains__(self, collection):
-        for item in collection:
-            if self == item:
-                return True
-        return False
+#FIXME i want to affect how if mapping in collection is done
+    #def __contains__(self, collection):
+        #for item in collection:
+            #if self == item:
+                #return True
+        #return False
 
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))

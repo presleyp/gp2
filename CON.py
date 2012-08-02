@@ -19,21 +19,19 @@ class Con:
         assert len(self.weights) == len(self.constraints) + 1
         if random.random() < .5:
             self.make_constraint(Faithfulness, winners, self.feature_dict, self.stem)
+        elif self.aligned:
+            self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
         else:
-            if self.aligned:
-                self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
-            else:
-                self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
+            self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
         assert len(self.weights) == len(self.constraints) + 1
         self.i += 1
 
     def make_constraint(self, constraint_type, *args):
-        i = 0
-        while i < 10:
+        for _ in range(10):
             new_constraint = constraint_type(*args)
-            i += 1
             if new_constraint.constraint == None:
-                break
+                #break
+                continue
             duplicate = False
             for constraint in self.constraints:
                 if new_constraint == constraint:
@@ -60,7 +58,6 @@ class Markedness:
         winners = [winner.sr for winner in winners]
         self.constraint = None
         self.feature_dict = feature_dict
-        #self.num_features = self.feature_dict.num_features
         self.tier_freq = tier_freq
         self.tier = None
         winners = self.decide_tier(winners)
@@ -214,18 +211,12 @@ class MarkednessAligned(Markedness):
         from the computed winner and will assign violations. Return the winner
         the constraint will be made from,
         and the difference between it and the other winner."""
-        if numpy.random.randint(0,2) == 1:
+        if numpy.random.randint(0, 2) == 1:
             self.violation = 1
             return (winners[0], winners[0] - winners[1])
         else:
             self.violation = -1
             return (winners[1], winners[1] - winners[0])
-
-    def polarity(self, input):
-        if input < 0:
-            return '-'
-        else:
-            return '+'
 
     def __eq__(self, other):
         if isinstance(other, Faithfulness):
@@ -238,19 +229,19 @@ class MarkednessAligned(Markedness):
             return (numpy.equal(self.constraint, other.constraint)).all()
 
     def __str__(self):
-        polarity = '+' if self.violation else '-'
+        sign = polarity(self.violation)
         segments = []
         for segment in self.constraint:
             #natural_class = [k for k, v in self.feature_dict.fd.iteritems() if segment <= v]
-            natural_class = [self.polarity(feature) +
+            natural_class = [polarity(feature) +
                              self.feature_dict.get_feature_name(feature) for
                              feature in segment]
             natural_class = ''.join(['{', ','.join(natural_class), '}'])
             segments.append(natural_class)
         if self.tier:
-            return ''.join([self.feature_dict.get_feature_name(self.tier), ' tier ', polarity, str(segments)])
+            return ''.join([self.feature_dict.get_feature_name(self.tier), ' tier ', sign, str(segments)])
         else:
-            return ''.join([self.polarity(self.violation)] + [segment for segment in segments])
+            return ''.join([sign] + [segment for segment in segments])
 
 class Faithfulness:
     def __init__(self, winners, feature_dict, stem):
@@ -312,3 +303,5 @@ class Faithfulness:
         self.constraint.context = 'faith'
         return str(self.constraint)
 
+def polarity(number):
+    return '-' if number < 0 else '+'
