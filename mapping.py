@@ -64,8 +64,15 @@ class Mapping:
 
     def __eq__(self, other):
         if len(self.sr) != len(other.sr):
-            print 'self', self, 'other', other
+            #print 'self', self, 'other', other
+            return False
         return numpy.equal(self.sr, other.sr).all()
+
+    def __contains__(self, collection):
+        for item in collection:
+            if self == item:
+                return True
+        return False
 
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))

@@ -167,10 +167,10 @@ class Learn:
 
     def divide_input(self):
         """Choose training set and test set."""
-        one_tenth = int(len(self.all_input)/10)
+        one_fifth = int(len(self.all_input)/5)
         numpy.random.shuffle(self.all_input)
-        self.train_input = self.all_input[:one_tenth]
-        self.test_input = self.all_input[one_tenth:]
+        self.train_input = self.all_input[:one_fifth]
+        self.test_input = self.all_input[one_fifth:]
 
     def refresh(self):
         for inputs in (self.train_input, self.test_input):
@@ -486,29 +486,30 @@ if __name__ == '__main__':
 #Experiment('stem', [False, True], 'tier_freq', [0, .25, .5])
 #Experiment('learning_rate', [.001, 0.01, .1], 'induction_freq', [.1, .5, .9])
 
-    def run_experiment(time, i, j):
-        print 'experiment with ', i, ' and ', j
-        l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', gen_type = 'deterministic', num_trainings = 5, stem = i, tier_freq = j)
-        outputs = l.test_performance(20)
-        for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
-            filename = time +  name + 'stem' + str(i) + 'tier' + str(j) + '.csv'
-            filename2 = time +  name + '_stem_tier.csv'
-            matrix_to_csv(filename, matrix)
-            matrix_to_dataframe(filename2, i, j, matrix)
-        del l
+    #def run_experiment(time, i, j):
+        #print 'experiment with ', i, ' and ', j
+        #l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', learning_rate = .3, induction_freq = .7, gen_type = 'deterministic', num_trainings = 5, stem = i, tier_freq = j)
+        #outputs = l.test_performance(20)
+        #for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
+            #filename = time +  name + 'stem' + str(i) + 'tier' + str(j) + '.csv'
+            #filename2 = time +  name + '_stem_tier.csv'
+            #matrix_to_csv(filename, matrix)
+            #matrix_to_dataframe(filename2, i, j, matrix)
+        #del l
 
-    time = datetime.datetime.now()
-    time = time.strftime('%Y-%m-%d-%H:%M:%S')
-    if len(sys.argv) < 3:
-        for i in [False, True]:
-            for j in [0, .25, .5]:
-                run_experiment(time, i, j)
-    else:
-        i = False
-        if sys.argv[1].lower() == "true":
-            i = True
-        j = float(sys.argv[2])
-        run_experiment(time, i, j)
+    #time = datetime.datetime.now()
+    #time = time.strftime('%Y-%m-%d-%H:%M:%S')
+    #if len(sys.argv) < 3:
+        #for i in [False, True]:
+            #for j in [0, .25, .5]:
+                #run_experiment(time, i, j)
+    #else:
+        #i = False
+        #if sys.argv[1].lower() == "true":
+            #i = True
+        #i = float(sys.argv[1])
+        #j = float(sys.argv[2])
+        #run_experiment(time, i, j)
 
 
 
@@ -528,25 +529,25 @@ if __name__ == '__main__':
 
 
 
-    #def run_experiment(time, i, j):
-        #print 'experiment with ', i, ' and ', j
-        #l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = i, induction_freq = j)
-        #outputs = l.test_performance(20)
-        #for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
-            #filename = time + name + 'lr' + str(i) + 'induction' + str(j) + '.csv'
-            #filename2 = time + name + '_lr_induction.csv'
-            #matrix_to_csv(filename, matrix)
-            #matrix_to_dataframe(filename2, i, j, matrix)
-        #del l
+    def run_experiment(time, i, j):
+        print 'experiment with ', i, ' and ', j
+        l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, gen_type = 'deterministic', learning_rate = i, induction_freq = j, stem = True, tier_freq = 0.25)
+        outputs = l.test_performance(20)
+        for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
+            filename = time + name + 'lr' + str(i) + 'induction' + str(j) + '.csv'
+            filename2 = time + name + '_lr_induction.csv'
+            matrix_to_csv(filename, matrix)
+            matrix_to_dataframe(filename2, i, j, matrix)
+        del l
 
-    #time = datetime.datetime.now()
-    #time = time.strftime('%Y-%m-%d-%H:%M:%S')
-    #if len(sys.argv) < 3:
-        #for i in [0.01, 0.1, 0.25]:
-            #for j in [0.1, 0.5, 0.9]:
-                #run_experiment(time, i, j)
-    #else:
-        #i = float(sys.argv[1])
-        #j = float(sys.argv[2])
-        #run_experiment(time, i, j)
+    time = datetime.datetime.now()
+    time = time.strftime('%Y-%m-%d-%H:%M:%S')
+    if len(sys.argv) < 3:
+        for i in [0.01, 0.1, 0.25]:
+            for j in [0.1, 0.5, 0.9]:
+                run_experiment(time, i, j)
+    else:
+        i = float(sys.argv[1])
+        j = float(sys.argv[2])
+        run_experiment(time, i, j)
 

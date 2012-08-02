@@ -7,8 +7,8 @@ class Input:
     then surface form in segments, then semicolon-delimited list of changes from
     underlying form to surface form.  Ungrammatical mappings are optional; if
     you include them, the second line must be ungrammatical."""
-    def __init__(self, feature_dict, input_file, remake_input, num_negatives, max_changes, processes,
-        epenthetics, gen_type):
+    def __init__(self, feature_dict, input_file, remake_input, num_negatives,
+                 max_changes, processes, epenthetics, gen_type):
         """Convert lines of input to mapping objects.  Generate
         ungrammatical input-output pairs if they were not already present in the
         input file."""
@@ -78,43 +78,33 @@ class Gen:
     def ungrammaticalize(self, mapping):
         """Given a grammatical input-output mapping, create randomly
         ungrammatical mappings with the same input."""
-        negatives = []
-        if mapping.ur.all() != mapping.sr.all():
-            negatives.append(self.make_faithful_cand(mapping))
+        negatives = self.make_faithful_cand(mapping)
         while len(negatives) < self.num_negatives:
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
             new_mapping.stem = copy.copy(mapping.stem)
-            for j in range(numpy.random.randint(0, self.max_changes + 1)):
+            for _ in range(numpy.random.randint(0, self.max_changes + 1)):
                 process = random.choice(self.processes)
                 process(new_mapping)
             # Don't add a mapping if it's the same as the grammatical one.
-            try:
-                if new_mapping == mapping:
-                    continue
-            except ValueError: # they're not the same length
-                pass
+            if new_mapping == mapping:
+                continue
             # Don't add a mapping if it's the same as a previously
             # generated one.
             new_mapping.add_boundaries()
-            duplicate = False
-            for negative in negatives:
-                try:
-                    if numpy.equal(new_mapping.sr, negative.sr).all():
-                        duplicate = True
-                        break
-                except ValueError:
-                    pass
-            if not duplicate:
+            if new_mapping not in negatives:
                 new_mapping.set_ngrams()
                 negatives.append(new_mapping)
         return negatives
 
     def make_faithful_cand(self, mapping):
-        new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
-        new_mapping.stem = copy.copy(mapping.stem)
-        new_mapping.add_boundaries()
-        new_mapping.set_ngrams()
-        return new_mapping
+        if mapping.ur.all() != mapping.sr.all():
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.stem = copy.copy(mapping.stem)
+            new_mapping.add_boundaries()
+            new_mapping.set_ngrams()
+            return [new_mapping]
+        else:
+            return []
 
     def epenthesize(self, mapping):
         """Map a ur to an sr with one more segment."""
@@ -197,96 +187,70 @@ class Gen:
             mapping.changes.append(change)
 
 class DeterministicGen(Gen):
+    """Generates candidates that test the processes found in my Turkish corpus."""
     def ungrammaticalize(self, mapping):
-        """Given a grammatical input-output mapping, create randomly
-        ungrammatical mappings with the same input."""
-        negatives = []
-        # make faithful candidate
-        if mapping.ur.all() != mapping.sr.all():
-            negatives.append(self.make_faithful_cand(mapping))
-        # make candidate with changed voicing
-        voice = self.feature_dict.get_feature_number('voi')
-        voicing = None
+        """Given a grammatical input-output mapping, create ungrammatical
+        mappings with all combinations of word-final voicing and of rounding and
+        backness in the last vowel."""
+        negatives = self.make_faithful_cand(mapping) + self.change_voicing(mapping) + self.change_vowels(mapping)
+        return list(set(negatives)) #uniquify
+
+    def change_voicing(self, mapping):
+        """If the last segment of the grammatical candidate is specified for
+        voicing, generate a candidate in which it has the opposite voicing."""
         locus = len(mapping.sr) - 1
-        for item in mapping.sr[locus]:
-            if numpy.absolute(item) == voice:
-                voicing = item
+        voicing = self.find_feature_value(mapping.ur[locus], 'voi')
         if voicing:
-            new_sr = copy.deepcopy(mapping.ur)
-            new_sr[locus].discard(voicing)
-            new_sr[locus].add(-voicing)
-            change = Change(self.feature_dict, change_type = 'change',
-                                    feature = voicing, mapping = mapping, locus = locus)
-            change.make_set()
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur),
-                                                      new_sr, [change]])
-            duplicate = False
-            if numpy.equal(new_mapping.sr, mapping.sr).all():
-                duplicate = True
-            new_mapping.add_boundaries()
-            for negative in negatives:
-                try:
-                    if numpy.equal(new_mapping.sr, negative.sr).all():
-                        duplicate = True
-                        break
-                except ValueError:
-                    pass
-            if not duplicate:
-                try:
-                    self.feature_dict.get_segments(new_mapping.sr)
-                    new_mapping.set_ngrams()
-                    negatives.append(new_mapping)
-                except IndexError:
-                    pass
-        # make vowel harmony candidate
+            return self.make_new_mapping(mapping, locus, voicing)
+        else:
+            return []
+
+    def find_feature_value(self, segment, feature):
+        feature_number = self.feature_dict.get_feature_number(feature)
+        return segment & set([feature_number, -feature_number])
+
+    def change_vowels(self, mapping):
+        """Generate candidates in which the last vowel of the word has all
+        possible combinations of backness and rounding besides the one in the
+        grammatical candidate."""
+        new_mappings = []
         vocalic = self.feature_dict.get_feature_number('voc')
-        back = self.feature_dict.get_feature_number('back')
-        roundness = self.feature_dict.get_feature_number('round')
         last_vowel = None
         ur_range = range(len(mapping.ur))
         ur_range.reverse()
         for i in ur_range:
             if vocalic in mapping.ur[i]:
                 last_vowel = i
-                back = mapping.ur[i] & set([back, -back])
-                roundness = mapping.ur[i] & set([roundness, -roundness])
                 break
+
+        back = self.find_feature_value(mapping.ur[last_vowel], 'back')
+        roundness = self.find_feature_value(mapping.ur[last_vowel], 'round')
         backround = back | roundness
-        for i in [back, roundness, backround]:
-            new_mapping = Mapping(self.feature_dict, [False,
-                                                      copy.deepcopy(mapping.ur),
-                                                      copy.deepcopy(mapping.ur),
-                                                      []])
-            new_mapping.sr[last_vowel] -= i
-            j = [-x for x in i]
-            new_mapping.sr[last_vowel] |= set(j)
-            try:
-                self.feature_dict.get_segment(new_mapping.sr[last_vowel])
-            except IndexError:
-                continue
-            for feature in i:
-                change = Change(self.feature_dict, mapping = mapping,
-                                        locus = last_vowel, feature = feature)
-                change.make_set()
-                new_mapping.changes.append(change)
-            duplicate = False
-            if numpy.equal(new_mapping.sr, mapping.sr).all():
-                duplicate = True
-            new_mapping.add_boundaries()
-            for negative in negatives:
-                try:
-                    if numpy.equal(new_mapping.sr, negative.sr).all():
-                        duplicate = True
-                        break
-                except ValueError:
-                    pass
-            if not duplicate:
-                try:
-                    self.feature_dict.get_segments(new_mapping.sr)
-                    new_mapping.set_ngrams()
-                    negatives.append(new_mapping)
-                except IndexError:
-                    pass
-        return negatives
 
+        for item in [back, roundness, backround]:
+            new_mappings += self.make_new_mapping(mapping, last_vowel, item)
+        return new_mappings
 
+    def make_new_mapping(self, old_mapping, locus, features):
+        new_sr = copy.deepcopy(old_mapping.ur)
+        new_sr[locus] -= features
+        for feature in features:
+            new_sr[locus] |= -feature
+        try:
+            self.feature_dict.get_segment(new_sr[locus])
+        except IndexError:
+            return []
+        new_mapping = Mapping(self.feature_dict, [False,
+                                                    copy.deepcopy(old_mapping.ur),
+                                                    copy.deepcopy(new_sr),
+                                                    []])
+        if old_mapping == new_mapping:
+            return []
+        new_mapping.stem = copy.copy(old_mapping.stem)
+        change = Change(self.feature_dict, change_type = 'change', mapping =
+                        new_mapping, locus = locus, feature = feature)
+        change.make_set()
+        new_mapping.changes.append(change)
+        new_mapping.add_boundaries()
+        new_mapping.set_ngrams()
+        return new_mapping
