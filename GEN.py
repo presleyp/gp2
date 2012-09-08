@@ -7,15 +7,14 @@ class Input:
     then surface form in segments, then semicolon-delimited list of changes from
     underlying form to surface form.  Ungrammatical mappings are optional; if
     you include them, the second line must be ungrammatical."""
-    def __init__(self, feature_dict, input_file, remake_input, num_negatives,
-                 max_changes, processes, epenthetics, gen_type):
+    def __init__(self, feature_dict, input_file, remake_input, gen_type, gen_args = None):
         """Convert lines of input to mapping objects.  Generate
         ungrammatical input-output pairs if they were not already present in the
         input file."""
         print 'calling Input'
         self.feature_dict = feature_dict
-        self.Generator = Gen if gen_type == 'random' else DeterministicGen
-        self.gen_args = [num_negatives, max_changes, processes, epenthetics]
+        self.Generator = RandomGen if gen_type == 'random' else DeterministicGen
+        self.gen_args = gen_args
         try:
             assert remake_input == False
             saved_file = open('save-' + input_file, 'rb')
@@ -55,7 +54,10 @@ class Input:
                     mapping.set_ngrams()
                     allinputs.append(mapping)
                 else:
-                    gen = self.Generator(self.feature_dict, *self.gen_args)
+                    if self.gen_args:
+                        gen = self.Generator(self.feature_dict, *self.gen_args)
+                    else:
+                        gen = self.Generator(self.feature_dict)
                     negatives = gen.ungrammaticalize(mapping)
                     mapping.add_boundaries()
                     mapping.set_ngrams()
@@ -65,15 +67,28 @@ class Input:
 
 class Gen:
     """Generates input-output mappings."""
-    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics):
+    def __init__(self, feature_dict):
         self.feature_dict = feature_dict
-        #self.major_features = self.feature_dict.major_features
+        self.non_boundaries = copy.deepcopy(self.feature_dict.fd)
+        del self.non_boundaries['|']
+
+    def make_faithful_cand(self, mapping):
+        if mapping.ur.all() != mapping.sr.all():
+            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping.stem = copy.copy(mapping.stem)
+            new_mapping.add_boundaries()
+            new_mapping.set_ngrams()
+            return [new_mapping]
+        else:
+            return []
+
+class RandomGen(Gen):
+    def __init__(self, feature_dict, num_negatives, max_changes, processes, epenthetics):
+        super().__init__(self, feature_dict)
         self.num_negatives = num_negatives
         self.max_changes = max_changes
         self.processes = eval(processes)
         self.epenthetics = epenthetics
-        self.non_boundaries = copy.deepcopy(self.feature_dict.fd)
-        del self.non_boundaries['|']
 
     def ungrammaticalize(self, mapping):
         """Given a grammatical input-output mapping, create randomly
@@ -95,16 +110,6 @@ class Gen:
                 new_mapping.set_ngrams()
                 negatives.append(new_mapping)
         return negatives
-
-    def make_faithful_cand(self, mapping):
-        if mapping.ur.all() != mapping.sr.all():
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
-            new_mapping.stem = copy.copy(mapping.stem)
-            new_mapping.add_boundaries()
-            new_mapping.set_ngrams()
-            return [new_mapping]
-        else:
-            return []
 
     def epenthesize(self, mapping):
         """Map a ur to an sr with one more segment."""
@@ -205,7 +210,7 @@ class DeterministicGen(Gen):
         else:
             return []
 
-    def find_feature_value(self, segment, feature):
+    def find_feature_value(self, segment, feature): # returns a set
         feature_number = self.feature_dict.get_feature_number(feature)
         return segment & set([feature_number, -feature_number])
 
@@ -228,14 +233,17 @@ class DeterministicGen(Gen):
         backround = back | roundness
 
         for item in [back, roundness, backround]:
-            new_mappings += self.make_new_mapping(mapping, last_vowel, item)
+            new_mappings.append(self.make_new_mapping(mapping, last_vowel, item))
+        #self.make_new_mapping(mapping, last_vowel, back)
+        #self.make_new_mapping(mapping, last_vowel, roundness)
+        #self.make_new_mapping(mapping, last_vowel, backround)
         return new_mappings
 
     def make_new_mapping(self, old_mapping, locus, features):
         new_sr = copy.deepcopy(old_mapping.ur)
         new_sr[locus] -= features
         for feature in features:
-            new_sr[locus] |= -feature
+            new_sr[locus].add(-feature)
         try:
             self.feature_dict.get_segment(new_sr[locus])
         except IndexError:
@@ -247,10 +255,11 @@ class DeterministicGen(Gen):
         if old_mapping == new_mapping:
             return []
         new_mapping.stem = copy.copy(old_mapping.stem)
-        change = Change(self.feature_dict, change_type = 'change', mapping =
-                        new_mapping, locus = locus, feature = feature)
-        change.make_set()
-        new_mapping.changes.append(change)
+        for feature in features:
+            change = Change(self.feature_dict, change_type = 'change', mapping =
+                            new_mapping, locus = locus, feature = feature)
+            change.make_set()
+            new_mapping.changes.append(change)
         new_mapping.add_boundaries()
         new_mapping.set_ngrams()
         return new_mapping

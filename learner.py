@@ -119,14 +119,18 @@ class Learn:
                  constraint_parts = ['voi', '+word', 'round', 'back']):
         # parameters
         feature_dict = FeatureDict(feature_chart)
-        self.input_args = {'feature_dict': feature_dict, 'input_file':
-                           input_file, 'remake_input': remake_input,
-                           'num_negatives': num_negatives, 'max_changes':
-                           max_changes, 'processes': processes, 'epenthetics':
-                           epenthetics, 'gen_type': gen_type}
-        self.algorithm_args = {'feature_dict': feature_dict, 'learning_rate':
-                               learning_rate, 'aligned': aligned, 'stem': stem,
-                               'tier_freq': tier_freq, 'induction_freq': induction_freq}
+        self.input_args = {'feature_dict': feature_dict,
+                           'input_file': input_file,
+                           'remake_input': remake_input,
+                           'gen_type': gen_type}
+        if gen_type == 'random':
+            self.input_args['gen_args'] = [num_negatives, max_changes, processes, epenthetics]
+        self.algorithm_args = {'feature_dict': feature_dict,
+                               'learning_rate': learning_rate,
+                               'aligned': aligned,
+                               'stem': stem,
+                               'tier_freq': tier_freq,
+                               'induction_freq': induction_freq}
         self.num_trainings = num_trainings
 
         # input data
