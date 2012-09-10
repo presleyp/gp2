@@ -21,7 +21,7 @@ class Input:
             self.allinputs = cPickle.load(saved_file)
             print 'read from file'
         except (IOError, AssertionError):
-            self.allinputs = self.make_input(input_file)
+            self.allinputs = self.make_input(input_file) #FIXME something goes wrong here, it gets no further
             saved_file = open('save-' + input_file, 'wb')
             cPickle.dump(self.allinputs, saved_file)
         finally:
@@ -40,29 +40,22 @@ class Input:
     def make_input(self, infile):
         """Based on file of lines of the form "1,underlyingform,surfaceform,changes"
         create Mapping objects with those attributes.
-        Create ungrammatical mappings if not present.
         Bundle mappings into tableaux."""
         allinputs = []
-        ungrammatical_included = False
         with open(infile, 'r') as f:
             fread = csv.reader(f)
+            if self.gen_args:
+                gen = self.Generator(self.feature_dict, *self.gen_args)
+            else:
+                gen = self.Generator(self.feature_dict)
             for line in fread:
                 mapping = Mapping(self.feature_dict, line)
                 mapping.to_data()
-                if ungrammatical_included:
-                    mapping.add_boundaries()
-                    mapping.set_ngrams()
-                    allinputs.append(mapping)
-                else:
-                    if self.gen_args:
-                        gen = self.Generator(self.feature_dict, *self.gen_args)
-                    else:
-                        gen = self.Generator(self.feature_dict)
-                    negatives = gen.ungrammaticalize(mapping)
-                    mapping.add_boundaries()
-                    mapping.set_ngrams()
-                    tableau = [mapping] + negatives
-                    allinputs.append(tableau)
+                negatives = gen.ungrammaticalize(mapping)
+                mapping.add_boundaries()
+                mapping.set_ngrams()
+                tableau = [mapping] + negatives
+                allinputs.append(tableau)
             return allinputs
 
 class Gen:
@@ -212,7 +205,7 @@ class DeterministicGen(Gen):
         locus = len(mapping.sr) - 1
         voicing = self.find_feature_value(mapping.ur[locus], 'voi')
         if voicing:
-            return self.make_new_mapping(mapping, locus, voicing)
+            return [self.make_new_mapping(mapping, locus, voicing)]
         else:
             return []
 
@@ -240,9 +233,7 @@ class DeterministicGen(Gen):
 
         for item in [back, roundness, backround]:
             new_mappings.append(self.make_new_mapping(mapping, last_vowel, item))
-        #self.make_new_mapping(mapping, last_vowel, back)
-        #self.make_new_mapping(mapping, last_vowel, roundness)
-        #self.make_new_mapping(mapping, last_vowel, backround)
+        new_mappings = [mapping for mapping in new_mappings if mapping != []]
         return new_mappings
 
     def make_new_mapping(self, old_mapping, locus, features):
