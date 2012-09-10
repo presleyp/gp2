@@ -10,7 +10,7 @@ class FeatureDict:
         self.feature_names = None
         feature_indices = None
         with open(feature_chart, 'r') as fc:
-            fcd = csv.reader(fc)
+            fcd = csv.reader(fc, delimiter = '\t')
             first_line = fcd.next()
             segment = first_line.pop(0)
             self.feature_names = ['placeholder'] + first_line
@@ -62,6 +62,8 @@ class FeatureDict:
         none in the feature dictionary."""
         tiers = set()
         tier_names = ['voc', 'cons', 'strid']
+        #print self.get_feature_number('voc')
+        print self.feature_names
         for name in tier_names:
             try:
                 tiers.add(self.get_feature_number(name))
