@@ -73,7 +73,7 @@ class Gen:
         del self.non_boundaries['|']
 
     def make_faithful_cand(self, mapping):
-        if mapping.ur.all() != mapping.sr.all():
+        if (mapping.ur != mapping.sr).any():
             new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
             new_mapping.stem = copy.copy(mapping.stem)
             new_mapping.add_boundaries()
@@ -198,7 +198,13 @@ class DeterministicGen(Gen):
         mappings with all combinations of word-final voicing and of rounding and
         backness in the last vowel."""
         negatives = self.make_faithful_cand(mapping) + self.change_voicing(mapping) + self.change_vowels(mapping)
-        return list(set(negatives)) #uniquify
+        #unique_negatives = []
+        #for candidate in negatives:
+            #if candidate:
+                #if candidate not in unique_negatives:
+                    #unique_negatives.append(candidate)
+        #return unique_negatives
+        return negatives
 
     def change_voicing(self, mapping):
         """If the last segment of the grammatical candidate is specified for
