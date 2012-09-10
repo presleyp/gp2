@@ -42,13 +42,13 @@ class Mapping:
                     feature = changeparts.pop(1)
                     change.feature = self.feature_dict.get_feature_number(feature)
                     value = changeparts.pop(1)
-                    change.value = '+' if value == 1 else '-'
+                    change.value = '+' if value == '1' else '-'
                 except IndexError:
                     pass
                 change.make_set()
                 self.changes[i] = change
 
-    def in_stem(self, locus):
+    def in_stem(self, locus): #TODO check that <= not needed
         return True if self.stem[0] < locus < self.stem[1] else False
 
     def split(self, feature):
@@ -95,16 +95,13 @@ class Mapping:
 class Change:
     def __init__(self, feature_dict, change_type = 'change', feature = '', mapping = '', locus = ''):
         self.feature_dict = feature_dict
-        self.change_type = change_type
-        self.feature = ''
-        self.value = ''
         if feature:
             self.feature = numpy.absolute(feature)
             self.value = '+' if feature > 0 else '-'
             self.change_type = 'change'
         else:
-            self.feature = feature
-            self.value = feature
+            self.feature = ''
+            self.value = ''
             self.change_type = change_type
         self.stem = ''
         if mapping:

@@ -17,7 +17,7 @@ class FeatureDict:
             feature_indices = numpy.arange(1, len(first_line) + 1)
             for line in fcd:
                 segment = line.pop(0)
-                line = [int(item) for item in line]
+                line = [int(value) for value in line]
                 self.fd[segment] = set(numpy.array(line) * feature_indices)
                 self.fd[segment].discard(0)
         self.tiers = self.init_tiers()
