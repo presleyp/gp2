@@ -49,7 +49,7 @@ class Mapping:
                 self.changes[i] = change
 
     def in_stem(self, locus): #TODO check that <= not needed
-        return True if self.stem[0] < locus < self.stem[1] else False
+        return True if self.stem[0] <= locus < self.stem[1] else False
 
     def split(self, feature):
         if feature < 0:
