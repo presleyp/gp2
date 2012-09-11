@@ -497,7 +497,7 @@ if __name__ == '__main__':
         #for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
             #filename = time +  name + 'stem' + str(i) + 'tier' + str(j) + '.csv'
             #filename2 = time +  name + '_stem_tier.csv'
-            #matrix_to_csv(filename, matrix)
+            ##matrix_to_csv(filename, matrix)
             #matrix_to_dataframe(filename2, i, j, matrix)
         #del l
 
@@ -540,7 +540,7 @@ if __name__ == '__main__':
         for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
             filename = time + name + 'lr' + str(i) + 'induction' + str(j) + '.csv'
             filename2 = time + name + '_lr_induction.csv'
-            matrix_to_csv(filename, matrix)
+            #matrix_to_csv(filename, matrix)
             matrix_to_dataframe(filename2, i, j, matrix)
         del l
 

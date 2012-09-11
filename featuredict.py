@@ -62,8 +62,6 @@ class FeatureDict:
         none in the feature dictionary."""
         tiers = set()
         tier_names = ['voc', 'cons', 'strid']
-        #print self.get_feature_number('voc')
-        print self.feature_names
         for name in tier_names:
             try:
                 tiers.add(self.get_feature_number(name))

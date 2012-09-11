@@ -191,6 +191,8 @@ class DeterministicGen(Gen):
         mappings with all combinations of word-final voicing and of rounding and
         backness in the last vowel."""
         negatives = self.make_faithful_cand(mapping) + self.change_voicing(mapping) + self.change_vowels(mapping)
+        print self.change_voicing(mapping)
+        print negatives
         #unique_negatives = []
         #for candidate in negatives:
             #if candidate:
@@ -204,10 +206,12 @@ class DeterministicGen(Gen):
         voicing, generate a candidate in which it has the opposite voicing."""
         locus = len(mapping.sr) - 1
         voicing = self.find_feature_value(mapping.ur[locus], 'voi')
+        changed_voice = []
         if voicing:
-            return [self.make_new_mapping(mapping, locus, voicing)]
-        else:
-            return []
+            new_mapping = self.make_new_mapping(mapping, locus, voicing)
+            if new_mapping:
+                changed_voice = [new_mapping]
+        return changed_voice
 
     def find_feature_value(self, segment, feature): # returns a set
         feature_number = self.feature_dict.get_feature_number(feature)
