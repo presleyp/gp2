@@ -1,3 +1,5 @@
+import sys, csv, datetime, learner
+
 def matrix_to_dataframe(filename, i, j, matrix):
     with open(filename, 'a') as f:
         cwrite = csv.writer(f)
@@ -7,7 +9,7 @@ def matrix_to_dataframe(filename, i, j, matrix):
 
 def run_experiment(time, i, j):
     print 'experiment with ', i, ' and ', j
-    l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, gen_type = 'deterministic', learning_rate = i, induction_freq = j, stem = True, tier_freq = 0.25)
+    l = learner.Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4NoVHExceptions.csv', num_trainings = 5, gen_type = 'deterministic', learning_rate = i, induction_freq = j, stem = True, tier_freq = 0.25)
     outputs = l.test_performance(20)
     for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
         filename2 = time + name + '_lr_induction.csv'

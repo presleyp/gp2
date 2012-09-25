@@ -191,8 +191,6 @@ class DeterministicGen(Gen):
         mappings with all combinations of word-final voicing and of rounding and
         backness in the last vowel."""
         negatives = self.make_faithful_cand(mapping) + self.change_voicing(mapping) + self.change_vowels(mapping)
-        print self.change_voicing(mapping)
-        print negatives
         #unique_negatives = []
         #for candidate in negatives:
             #if candidate:
