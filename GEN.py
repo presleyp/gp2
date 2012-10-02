@@ -190,7 +190,8 @@ class DeterministicGen(Gen):
         """Given a grammatical input-output mapping, create ungrammatical
         mappings with all combinations of word-final voicing and of rounding and
         backness in the last vowel."""
-        negatives = self.make_faithful_cand(mapping) + self.change_voicing(mapping) + self.change_vowels(mapping)
+	changed_voice = self.change_voicing(mapping)
+        negatives = self.make_faithful_cand(mapping) + changed_voice + self.change_vowels(mapping) + self.change_vowels(changed_voice)
         #unique_negatives = []
         #for candidate in negatives:
             #if candidate:
