@@ -21,7 +21,7 @@ class Input:
             self.allinputs = cPickle.load(saved_file)
             print 'read from file'
         except (IOError, AssertionError):
-            self.allinputs = self.make_input(input_file) #FIXME something goes wrong here, it gets no further
+            self.allinputs = self.make_input(input_file)
             saved_file = open('save-' + input_file, 'wb')
             cPickle.dump(self.allinputs, saved_file)
         finally:
@@ -135,15 +135,6 @@ class RandomGen(Gen):
             moved_left_features = [''.join([2, f]) for f in self.major_features(moved_left)]
             mapping.changes.add(frozenset('metathesize', self.major_features(moved_right), moved_left_features))
 
-    # I want to change feature values rather than change from one segment to
-    # another so that the probability of changing from t to d is higher than the
-    # probability of changing from t to m. But this means it's
-    # possible to change to a set of feature values that maps to no
-    # segment. I could allow this and manage the segmental inventory with
-    # unigram constraints, but it seems odd to allow segments that aren't even
-    # physically possible. So I'll at least filter those out (and pretend
-    # phonetics is doing it, perhaps); for now I'll also filter out segments not
-    # in the inventory, but in the future it's may be better to change that.
     def change_feature_value(self, mapping):
         """Map a ur to an sr with one segment changed. Prefers fewer feature
         changes, but will only map to segments that are in the inventory. Each
@@ -192,12 +183,6 @@ class DeterministicGen(Gen):
         backness in the last vowel."""
 	changed_voice = self.change_voicing(mapping)
         negatives = self.make_faithful_cand(mapping) + changed_voice + self.change_vowels(mapping) + self.change_vowels(changed_voice)
-        #unique_negatives = []
-        #for candidate in negatives:
-            #if candidate:
-                #if candidate not in unique_negatives:
-                    #unique_negatives.append(candidate)
-        #return unique_negatives
         return negatives
 
     def change_voicing(self, mapping):

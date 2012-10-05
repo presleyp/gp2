@@ -4,7 +4,7 @@ import numpy, random, copy
 class Con:
     def __init__(self, feature_dict, tier_freq, aligned, stem):
         self.constraints = []
-        self.weights = numpy.array([0]) # intercept weight
+        self.weights = numpy.array([0])
         self.feature_dict = feature_dict
         self.tier_freq = tier_freq
         self.aligned = aligned
@@ -15,7 +15,6 @@ class Con:
         """Makes one new markedness and one new faithfulness constraint
         and initializes their weights, unless appropriate constraints
         cannot be found within 15 tries."""
-        #print self.i
         assert len(self.weights) == len(self.constraints) + 1
         if random.random() < .5:
             self.make_constraint(Faithfulness, winners, self.feature_dict, self.stem)
@@ -30,7 +29,6 @@ class Con:
         for _ in range(10):
             new_constraint = constraint_type(*args)
             if new_constraint.constraint == None:
-                #break
                 continue
             duplicate = False
             for constraint in self.constraints:
@@ -147,7 +145,7 @@ class Markedness:
         ngram = self.dontcares(ngram)
         self.constraint = ngram
 
-    def get_tier(self, winner): #TODO ask if all kinds of tiers should be searched over
+    def get_tier(self, winner):
         """Returns a list of the segments in a word that are positive for a certain
         feature. Features currently supported are vocalic, consonantal, nasal, and strident."""
         if not self.tier: #if creating the constraint, not getting violations
@@ -256,7 +254,7 @@ class Faithfulness:
         assert type(self.base) == list
         random.shuffle(self.base)
         for change in self.base:
-            if self.base.count(change) > self.other.count(change): #FIXME will this work?
+            if self.base.count(change) > self.other.count(change):
                 #print self.base.count(change), self.other.count(change)
                 #print winners[1].changes, winners[0].changes
                 self.constraint = change

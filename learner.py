@@ -1,38 +1,16 @@
 #!/usr/bin/env python
-import copy, numpy, random, datetime, csv
+import copy, numpy, random, datetime
 import matplotlib.pyplot as pyplot
-#from mapping import Mapping, Change, ChangeNoStem
 from featuredict import FeatureDict
-from GEN import Input#, Gen, DeterministicGen
-from CON import Con#, Markedness, MarkednessAligned, Faithfulness
+from GEN import Input
+from CON import Con
 from matplotlib.backends.backend_pdf import PdfPages
-#TODO make non_boundaries dict in FeatureDict and make it read "boundary" from feature names
-#TODO Faithfulness: delete a change that's being reversed?
-#TODO time random.sample vs numpy.random.sample
-#TODO copy problem in diff_ngrams
-# keep in mind: tiers can mess up alignment
-
-#TODO think about using losers to help guide constraint induction. if you make a constraint, you want it to privilege cw over gw, but you
-# also want cw to win over losers. could this help?
-#TODO look at Jason Riggle's GEN and think about using CON to make GEN.
-
-#TODO thanks to Gaja: maybe randomly choose between inducing markedness and faithfulness,
-# start by making general constraints, save the most specified version of it,
-# when making the same or the opposite, compare to most specified version and
-# figure out how to make it more specific in a helpful way. most specified
-# version should probably include 1 segment on either side.
 
 #Profiler:
 # import cProfile, learner, pstats
 # cProfile.run("learner.Learn('feature_chart4.csv', ['input5.csv'], processes = '[self.change_feature_value]')", 'learnerprofile.txt')
 # p = pstats.Stats('learnerprofile.txt')
 # p.sort_stats('cumulative').print_stats(30)
-
-# tests:
-    # different tier frequencies
-    # with and without stem constraints
-    # with and without zipfian distribution in constraint making
-    # random gen vs deterministic gen
 
 class HGGLA:
     def __init__(self, feature_dict, learning_rate, aligned, stem, tier_freq, induction_freq):
@@ -396,4 +374,4 @@ class CrossValidate(Learn):
     #localpath = os.getcwd() + '/' + '/'.join(sys.argv[0].split('/')[:-1]) #don't use
 #    localpath = '/'.join(sys.argv[0].split('/')[:-1])
 #    os.chdir(localpath)
-   
+

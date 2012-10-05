@@ -64,7 +64,6 @@ class Mapping:
 
     def __eq__(self, other):
         if len(self.sr) != len(other.sr):
-            #print 'self', self, 'other', other
             return False
         return numpy.equal(self.sr, other.sr).all()
 
@@ -119,7 +118,7 @@ class Change:
         feature = self.feature_dict.get_feature_name(self.feature)
         stem = self.stem if self.stem in self.set else ''
         value = self.value if self.value in self.set else ''
-        return ''.join([change_type, ' ', stem, ' ', value, feature]) # TODO fix so I don't get double spaces
+        return ''.join([change_type, ' ', stem, ' ', value, feature])
 
     def __eq__(self, other):
         if other == None:
@@ -141,8 +140,3 @@ class Change:
 
     def add(self, other):
         self.set.add(other)
-
-#class ChangeNoStem(Change):
-    #def make_set(self):
-        #self.set = set([self.change_type, self.feature, self.value])
-        #self.set.discard('')
