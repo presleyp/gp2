@@ -2,37 +2,34 @@ import numpy, random, copy
 #TODO privilege constraints where grams have same features, maybe also where values are the same
 
 class Con:
-    def __init__(self, feature_dict, tier_freq, aligned):
+    def __init__(self, feature_dict, tier_freq, aligned, stem):
         self.constraints = []
-        self.weights = numpy.array([0]) # intercept weight
+        self.weights = numpy.array([0])
         self.feature_dict = feature_dict
         self.tier_freq = tier_freq
         self.aligned = aligned
+        self.stem = stem
         self.i = 0
 
     def induce(self, winners):
         """Makes one new markedness and one new faithfulness constraint
         and initializes their weights, unless appropriate constraints
         cannot be found within 15 tries."""
-        #print self.i
         assert len(self.weights) == len(self.constraints) + 1
         if random.random() < .5:
-            self.make_constraint(Faithfulness, winners, self.feature_dict)
+            self.make_constraint(Faithfulness, winners, self.feature_dict, self.stem)
+        elif self.aligned:
+            self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
         else:
-            if self.aligned:
-                self.make_constraint(MarkednessAligned, self.feature_dict, self.tier_freq, winners)
-            else:
-                self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
+            self.make_constraint(Markedness, self.feature_dict, self.tier_freq, winners)
         assert len(self.weights) == len(self.constraints) + 1
         self.i += 1
 
     def make_constraint(self, constraint_type, *args):
-        i = 0
-        while i < 10:
+        for _ in range(10):
             new_constraint = constraint_type(*args)
-            i += 1
             if new_constraint.constraint == None:
-                break
+                continue
             duplicate = False
             for constraint in self.constraints:
                 if new_constraint == constraint:
@@ -59,7 +56,6 @@ class Markedness:
         winners = [winner.sr for winner in winners]
         self.constraint = None
         self.feature_dict = feature_dict
-        #self.num_features = self.feature_dict.num_features
         self.tier_freq = tier_freq
         self.tier = None
         winners = self.decide_tier(winners)
@@ -149,7 +145,7 @@ class Markedness:
         ngram = self.dontcares(ngram)
         self.constraint = ngram
 
-    def get_tier(self, winner): #TODO ask if all kinds of tiers should be searched over
+    def get_tier(self, winner):
         """Returns a list of the segments in a word that are positive for a certain
         feature. Features currently supported are vocalic, consonantal, nasal, and strident."""
         if not self.tier: #if creating the constraint, not getting violations
@@ -176,7 +172,7 @@ class MarkednessAligned(Markedness):
         at random. Does not allow the protected feature to become a
         don't-care."""
         (base, difference) = self.coinflip(winners)
-        assert difference.any(), 'duplicates'
+        #assert difference.any(), 'duplicates'
         protected_segment = random.choice(numpy.where(difference)[0])
         protected_feature = random.sample(difference[protected_segment], 1)[0]
         # pick ngram
@@ -213,18 +209,12 @@ class MarkednessAligned(Markedness):
         from the computed winner and will assign violations. Return the winner
         the constraint will be made from,
         and the difference between it and the other winner."""
-        if numpy.random.randint(0,2) == 1:
+        if numpy.random.randint(0, 2) == 1:
             self.violation = 1
             return (winners[0], winners[0] - winners[1])
         else:
             self.violation = -1
             return (winners[1], winners[1] - winners[0])
-
-    def polarity(self, input):
-        if input < 0:
-            return '-'
-        else:
-            return '+'
 
     def __eq__(self, other):
         if isinstance(other, Faithfulness):
@@ -237,38 +227,43 @@ class MarkednessAligned(Markedness):
             return (numpy.equal(self.constraint, other.constraint)).all()
 
     def __str__(self):
-        polarity = '+' if self.violation else '-'
+        sign = polarity(self.violation)
         segments = []
         for segment in self.constraint:
             #natural_class = [k for k, v in self.feature_dict.fd.iteritems() if segment <= v]
-            natural_class = [self.polarity(feature) +
+            natural_class = [polarity(feature) +
                              self.feature_dict.get_feature_name(feature) for
                              feature in segment]
             natural_class = ''.join(['{', ','.join(natural_class), '}'])
             segments.append(natural_class)
         if self.tier:
-            return ''.join([self.feature_dict.get_feature_name(self.tier), ' tier ', polarity, str(segments)])
+            return ''.join([self.feature_dict.get_feature_name(self.tier), ' tier ', sign, str(segments)])
         else:
-            return ''.join([self.polarity(self.violation)] + [segment for segment in segments])
+            return ''.join([sign] + [segment for segment in segments])
 
 class Faithfulness:
-    def __init__(self, winners, feature_dict):
+    def __init__(self, winners, feature_dict, stem):
         """Find a change that exists in only one winner. Abstract away from some
         of its feature values, but not so much that it becomes equivalent to a
         change in the other winner. Make this a faithfulness constraint."""
         self.feature_dict = feature_dict
+        self.stem = stem
         self.constraint = None
         self.base = copy.deepcopy(winners[1].changes)
         self.other = winners[0].changes
         assert type(self.base) == list
         random.shuffle(self.base)
         for change in self.base:
-            if self.base.count(change) > self.other.count(change): #FIXME will this work?
+            if self.base.count(change) > self.other.count(change):
                 #print self.base.count(change), self.other.count(change)
                 #print winners[1].changes, winners[0].changes
                 self.constraint = change
-                for item in [change.value, change.stem]:
-                    self.remove_specific(change, item, winners)
+                if not self.stem:
+                    self.constraint.discard('stem')
+                    self.remove_specific(change, change.value, winners)
+                else:
+                    for item in [change.value, change.stem]:
+                        self.remove_specific(change, item, winners)
                 break
 
     def remove_specific(self, change, item, winners):
@@ -306,3 +301,5 @@ class Faithfulness:
         self.constraint.context = 'faith'
         return str(self.constraint)
 
+def polarity(number):
+    return '-' if number < 0 else '+'

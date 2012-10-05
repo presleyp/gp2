@@ -1,26 +1,10 @@
 #!/usr/bin/env python
 import copy, numpy, random, datetime, csv
 import matplotlib.pyplot as pyplot
-#from mapping import Mapping, Change, ChangeNoStem
 from featuredict import FeatureDict
-from GEN import Input#, Gen, DeterministicGen
-from CON import Con#, Markedness, MarkednessAligned, Faithfulness
+from GEN import Input
+from CON import Con
 from matplotlib.backends.backend_pdf import PdfPages
-#TODO make non_boundaries dict in FeatureDict and make it read "boundary" from feature names
-#TODO Faithfulness: delete a change that's being reversed?
-#TODO time random.sample vs numpy.random.sample
-#TODO copy problem in diff_ngrams
-# keep in mind: tiers can mess up alignment
-
-#TODO think about using losers to help guide constraint induction. if you make a constraint, you want it to privilege cw over gw, but you
-# also want cw to win over losers. could this help?
-#TODO look at Jason Riggle's GEN and think about using CON to make GEN.
-
-#TODO thanks to Gaja: maybe randomly choose between inducing markedness and faithfulness,
-# start by making general constraints, save the most specified version of it,
-# when making the same or the opposite, compare to most specified version and
-# figure out how to make it more specific in a helpful way. most specified
-# version should probably include 1 segment on either side.
 
 #Profiler:
 # import cProfile, learner, pstats
@@ -28,20 +12,14 @@ from matplotlib.backends.backend_pdf import PdfPages
 # p = pstats.Stats('learnerprofile.txt')
 # p.sort_stats('cumulative').print_stats(30)
 
-# tests:
-    # different tier frequencies
-    # with and without stem constraints
-    # with and without zipfian distribution in constraint making
-    # random gen vs deterministic gen
-
 class HGGLA:
-    def __init__(self, feature_dict, learning_rate, aligned, tier_freq, induction_freq):
+    def __init__(self, feature_dict, learning_rate, aligned, stem, tier_freq, induction_freq):
         """Takes processed input and learns on it one tableau at a time.
         The constraints are updated by the difference in violation vectors
         between the computed winner and the desired winner,
         multiplied by the learning rate."""
         self.learning_rate = learning_rate
-        self.con = Con(feature_dict, tier_freq, aligned)
+        self.con = Con(feature_dict, tier_freq, aligned, stem)
         self.induction_freq = induction_freq
 
     def evaluate(self, tableau):
@@ -113,28 +91,34 @@ class Learn:
     def __init__(self, feature_chart, input_file, remake_input = False,
                  num_negatives = 15, max_changes = 5, processes =
                  '[self.change_feature_value]', #'[self.delete, self.metathesize, self.change_feature_value, self.epenthesize]',
-                 epenthetics = ['e', '?'], stem = True, gen_type = 'random',
+                 epenthetics = ['e', '?'], gen_type = 'random',
                  learning_rate = 0.1, num_trainings = 5, aligned = True,
-                 tier_freq = .25, induction_freq = .1):
+                 tier_freq = .25, induction_freq = .1, stem = False,
+                 constraint_parts = ['voi', '+word', 'round', 'back']):
         # parameters
         feature_dict = FeatureDict(feature_chart)
-        self.input_args = {'feature_dict': feature_dict, 'input_file':
-                           input_file, 'remake_input': remake_input,
-                           'num_negatives': num_negatives, 'max_changes':
-                           max_changes, 'processes': processes, 'epenthetics':
-                           epenthetics, 'stem': stem, 'gen_type': gen_type}
-        self.algorithm_args = {'feature_dict': feature_dict, 'learning_rate':
-                               learning_rate, 'aligned': aligned, 'tier_freq': tier_freq,
+        self.input_args = {'feature_dict': feature_dict,
+                           'input_file': input_file,
+                           'remake_input': remake_input,
+                           'gen_type': gen_type}
+        if gen_type == 'random':
+            self.input_args['gen_args'] = [num_negatives, max_changes, processes, epenthetics]
+        self.algorithm_args = {'feature_dict': feature_dict,
+                               'learning_rate': learning_rate,
+                               'aligned': aligned,
+                               'stem': stem,
+                               'tier_freq': tier_freq,
                                'induction_freq': induction_freq}
         self.num_trainings = num_trainings
 
         # input data
         self.all_input = None
-        self.train_input = None
-        self.test_input = None
+        self.train_input = []
+        self.test_input = []
 
         # output data
-        time = str(datetime.datetime.now())
+        time = datetime.datetime.now()
+        time = time.strftime('%Y-%m-%d-%H:%M:%S')
         self.figs = PdfPages('Output-' + time + '.pdf')
         self.report = 'Output-' + time + '.txt'
         self.training_errors = []
@@ -181,8 +165,6 @@ class Learn:
     def run(self, i):
         """Initialize HGGLA and do all training and testing iterations for this run."""
         self.alg = HGGLA(**self.algorithm_args)
-        if i:
-            self.refresh()
         for log in [self.training_errors, self.num_constraints, self.testing_errors]:
             log.append([])
             assert log[i] == []
@@ -215,12 +197,58 @@ class Learn:
                              str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
         return float(len(errors))/float(len(self.test_input))
 
+    def test_parameter(self, parameter, values):
+        """If parameter is an input parameter, redo input for each value of the
+        parameter. If parameter is an algorithm parameter, make and divide the
+        input once, and then run the algorithm with each value of the
+        parameter."""
+        if parameter in self.input_args:
+            for i, value in enumerate(values):
+                print 'run ', i
+                self.input_args[parameter] = value
+                self.remake_input = True
+                self.make_input()
+                self.divide_input()
+                with open(self.report, 'a') as f:
+                    f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
+                self.run(i)
+        elif parameter in self.algorithm_args:
+            self.make_input()
+            self.divide_input()
+            for i, value in enumerate(values):
+                print 'run ', i
+                self.algorithm_args[parameter] = value
+                with open(self.report, 'a') as f:
+                    f.write(' '.join(['\n\n\n--------', parameter, '=', str(value), '--------']))
+                self.run(i)
+        else:
+            raise AssertionError, 'Update parameter lists.'
+        print 'tested ', parameter, 'on ', values
+        print 'error percentage on last test of each run', [run[-1] for run in self.testing_errors]
+        print 'number of constraints', [run[-1] for run in self.num_constraints]
+        self.plot_errors(parameter = parameter, values = values)
+        self.figs.close()
+        self.all_input = None
+        self.train_input = None
+        self.test_input = None
+        return (self.training_errors, self.testing_errors, self.num_constraints)
+
     def test_performance(self, num_runs = 5):
         """Make the input once, and then run several times with a new division
         into training and testing sets each time. Get average accuracy
         values."""
         self.make_input()
+        #self.training_errors = []
+        #self.testing_errors = []
+        #self.num_constraints = []
+        #time = datetime.datetime.now()
+        #time = time.strftime('%Y-%m-%d-%H:%M:%S')
+        #self.figs = PdfPages('Output-' + time + '.pdf')
+        #self.report = 'Output-' + time + '.txt'
         for i in range(num_runs):
+            if i:
+                self.refresh()
+            print 'run ', i
             self.divide_input()
             with open(self.report, 'a') as f:
                 f.write('\n\n\n--------Run ' + str(i) + '--------')
@@ -232,6 +260,10 @@ class Learn:
                                           self.num_constraints])
         self.plot_errors()
         self.figs.close()
+        self.all_input = None
+        self.train_input = None
+        self.test_input = None
+        return (self.training_errors, self.testing_errors, self.num_constraints)
 
     def plot_constraints(self):
         """Plot the 20 highest weighted constraints and write all of them to a
@@ -292,57 +324,52 @@ class Learn:
             self.figs.savefig()
             pyplot.clf()
 
-if __name__ == '__main__':
-    import os
-    import sys
+    def check_constraints(self):
+        constraints_found = []
+        for line in self.constraint_lines:
+            for part in self.constraint_parts:
+                if part in line:
+                    constraints_found.append(line)
+                    break
+        with open(self.report, 'a') as f:
+            f.write('\n\nConstraints With Expected Features\n' + '\n'.join(constraints_found))
+
+class CrossValidate(Learn):
+    """Train the algorithm on every possible set of all but one data point
+    and test on the leftover data point.
+    Look at the average accuracy across tests."""
+
+    def run_HGGLA(self, inputs):
+        tableaux = self.make_tableaux(inputs)
+        for i, tableau in enumerate(tableaux):
+            self.refresh_input(tableaux)
+            self.refresh_con()
+            assert self.alg.con.constraints == []
+            training_set = tableaux[:i] + tableaux[i + 1:]
+            for i in range(self.num_trainings):
+                errors = self.alg.train(training_set)
+                self.training_errors.append(sum(errors))
+            # test
+            desired = None
+            test_tableau = []
+            for mapping in tableau:
+                if mapping.grammatical:
+                    desired = mapping.sr
+                map_copy = copy.deepcopy(mapping)
+                map_copy.grammatical = 'test'
+                test_tableau.append(map_copy)
+            for m in test_tableau:
+                assert m.harmony == None
+                assert m.violations == numpy.array([1])
+            if self.alg.test(test_tableau).sr == desired:
+                self.accuracy.append(1)
+            else:
+                self.accuracy.append(0)
+
+#if __name__ == '__main__':
+#    import os
+#    import sys
     #localpath = os.getcwd() + '/' + '/'.join(sys.argv[0].split('/')[:-1]) #don't use
-    localpath = '/'.join(sys.argv[0].split('/')[:-1])
-    os.chdir(localpath)
-    #learner = Learn('feature_chart4.csv', 'input6.csv', processes = '[self.change_feature_value]', max_changes = 5, num_negatives = 20, induction_freq = .5)
-    #learner = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv', num_trainings = 5, learning_rate = .1,
-                         #max_changes = 5, num_negatives = 15, tier_freq = 0, processes = '[self.change_feature_value]')
-    #TurkishInput2 has the ~ inputs taken out, the variable inputs taken out, and deletion taken out.
-    #TurkishInput1 is the same but deletion is still in.
-    #same pattern for test files
-    #TurkishInput3 is TurkishInput2 plus TurkishTest2
-    #TurkishInput4 is TurkishInput3 with all underlying suffix vowels changed to i, and appropriate changes added.
-    #learner.test_performance(2)
-    #learner.test_parameter('self.learning_rate', [.01, .05, .1, .2, .3, .4, .5])
-    #learner.test_parameter('self.induction_freq', [0, .1, .2, .3, .4, .5, .6, .7, .8])
-    #learner.test_parameter('self.max_changes', [2, 5, 10])
-    #learner.test_parameter('tier_freq', [0, .1, .2, .3, .4, .5])
-
-    def matrix_to_dataframe(filename, i, j, matrix):
-        with open(filename, 'a') as f:
-            cwrite = csv.writer(f)
-            #cwrite.writerow([name, 'stem', 'tier', 'Iteration'])
-            for row in matrix:
-                for k, number in enumerate(row):
-                    cwrite.writerow([number, i, j, k])
-
-    def run_experiment(time, i, j):
-        print 'experiment with ', i, ' and ', j
-        l = Learn('TurkishFeaturesWithNA.csv', 'TurkishInput4.csv',
-                  induction_freq = .7, learning_rate = .3, gen_type =
-                  'deterministic', num_trainings = 5, stem = i, tier_freq = j)
-        outputs = l.test_performance(20)
-        for (name, matrix) in zip(['training ', 'testing ', 'constraints '], outputs):
-            filename = time +  name + 'stem' + str(i) + 'tier' + str(j) + '.csv'
-            filename2 = time +  name + '_stem_tier.csv'
-            #matrix_to_csv(filename, matrix)
-            matrix_to_dataframe(filename2, i, j, matrix)
-        del l
-
-    time = datetime.datetime.now()
-    time = time.strftime('%Y-%m-%d-%H:%M:%S')
-    if len(sys.argv) < 3:
-        for i in [False, True]:
-            for j in [0, .25, .5]:
-                run_experiment(time, i, j)
-    else:
-        i = False
-        if sys.argv[1].lower() == "true":
-            i = True
-        j = float(sys.argv[2])
-        run_experiment(time, i, j)
+#    localpath = '/'.join(sys.argv[0].split('/')[:-1])
+#    os.chdir(localpath)
 

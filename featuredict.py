@@ -10,26 +10,22 @@ class FeatureDict:
         self.feature_names = None
         feature_indices = None
         with open(feature_chart, 'r') as fc:
-            fcd = csv.reader(fc)
-            for i, line in enumerate(fcd):
+            fcd = csv.reader(fc, delimiter = '\t')
+            first_line = fcd.next()
+            segment = first_line.pop(0)
+            self.feature_names = ['placeholder'] + first_line
+            feature_indices = numpy.arange(1, len(first_line) + 1)
+            for line in fcd:
                 segment = line.pop(0)
-                if i == 0:
-                    self.feature_names = ['placeholder'] + line #this way, indices of feature names are the numbers I assign to them, which don't include 0
-                    feature_indices = numpy.arange(1, len(line) + 1)
-                if i > 0:
-                    line = [int(item) for item in line]
-                    self.fd[segment] = set(numpy.array(line) * feature_indices)
-                    self.fd[segment].discard(0)
+                line = [int(value) for value in line]
+                self.fd[segment] = set(numpy.array(line) * feature_indices)
+                self.fd[segment].discard(0)
         self.tiers = self.init_tiers()
 
     def get_feature_number(self, feature_name):
         return self.feature_names.index(feature_name)
 
     def get_feature_name(self, feature_number):
-        try:
-            numpy.absolute(feature_number)
-        except:
-            print feature_number, type(feature_number)
         return self.feature_names[numpy.absolute(feature_number)]
 
     def get_features_seg(self, segment):
@@ -53,24 +49,23 @@ class FeatureDict:
     def major_features(self, featureset):
         """Select only the first three features. These should be vocalic,
         consonantal, and sonorant."""
-        features = copy.copy(featureset)
-        majors = features & set([1,2,3,-1,-2,-3])
-        major_features = set()
-        for feature in major_features:
-            major_features |= float(feature)
-        return major_features
+        majors = []
+        for feature in ['voc', 'cons', 'son']:
+            number = self.get_feature_number(feature)
+            majors.add(number)
+            majors.add(-number)
+        return featureset & set(majors)
 
     def init_tiers(self):
         """Build a list of feature indices for the features that can have tiers
         and that are in the feature dictionary. Raises an error if there are
         none in the feature dictionary."""
         tiers = set()
-        tier_names = ['voc', 'cons', 'nas', 'strid']
+        tier_names = ['voc', 'cons', 'strid']
         for name in tier_names:
             try:
                 tiers.add(self.get_feature_number(name))
             except ValueError:
-                pass
+                continue
         assert len(tiers) > 0, "feature chart doesn't support tiers"
         return tiers
-

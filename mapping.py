@@ -41,14 +41,15 @@ class Mapping:
                 try:
                     feature = changeparts.pop(1)
                     change.feature = self.feature_dict.get_feature_number(feature)
-                    change.value = changeparts.pop(1)
+                    value = changeparts.pop(1)
+                    change.value = '+' if value == '1' else '-'
                 except IndexError:
                     pass
                 change.make_set()
                 self.changes[i] = change
 
-    def in_stem(self, locus):
-        return True if self.stem[0] < locus < self.stem[1] else False
+    def in_stem(self, locus): #TODO check that <= not needed
+        return True if self.stem[0] <= locus < self.stem[1] else False
 
     def split(self, feature):
         if feature < 0:
@@ -63,8 +64,15 @@ class Mapping:
 
     def __eq__(self, other):
         if len(self.sr) != len(other.sr):
-            print 'self', self, 'other', other
+            return False
         return numpy.equal(self.sr, other.sr).all()
+
+#FIXME i want to affect how if mapping in collection is done
+    #def __contains__(self, collection):
+        #for item in collection:
+            #if self == item:
+                #return True
+        #return False
 
     def __str__(self):
         ur = ''.join(self.feature_dict.get_segments(self.ur))
@@ -86,16 +94,13 @@ class Mapping:
 class Change:
     def __init__(self, feature_dict, change_type = 'change', feature = '', mapping = '', locus = ''):
         self.feature_dict = feature_dict
-        self.change_type = change_type
-        self.feature = ''
-        self.value = ''
         if feature:
             self.feature = numpy.absolute(feature)
             self.value = '+' if feature > 0 else '-'
             self.change_type = 'change'
         else:
-            self.feature = feature
-            self.value = feature
+            self.feature = ''
+            self.value = ''
             self.change_type = change_type
         self.stem = ''
         if mapping:
@@ -113,7 +118,7 @@ class Change:
         feature = self.feature_dict.get_feature_name(self.feature)
         stem = self.stem if self.stem in self.set else ''
         value = self.value if self.value in self.set else ''
-        return ''.join([change_type, ' ', stem, ' ', value, feature]) # TODO fix so I don't get double spaces
+        return ''.join([change_type, ' ', stem, ' ', value, feature])
 
     def __eq__(self, other):
         if other == None:
@@ -135,8 +140,3 @@ class Change:
 
     def add(self, other):
         self.set.add(other)
-
-class ChangeNoStem(Change):
-    def make_set(self):
-        self.set = set([self.change_type, self.feature, self.value])
-        self.set.discard('')
