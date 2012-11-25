@@ -22,7 +22,8 @@ if len(sys.argv) < 3:
         for j in [0.1, 0.5, 0.9]:
             run_experiment(time, i, j)
 else:
-    i = True if sys.argv[1].lower() == 'true' else False
+    #i = True if sys.argv[1].lower() == 'true' else False
+    i = float(sys.argv[1])
     j = float(sys.argv[2])
     run_experiment(time, i, j)
 

@@ -30,7 +30,7 @@ faithfulword.to_data()
 dgen = DeterministicGen(fd)
 with open('TurkishInput4.csv', 'r') as f:
     lines = csv.reader(f)
-    for line in list(lines)[1100:1101]:
+    for line in list(lines)[101:102]:
         print line
         word = Mapping(fd, line)
         word.to_data()

@@ -258,12 +258,10 @@ class Faithfulness:
                 #print self.base.count(change), self.other.count(change)
                 #print winners[1].changes, winners[0].changes
                 self.constraint = change
-                if not self.stem:
+                #if not self.stem:
+                if numpy.random.random() > self.stem:
                     self.constraint.discard('stem')
-                    self.remove_specific(change, change.value, winners)
-                else:
-                    for item in [change.value, change.stem]:
-                        self.remove_specific(change, item, winners)
+                self.remove_specific(change, change.value, winners)
                 break
 
     def remove_specific(self, change, item, winners):
