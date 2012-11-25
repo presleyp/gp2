@@ -58,9 +58,12 @@ class Mapping:
             return ['+', feature]
 
     def add_boundaries(self):
+	'''Adds | feature set to both ends of ur and sr if it's not
+        already there.'''
         boundary = self.feature_dict.get_features_seg('|')
-        self.ur = numpy.hstack((boundary, self.ur, boundary))
-        self.sr = numpy.hstack((boundary, self.sr, boundary))
+	if boundary != self.ur[0]:
+	    self.ur = numpy.hstack((boundary, self.ur, boundary))
+            self.sr = numpy.hstack((boundary, self.sr, boundary))
 
     def __eq__(self, other):
         if len(self.sr) != len(other.sr):

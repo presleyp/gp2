@@ -178,54 +178,56 @@ class RandomGen(Gen):
 class DeterministicGen(Gen):
     """Generates candidates that test the processes found in my Turkish corpus."""
     def ungrammaticalize(self, mapping):
-        """Given a grammatical input-output mapping, create ungrammatical
-        mappings with all combinations of word-final voicing and of rounding and
-        backness in the last vowel."""
-	changed_voice = self.change_voicing(mapping)
-        negatives = self.make_faithful_cand(mapping) + changed_voice + self.change_vowels(mapping) + self.change_vowels(changed_voice)
-        return negatives
+        changed_voice = self.change_voicing(mapping)
+        changed_vowels = self.change_vowels(mapping)
+        changed_both = [self.change_vowels(mapping, base = 'sr')
+            for mapping in changed_voice]
+        changed_both_flat = [m for alist in changed_both
+                for m in alist]
+        changed_mappings = changed_voice + changed_vowels + changed_both_flat
+        faithful_cand = self.make_faithful_cand(mapping)
+        false_mappings = changed_mappings + faithful_cand
+        assert faithful_cand == [] or false_mappings.count(faithful_cand[0]) <= 1
+        false_mappings = [m for m in false_mappings if m != mapping]
+        return false_mappings
 
-    def change_voicing(self, mapping):
-        """If the last segment of the grammatical candidate is specified for
-        voicing, generate a candidate in which it has the opposite voicing."""
-        locus = len(mapping.sr) - 1
-        voicing = self.find_feature_value(mapping.ur[locus], 'voi')
-        changed_voice = []
-        if voicing:
-            new_mapping = self.make_new_mapping(mapping, locus, voicing)
-            if new_mapping:
-                changed_voice = [new_mapping]
-        return changed_voice
+    def change_voicing(self, mapping, base = 'ur'):
+        original = mapping.ur if base == 'ur' else mapping.sr
+        voicing = self.feature_dict.get_feature_number('voi')
+        voiced_indices = [i for (i, segment) in enumerate(original) if voicing in segment]
+        devoiced = self.make_new_mappings(mapping, voiced_indices, set([voicing]), original)
+        voiceless_indices = [i for (i, segment) in enumerate(original) if -voicing in segment]
+        voice_added = self.make_new_mappings(mapping, voiceless_indices, set([-voicing]), original)
+        new_mappings = devoiced + voice_added
+        return new_mappings
+
+    def change_vowels(self, mapping, base = 'ur'):
+        vocalic = self.feature_dict.get_feature_number('voc')
+        original = mapping.ur if base == 'ur' else mapping.sr
+        vowel_indices = [i for (i, segment) in enumerate(original) if vocalic in segment]
+        new_mappings = []
+        for i in vowel_indices:
+            back = self.find_feature_value(mapping.ur[i], 'back')
+            roundness = self.find_feature_value(mapping.ur[i], 'round')
+            backround = back | roundness
+            new_mappings += [self.make_new_mapping(mapping, i, item, base = original)
+                            for item in [back, roundness, backround]]
+        new_mappings = [m for m in new_mappings if m]
+        return new_mappings
 
     def find_feature_value(self, segment, feature): # returns a set
         feature_number = self.feature_dict.get_feature_number(feature)
         return segment & set([feature_number, -feature_number])
 
-    def change_vowels(self, mapping):
-        """Generate candidates in which the last vowel of the word has all
-        possible combinations of backness and rounding besides the one in the
-        grammatical candidate."""
-        new_mappings = []
-        vocalic = self.feature_dict.get_feature_number('voc')
-        last_vowel = None
-        ur_range = range(len(mapping.ur))
-        ur_range.reverse()
-        for i in ur_range:
-            if vocalic in mapping.ur[i]:
-                last_vowel = i
-                break
 
-        back = self.find_feature_value(mapping.ur[last_vowel], 'back')
-        roundness = self.find_feature_value(mapping.ur[last_vowel], 'round')
-        backround = back | roundness
+    def make_new_mappings(self, old_mapping, loci, features, base):
+        new_mappings = [self.make_new_mapping(old_mapping, locus, features, base)
+                        for locus in loci]
+        real_mappings = [m for m in new_mappings if m]
+        return real_mappings
 
-        for item in [back, roundness, backround]:
-            new_mappings.append(self.make_new_mapping(mapping, last_vowel, item))
-        new_mappings = [mapping for mapping in new_mappings if mapping != []]
-        return new_mappings
-
-    def make_new_mapping(self, old_mapping, locus, features):
-        new_sr = copy.deepcopy(old_mapping.ur)
+    def make_new_mapping(self, old_mapping, locus, features, base):
+        new_sr = copy.deepcopy(base)
         new_sr[locus] -= features
         for feature in features:
             new_sr[locus].add(-feature)
@@ -234,17 +236,16 @@ class DeterministicGen(Gen):
         except IndexError:
             return []
         new_mapping = Mapping(self.feature_dict, [False,
-                                                    copy.deepcopy(old_mapping.ur),
-                                                    copy.deepcopy(new_sr),
-                                                    []])
-        if old_mapping == new_mapping:
-            return []
+                    copy.deepcopy(old_mapping.ur),
+                    copy.deepcopy(new_sr),
+                    []])
         new_mapping.stem = copy.copy(old_mapping.stem)
         for feature in features:
             change = Change(self.feature_dict, change_type = 'change', mapping =
-                            new_mapping, locus = locus, feature = feature)
+                new_mapping, locus = locus, feature = feature)
             change.make_set()
             new_mapping.changes.append(change)
         new_mapping.add_boundaries()
         new_mapping.set_ngrams()
         return new_mapping
+
