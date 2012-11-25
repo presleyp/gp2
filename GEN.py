@@ -188,7 +188,7 @@ class DeterministicGen(Gen):
         faithful_cand = self.make_faithful_cand(mapping)
         false_mappings = changed_mappings + faithful_cand
         assert faithful_cand == [] or false_mappings.count(faithful_cand[0]) <= 1
-        false_mappings = [m for m in false_mappings if m != mapping]
+        false_mappings = [m for m in set(false_mappings) if m != mapping]
         return false_mappings
 
     def change_voicing(self, mapping, base = 'ur'):

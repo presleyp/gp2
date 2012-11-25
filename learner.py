@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import copy, numpy, random, datetime, csv
-import matplotlib.pyplot as pyplot
+#import matplotlib.pyplot as pyplot
 from featuredict import FeatureDict
 from GEN import Input
 from CON import Con
-from matplotlib.backends.backend_pdf import PdfPages
+#from matplotlib.backends.backend_pdf import PdfPages
 
 #Profiler:
 # import cProfile, learner, pstats
@@ -119,7 +119,7 @@ class Learn:
         # output data
         time = datetime.datetime.now()
         time = time.strftime('%Y-%m-%d-%H:%M:%S')
-        self.figs = PdfPages('Output-' + time + '.pdf')
+        #self.figs = PdfPages('Output-' + time + '.pdf')
         self.report = 'Output-' + time + '.txt'
         self.training_errors = []
         self.testing_errors = []
@@ -276,25 +276,26 @@ class Learn:
         with open(self.report, 'a') as f:
             f.write('\n\nTotal Constraints, Sorted by Weight\n')
             f.write('\n'.join(self.constraint_lines))
-        constraint_list = zip(*constraint_list)
-        #ind = numpy.arange(num_con)
-        length = 20 if num_con > 20 else num_con
-        ind = numpy.arange(length)
-        height = .35
-        #colors = ['r' if isinstance(c, Faithfulness) else 'y' for c in self.alg.con.constraints]
-        pyplot.barh(ind, constraint_list[0][0:length]) #, color = colors
-        pyplot.xlabel('Weights')
-        pyplot.title('Constraint Weights')
-        pyplot.yticks(ind+height/2., constraint_list[1][0:length])
-        pyplot.subplots_adjust(left = .5) # make room for constraint names
-        self.figs.savefig()
-        pyplot.clf()
+        #FIXME commenting out plotting because I don't have pyplot installed
+        #constraint_list = zip(*constraint_list)
+        ##ind = numpy.arange(num_con)
+        #length = 20 if num_con > 20 else num_con
+        #ind = numpy.arange(length)
+        #height = .35
+        ##colors = ['r' if isinstance(c, Faithfulness) else 'y' for c in self.alg.con.constraints]
+        #pyplot.barh(ind, constraint_list[0][0:length]) #, color = colors
+        #pyplot.xlabel('Weights')
+        #pyplot.title('Constraint Weights')
+        #pyplot.yticks(ind+height/2., constraint_list[1][0:length])
+        #pyplot.subplots_adjust(left = .5) # make room for constraint names
+        #self.figs.savefig()
+        #pyplot.clf()
 
     def plot_errors(self, parameter = None, values = None):
         """Make three plots, one for training, one for testing, and one for number of constraints. Each has
         iterations on the x axis and error percentage on the y axis. Plot a line
         for each run."""
-        pyplot.subplots_adjust(left = .15)
+        #pyplot.subplots_adjust(left = .15)
         for (name, item) in [('Training', self.training_errors), ('Testing', self.testing_errors), ('Constraints', self.num_constraints)]:
 
             # report arrays
@@ -304,25 +305,25 @@ class Learn:
                         str(numpy.mean(final_iterations)), 'Standard Deviation: ' + str(numpy.std(final_iterations)), str(item)]))
 
             # make plots
-            plots = []
-            for run in item:
-                plots.append(pyplot.plot(run))
-            pyplot.xlabel('Iteration')
-            pyplot.xticks(numpy.arange(self.num_trainings))
-            # error plots
-            if name != 'Constraints':
-                pyplot.ylim(-.1, 1.1)
-                pyplot.ylabel('Proportion of Inputs Mapped to Incorrect Outputs')
-                pyplot.yticks(numpy.arange(-.1, 1.1, .1))
-                pyplot.title(name + ' Error Rates')
-            # constraint plot
-            else:
-                pyplot.ylabel('Number of Constraints')
-                pyplot.title('Running Count of Constraints')
-            labels = [parameter + ' = ' + str(value) for value in values] if parameter else range(len(item))
-            #pyplot.legend(plots, labels, loc = 0)
-            self.figs.savefig()
-            pyplot.clf()
+            #plots = []
+            #for run in item:
+                #plots.append(pyplot.plot(run))
+            #pyplot.xlabel('Iteration')
+            #pyplot.xticks(numpy.arange(self.num_trainings))
+            ## error plots
+            #if name != 'Constraints':
+                #pyplot.ylim(-.1, 1.1)
+                #pyplot.ylabel('Proportion of Inputs Mapped to Incorrect Outputs')
+                #pyplot.yticks(numpy.arange(-.1, 1.1, .1))
+                #pyplot.title(name + ' Error Rates')
+            ## constraint plot
+            #else:
+                #pyplot.ylabel('Number of Constraints')
+                #pyplot.title('Running Count of Constraints')
+            #labels = [parameter + ' = ' + str(value) for value in values] if parameter else range(len(item))
+            ##pyplot.legend(plots, labels, loc = 0)
+            #self.figs.savefig()
+            #pyplot.clf()
 
     def check_constraints(self):
         constraints_found = []
