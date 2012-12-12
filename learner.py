@@ -259,7 +259,7 @@ class Learn:
               '\nnumber of constraints', [run[-1] for run in
                                           self.num_constraints])
         self.plot_errors()
-        self.figs.close()
+        #self.figs.close() #TODO uncomment if plotting is fixed
         self.all_input = None
         self.train_input = None
         self.test_input = None

@@ -70,6 +70,12 @@ class Mapping:
             return False
         return numpy.equal(self.sr, other.sr).all()
 
+    def __ne__(self, other):
+	if self == other:
+	    return False
+	else:
+	    return True
+
 #FIXME i want to affect how if mapping in collection is done
     #def __contains__(self, collection):
         #for item in collection:

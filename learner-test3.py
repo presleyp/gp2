@@ -34,7 +34,7 @@ with open('TurkishInput4.csv', 'r') as f:
         print line
         word = Mapping(fd, line)
         word.to_data()
-        #print word
+        print 'true in test', word
         #voicing = dgen.change_voicing(word)
         #print voicing
         ##if voicing:
@@ -51,22 +51,24 @@ with open('TurkishInput4.csv', 'r') as f:
         word.add_boundaries()
         word.set_ngrams()
         print word
-        print negatives[3]
-        mark = MarkednessAligned(fd, .5, [word, negatives[2]])
-        print mark
-        faith = Faithfulness([word, negatives[3]], fd, True)
-        print faith
+        for negative in negatives:
+            print negative
+        #print negatives[3]
+        #mark = MarkednessAligned(fd, .5, [word, negatives[2]])
+        #print mark
+        #faith = Faithfulness([word, negatives[3]], fd, True)
+        #print faith
 assert [] == dgen.make_faithful_cand(faithfulword)
 
-#inputs = Input(fd, 'TurkishInput4.csv', True, 'deterministic')
-#tablengths = []
-#for tableau in inputs.allinputs:
-    #tablengths.append(len(tableau))
-    ##for mapping in tableau:
-        ##print mapping
-#print numpy.mean(tablengths) #4.2
-#print max(tablengths) # 6
-#print min(tablengths) # 2
+inputs = Input(fd, 'TurkishInput4NoVHExceptions.csv', True, 'deterministic')
+tablengths = []
+for tableau in inputs.allinputs:
+    tablengths.append(len(tableau))
+    for mapping in tableau:
+        print mapping
+print numpy.mean(tablengths) #4.2
+print max(tablengths) # 6
+print min(tablengths) # 2
 
 #TODO should i have cands with both changes?
 #TODO test CON, EVAL

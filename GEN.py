@@ -43,7 +43,7 @@ class Input:
         Bundle mappings into tableaux."""
         allinputs = []
         with open(infile, 'r') as f:
-            fread = csv.reader(f)
+            fread = list(csv.reader(f))
             if self.gen_args:
                 gen = self.Generator(self.feature_dict, *self.gen_args)
             else:
@@ -67,7 +67,10 @@ class Gen:
 
     def make_faithful_cand(self, mapping):
         if (mapping.ur != mapping.sr).any():
-            new_mapping = Mapping(self.feature_dict, [False, copy.deepcopy(mapping.ur), copy.deepcopy(mapping.ur), []])
+            new_mapping = Mapping(self.feature_dict, [False,
+                                                      copy.deepcopy(mapping.ur),
+                                                      copy.deepcopy(mapping.ur),
+                                                      []])
             new_mapping.stem = copy.copy(mapping.stem)
             new_mapping.add_boundaries()
             new_mapping.set_ngrams()
@@ -178,41 +181,42 @@ class RandomGen(Gen):
 class DeterministicGen(Gen):
     """Generates candidates that test the processes found in my Turkish corpus."""
     def ungrammaticalize(self, mapping):
-        changed_voice = self.change_voicing(mapping)
-        changed_vowels = self.change_vowels(mapping)
-        changed_both = [self.change_vowels(mapping, base = 'sr')
-            for mapping in changed_voice]
-        changed_both_flat = [m for alist in changed_both
-                for m in alist]
+        false_faithful_cand = self.make_faithful_cand(mapping)
+        faithful_cand = false_faithful_cand[0] if false_faithful_cand else mapping
+        changed_voice = self.change_voicing(faithful_cand)
+        changed_vowels = self.change_vowels(faithful_cand)
+        changed_both = [self.change_vowels(m) for m in changed_voice]
+        changed_both_flat = [m for alist in changed_both for m in alist]
         changed_mappings = changed_voice + changed_vowels + changed_both_flat
-        faithful_cand = self.make_faithful_cand(mapping)
-        false_mappings = changed_mappings + faithful_cand
-        assert faithful_cand == [] or false_mappings.count(faithful_cand[0]) <= 1
-        false_mappings = [m for m in set(false_mappings) if m != mapping]
+        false_mappings = changed_mappings + false_faithful_cand
+        assert false_faithful_cand == [] or false_mappings.count(false_faithful_cand[0]) <= 1
+        mapping.add_boundaries()
+        false_mappings = [m for m in false_mappings if m != mapping] #not working
         return false_mappings
 
-    def change_voicing(self, mapping, base = 'ur'):
-        original = mapping.ur if base == 'ur' else mapping.sr
+    def change_voicing(self, base): # check for no copy bugs
+        original = base.sr
         voicing = self.feature_dict.get_feature_number('voi')
         voiced_indices = [i for (i, segment) in enumerate(original) if voicing in segment]
-        devoiced = self.make_new_mappings(mapping, voiced_indices, set([voicing]), original)
+        devoiced = self.make_new_mappings(base, voiced_indices, set([voicing]))
         voiceless_indices = [i for (i, segment) in enumerate(original) if -voicing in segment]
-        voice_added = self.make_new_mappings(mapping, voiceless_indices, set([-voicing]), original)
+        voice_added = self.make_new_mappings(base, voiceless_indices, set([-voicing]))
         new_mappings = devoiced + voice_added
+        new_mappings = [m for m in new_mappings if m != base]
         return new_mappings
 
-    def change_vowels(self, mapping, base = 'ur'):
+    def change_vowels(self, base):
         vocalic = self.feature_dict.get_feature_number('voc')
-        original = mapping.ur if base == 'ur' else mapping.sr
+        original = base.sr
         vowel_indices = [i for (i, segment) in enumerate(original) if vocalic in segment]
         new_mappings = []
         for i in vowel_indices:
-            back = self.find_feature_value(mapping.ur[i], 'back')
-            roundness = self.find_feature_value(mapping.ur[i], 'round')
+            back = self.find_feature_value(base.ur[i], 'back')
+            roundness = self.find_feature_value(base.ur[i], 'round')
             backround = back | roundness
-            new_mappings += [self.make_new_mapping(mapping, i, item, base = original)
+            new_mappings += [self.make_new_mapping(base, i, item)
                             for item in [back, roundness, backround]]
-        new_mappings = [m for m in new_mappings if m]
+        new_mappings = [m for m in new_mappings if m and m != base]
         return new_mappings
 
     def find_feature_value(self, segment, feature): # returns a set
@@ -220,14 +224,14 @@ class DeterministicGen(Gen):
         return segment & set([feature_number, -feature_number])
 
 
-    def make_new_mappings(self, old_mapping, loci, features, base):
-        new_mappings = [self.make_new_mapping(old_mapping, locus, features, base)
+    def make_new_mappings(self, old_mapping, loci, features):
+        new_mappings = [self.make_new_mapping(old_mapping, locus, features)
                         for locus in loci]
         real_mappings = [m for m in new_mappings if m]
         return real_mappings
 
-    def make_new_mapping(self, old_mapping, locus, features, base):
-        new_sr = copy.deepcopy(base)
+    def make_new_mapping(self, old_mapping, locus, features):
+        new_sr = copy.deepcopy(old_mapping.sr)
         new_sr[locus] -= features
         for feature in features:
             new_sr[locus].add(-feature)
@@ -237,8 +241,8 @@ class DeterministicGen(Gen):
             return []
         new_mapping = Mapping(self.feature_dict, [False,
                     copy.deepcopy(old_mapping.ur),
-                    copy.deepcopy(new_sr),
-                    []])
+                    new_sr,
+                    copy.deepcopy(old_mapping.changes)])
         new_mapping.stem = copy.copy(old_mapping.stem)
         for feature in features:
             change = Change(self.feature_dict, change_type = 'change', mapping =
