@@ -41,12 +41,16 @@ getData = function(filename, colnames, colclasses, iternum) {
 }
 
 printTable = function(data, func, n){
-  print(xtable(round(tapply(data[,1] * rates[n], list(data[,2], data[,3]), func), 3)))
+  print(xtable(tapply(data[,1] * rates[n], list(data[,2], data[,3]), func)))
 }
 
 printMeanSd = function(data){
   printTable(data, mean, n)
   printTable(data, sd, n)
+}
+
+meanAndSd = function(data){
+  return(paste(round(mean(data),3), " (", round(sd(data),3), ")", sep=''))
 }
 
 plotBeans = function(data, type){
