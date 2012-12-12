@@ -94,7 +94,8 @@ class Learn:
                  epenthetics = ['e', '?'], gen_type = 'random',
                  learning_rate = 0.1, num_trainings = 5, aligned = True,
                  tier_freq = .25, induction_freq = .1, stem = False,
-                 constraint_parts = ['voi', '+word', 'round', 'back']):
+                 constraint_parts = ['voi', '+word', 'round', 'back'],
+                 report_id = None):
         # parameters
         feature_dict = FeatureDict(feature_chart)
         self.input_args = {'feature_dict': feature_dict,
@@ -120,7 +121,7 @@ class Learn:
         time = datetime.datetime.now()
         time = time.strftime('%Y-%m-%d-%H:%M:%S')
         #self.figs = PdfPages('Output-' + time + '.pdf')
-        self.report = 'Output-' + time + '.txt'
+        self.report = 'Output-' + time + '.txt' if report_id == None else 'Output-' + report_id + '.txt'
         self.training_errors = []
         self.testing_errors = []
         self.num_constraints = []
@@ -162,7 +163,7 @@ class Learn:
         self.alg.con.constraints = []
         self.alg.con.weights = numpy.array([0])
 
-    def run(self, i):
+    def run(self, i = 0):
         """Initialize HGGLA and do all training and testing iterations for this run."""
         self.alg = HGGLA(**self.algorithm_args)
         for log in [self.training_errors, self.num_constraints, self.testing_errors]:
@@ -174,6 +175,7 @@ class Learn:
             self.num_constraints[i].append(num_constraints)
             self.testing_errors[i].append(self.test_HGGLA(j))
         self.plot_constraints()
+        return (self.training_errors, self.testing_errors, self.num_constraints)
 
     def train_HGGLA(self, i):
         """Do one iteration through the training data."""
@@ -253,6 +255,7 @@ class Learn:
             with open(self.report, 'a') as f:
                 f.write('\n\n\n--------Run ' + str(i) + '--------')
             self.run(i)
+
         print('ran program ', num_runs, ' times')
         print('error percentage on last test of each run', [run[-1] for run in
                                                             self.testing_errors],
@@ -265,17 +268,20 @@ class Learn:
         self.test_input = None
         return (self.training_errors, self.testing_errors, self.num_constraints)
 
+    def prepare_constraints(self):
+        constraints = [str(c) for c in self.alg.con.constraints]
+        #num_con = len(constraints)
+        constraint_list = zip(self.alg.con.weights, constraints)
+        constraint_list.sort(reverse = True)
+        self.constraint_lines = '\n'.join([str(w) + '\t' + c for (w, c) in constraint_list])
+
     def plot_constraints(self):
         """Plot the 20 highest weighted constraints and write all of them to a
         file with their weights, in descending order of weight."""
-        constraints = [str(c) for c in self.alg.con.constraints]
-        num_con = len(constraints)
-        constraint_list = zip(self.alg.con.weights, constraints)
-        constraint_list.sort(reverse = True)
-        self.constraint_lines = [str(w) + '\t' + c for (w, c) in constraint_list]
+        self.prepare_constraints()
         with open(self.report, 'a') as f:
             f.write('\n\nTotal Constraints, Sorted by Weight\n')
-            f.write('\n'.join(self.constraint_lines))
+            f.write(self.constraint_lines)
         #FIXME commenting out plotting because I don't have pyplot installed
         #constraint_list = zip(*constraint_list)
         ##ind = numpy.arange(num_con)
@@ -296,7 +302,9 @@ class Learn:
         iterations on the x axis and error percentage on the y axis. Plot a line
         for each run."""
         #pyplot.subplots_adjust(left = .15)
-        for (name, item) in [('Training', self.training_errors), ('Testing', self.testing_errors), ('Constraints', self.num_constraints)]:
+        for (name, item) in [('Training', self.training_errors),
+                             ('Testing', self.testing_errors),
+                             ('Constraints', self.num_constraints)]:
 
             # report arrays
             final_iterations = [run[-1] for run in item]
