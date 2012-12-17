@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import copy, numpy, random, datetime, csv
+import copy, numpy, random, datetime
 #import matplotlib.pyplot as pyplot
 from featuredict import FeatureDict
-from GEN import Input
+from GEN import Input, open_tableau
 from CON import Con
 #from matplotlib.backends.backend_pdf import PdfPages
 
@@ -53,7 +53,7 @@ class HGGLA:
     def train(self, inputs):
         self.errors = []
         self.error_numbers = []
-        for i, tableau in enumerate(inputs):
+        for i, tableau in enumerate(open_tableau(inputs)):
             random.shuffle(tableau)
             self.train_tableau(tableau, i)
         return (self.errors, self.error_numbers)
@@ -143,9 +143,9 @@ class Learn:
                                'Frequency of Induction Upon Error: ' + str(induction_freq)]))
 
     def make_input(self):
-        """Use Input class to convert input file to data structure or access previously saved data structure."""
+        """Create or access candidate sets; get list of their filenames."""
         inputs = Input(**self.input_args)
-        self.all_input = inputs.allinputs
+        self.all_input = inputs.input_files
 
     def divide_input(self):
         """Choose training set and test set."""

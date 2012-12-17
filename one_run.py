@@ -1,4 +1,4 @@
-# usage: python one_run.py 0 0.4 1
+# usage: python one_run.py 0 0.4 1-0-40
 
 import learner, sys, csv
 

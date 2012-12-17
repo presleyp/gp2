@@ -1,4 +1,4 @@
-import cPickle, csv, copy, numpy, random
+import cPickle, csv, copy, numpy, random, glob, os, errno
 from mapping import Mapping, Change
 
 class Input:
@@ -15,18 +15,28 @@ class Input:
         self.feature_dict = feature_dict
         self.Generator = RandomGen if gen_type == 'random' else DeterministicGen
         self.gen_args = gen_args
-        try:
-            assert remake_input == False
-            saved_file = open('save-' + input_file, 'rb')
-            self.allinputs = cPickle.load(saved_file)
+        input_dir = 'save-' + input_file
+        self.make_dir(input_dir)
+        self.input_files = [x for x in glob.glob(input_dir + '/*')]
+        if remake_input == False and self.input_files != []:
+            #saved_file = open('save-' + input_file, 'rb')
+            #self.allinputs = cPickle.load(saved_file)
             print 'read from file'
-        except (IOError, AssertionError):
-            self.allinputs = self.make_input(input_file)
-            saved_file = open('save-' + input_file, 'wb')
-            cPickle.dump(self.allinputs, saved_file)
-        finally:
-            saved_file.close()
+        else:
+            self.input_files = self.make_input(input_file, input_dir)
+            #saved_file = open('save-' + input_file, 'wb')
+            #cPickle.dump(self.allinputs, saved_file)
+        #finally:
+            #saved_file.close()
         print 'done making input'
+
+    def make_dir(self, input_dir):
+        '''Make the directory if it doesn't already exist so that the files will have a place to go.'''
+        try:
+            os.makedirs(input_dir)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise exception
 
     def find_stem(self, affixes):
         for i, affix in enumerate(affixes):
@@ -37,26 +47,29 @@ class Input:
                 if len(segment_class) > 1:
                     affixes[i][j] = segment_class[0].intersection(*segment_class[1:])
 
-    def make_input(self, infile):
+    def make_input(self, input_file, input_dir):
         """Based on file of lines of the form "1,underlyingform,surfaceform,changes"
         create Mapping objects with those attributes.
         Bundle mappings into tableaux."""
-        allinputs = []
-        with open(infile, 'r') as f:
+        input_files = []
+        with open(input_file, 'r') as f:
             fread = list(csv.reader(f))
             if self.gen_args:
                 gen = self.Generator(self.feature_dict, *self.gen_args)
             else:
                 gen = self.Generator(self.feature_dict)
-            for line in fread:
+            for i, line in enumerate(fread):
                 mapping = Mapping(self.feature_dict, line)
                 mapping.to_data()
                 negatives = gen.ungrammaticalize(mapping)
                 mapping.add_boundaries()
                 mapping.set_ngrams()
                 tableau = [mapping] + negatives
-                allinputs.append(tableau)
-            return allinputs
+                tableau_file = ''.join([input_dir, '/', str(i), '.txt'])
+                with open(tableau_file, 'w') as f:
+                    cPickle.dump(tableau, f)
+                input_files.append(tableau_file)
+        return input_files
 
 class Gen:
     """Generates input-output mappings."""
@@ -252,4 +265,13 @@ class DeterministicGen(Gen):
         new_mapping.add_boundaries()
         new_mapping.set_ngrams()
         return new_mapping
+
+
+
+def open_tableau(file_list):
+    """Generator that yields one tableau at a time."""
+    for tableau_file in file_list:
+        with open(tableau_file, 'r') as f:
+            tableau = cPickle.load(f)
+            yield tableau
 
