@@ -60,11 +60,9 @@ with open('TurkishInput4.csv', 'r') as f:
         #print faith
 assert [] == dgen.make_faithful_cand(faithfulword)
 
-#with open('TurkishSmallInput.csv', 'r') as f:
-    #fread = list(csv.reader(f))
-    #print fread
 inputs = Input(fd, 'TurkishSmallInput.csv', True, 'deterministic')
 tablengths = []
+print 'mappings'
 for tableau in open_tableau(inputs.input_files):
     tablengths.append(len(tableau))
     for mapping in tableau:

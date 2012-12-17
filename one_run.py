@@ -14,7 +14,8 @@ tier_val = float(sys.argv[2])
 run_id = sys.argv[3]
 
 l = learner.Learn('TurkishFeaturesWithNA.csv',
-                  'TurkishInput4NoVHExceptions.csv',
+                  #'TurkishInput4NoVHExceptions.csv',
+                 'TurkishSmallInput.csv',
                   num_trainings = 5,
                   gen_type = 'deterministic',
                   learning_rate = .1,

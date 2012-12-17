@@ -73,7 +73,7 @@ class HGGLA:
                 #self.train_tableau(tableau)
             else:
                 self.update(grammatical_winner, computed_winner[0])
-            self.errors.append(''.join([str(grammatical_winner), '~', str(computed_winner[0])]))
+                self.errors.append(''.join([str(i), ': ', str(grammatical_winner), '~', str(computed_winner[0])]))
 
     def test(self, tableau):
         computed_winner = None
@@ -135,7 +135,7 @@ class Learn:
                                'Max Changes to Candidates: ' + str(max_changes),
                                'GEN processes: ' + processes,
                                'Epenthetic Segments: ' + str(epenthetics),
-                               'Used Stem Constraints? ' + str(stem),
+                               'Frequency of Stem Constraints: ' + str(stem),
                                'GEN type: ' + gen_type,
                                'Learning Rate: ' + str(learning_rate),
                                'Aligned Markedness Constraints: ' + str(aligned),
@@ -149,10 +149,10 @@ class Learn:
 
     def divide_input(self):
         """Choose training set and test set."""
-        one_fifth = int(len(self.all_input)/5)
+        one_half = int(len(self.all_input)/2)
         numpy.random.shuffle(self.all_input)
-        self.train_input = self.all_input[:one_fifth]
-        self.test_input = self.all_input[one_fifth:]
+        self.train_input = self.all_input[:one_half]
+        self.test_input = self.all_input[one_half:]
 
     def refresh(self):
         for inputs in (self.train_input, self.test_input):
@@ -190,7 +190,7 @@ class Learn:
     def test_HGGLA(self, i):
         """Do one iteration through the testing data."""
         errors = []
-        for tableau in self.test_input:
+        for tableau in open_tableau(self.test_input):
             winner = self.alg.test(tableau)
             if winner.grammatical == False:
                 errors.append(str(winner))
