@@ -15,7 +15,7 @@ class Input:
         self.feature_dict = feature_dict
         self.Generator = RandomGen if gen_type == 'random' else DeterministicGen
         self.gen_args = gen_args
-        input_dir = 'save-' + input_file
+        input_dir = 'dir-' + input_file
         self.make_dir(input_dir)
         self.input_files = [x for x in glob.glob(input_dir + '/*')]
         if remake_input == False and self.input_files != []:

@@ -170,6 +170,7 @@ class Learn:
             log.append([])
             assert log[i] == []
         for j in range(self.num_trainings):
+            print 'epoch ' + str(j)
             (training_errors, num_constraints) = self.train_HGGLA(j)
             self.training_errors[i].append(training_errors)
             self.num_constraints[i].append(num_constraints)

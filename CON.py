@@ -46,7 +46,7 @@ class Con:
             new_violations = numpy.array([constraint.get_violation(mapping)
                                           for constraint in self.constraints[new_constraints:]])
             mapping.violations = numpy.append(mapping.violations, new_violations)
-        assert len(mapping.violations) == len(self.constraints) + 1
+        #assert len(mapping.violations) == len(self.constraints) + 1
 
 class Markedness:
     def __init__(self, feature_dict, tier_freq, winners):
@@ -153,6 +153,9 @@ class Markedness:
         winner_tier = numpy.array([segment for segment in winner if self.tier in segment])
         return winner_tier
 
+    #FIXME where most of the time gets spent
+    # most of it is not in mapping.get_ngrams
+    # most of it is probably in the all() comparison
     def get_violation(self, mapping):
         """Finds the number of places in the surface representation
         (including overlapping ones) that match the pattern of the constraint."""
