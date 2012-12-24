@@ -10,7 +10,7 @@ def matrix_to_dataframe(filename, i, j, matrix):
                 cwrite.writerow([number, i, j, k])
 
 
-def run_once(stem_val, tier_val, run_id, decay):
+def run_once(stem_val, tier_val, decay, run_id):
     l = learner.Learn('TurkishFeaturesWithNA.csv',
                     'TurkishInput4NoVHExceptions.csv',
                     #'TurkishSmallInput.csv',
@@ -33,6 +33,6 @@ def run_once(stem_val, tier_val, run_id, decay):
 if __name__ == '__main__':
     stem_val = float(sys.argv[1])
     tier_val = float(sys.argv[2])
-    run_id = sys.argv[3]
-    decay = sys.argv[4]
-    run_once(stem_val, tier_val, run_id, decay)
+    decay = float(sys.argv[3])
+    run_id = sys.argv[4]
+    run_once(stem_val, tier_val, decay, run_id)
