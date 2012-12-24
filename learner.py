@@ -13,7 +13,7 @@ from CON import Con
 # p.sort_stats('cumulative').print_stats(30)
 
 class HGGLA:
-    def __init__(self, feature_dict, learning_rate, aligned, stem, tier_freq, induction_freq):
+    def __init__(self, feature_dict, learning_rate, aligned, stem, tier_freq, induction_freq, decay_rate):
         """Takes processed input and learns on it one tableau at a time.
         The constraints are updated by the difference in violation vectors
         between the computed winner and the desired winner,
@@ -21,6 +21,7 @@ class HGGLA:
         self.learning_rate = learning_rate
         self.con = Con(feature_dict, tier_freq, aligned, stem)
         self.induction_freq = induction_freq
+        self.decay_rate = decay_rate
 
     def evaluate(self, tableau):
         """Use constraints to find mappings violations
@@ -48,7 +49,7 @@ class HGGLA:
         difference = grammatical_winner.violations - computed_winner.violations
         assert len(difference) == len(self.con.constraints) + 1
         assert difference[0] == 0
-        self.con.weights += difference * self.learning_rate
+        self.con.weights += difference * self.learning_rate - (self.decay_rate * sum(w for w in self.con.weights))
 
     def train(self, inputs):
         self.errors = []
@@ -94,6 +95,7 @@ class Learn:
                  epenthetics = ['e', '?'], gen_type = 'random',
                  learning_rate = 0.1, num_trainings = 5, aligned = True,
                  tier_freq = .25, induction_freq = .1, stem = False,
+                 decay_rate = 0,
                  constraint_parts = ['voi', '+word', 'round', 'back'],
                  report_id = None):
         # parameters
@@ -109,7 +111,8 @@ class Learn:
                                'aligned': aligned,
                                'stem': stem,
                                'tier_freq': tier_freq,
-                               'induction_freq': induction_freq}
+                               'induction_freq': induction_freq,
+                               'decay_rate': decay_rate}
         self.num_trainings = num_trainings
 
         # input data
@@ -138,6 +141,7 @@ class Learn:
                                'Frequency of Stem Constraints: ' + str(stem),
                                'GEN type: ' + gen_type,
                                'Learning Rate: ' + str(learning_rate),
+                               'Decay Rate: ' + str(decay_rate),
                                'Aligned Markedness Constraints: ' + str(aligned),
                                'Frequency of Tier Constraints: ' + str(tier_freq),
                                'Frequency of Induction Upon Error: ' + str(induction_freq)]))

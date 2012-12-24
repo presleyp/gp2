@@ -66,8 +66,8 @@ class Input:
                 mapping.set_ngrams()
                 tableau = [mapping] + negatives
                 tableau_file = ''.join([input_dir, '/', str(i), '.txt'])
-                with open(tableau_file, 'w') as f:
-                    cPickle.dump(tableau, f)
+                with open(tableau_file, 'wb') as f:
+                    cPickle.dump(tableau, f, 1)
                 input_files.append(tableau_file)
         return input_files
 
@@ -271,7 +271,7 @@ class DeterministicGen(Gen):
 def open_tableau(file_list):
     """Generator that yields one tableau at a time."""
     for tableau_file in file_list:
-        with open(tableau_file, 'r') as f:
+        with open(tableau_file, 'rb') as f:
             tableau = cPickle.load(f)
             yield tableau
 
