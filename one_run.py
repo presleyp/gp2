@@ -15,6 +15,7 @@ def run_once(stem_val, tier_val, decay, run_id):
                     'TurkishInput4NoVHExceptions.csv',
                     #'TurkishSmallInput.csv',
                     num_trainings = 5,
+                    #num_trainings = 1,
                     gen_type = 'deterministic',
                     learning_rate = .1,
                     induction_freq = .5,

@@ -49,7 +49,10 @@ class HGGLA:
         difference = grammatical_winner.violations - computed_winner.violations
         assert len(difference) == len(self.con.constraints) + 1
         assert difference[0] == 0
-        self.con.weights += difference * self.learning_rate - (self.decay_rate * sum(w for w in self.con.weights))
+        #self.con.weights += difference * self.learning_rate - (self.decay_rate * numpy.absolute(sum(w for w in self.con.weights)))
+        prior = self.decay_rate * sum(w for w in self.con.weights)
+        for i in range(len(self.con.weights)):
+            self.con.weights[i] = min(0, self.con.weights[i] + difference[i] * self.learning_rate - prior)
 
     def train(self, inputs):
         self.errors = []
