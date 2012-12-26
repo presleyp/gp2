@@ -50,9 +50,8 @@ class HGGLA:
         assert len(difference) == len(self.con.constraints) + 1
         assert difference[0] == 0
         #self.con.weights += difference * self.learning_rate - (self.decay_rate * numpy.absolute(sum(w for w in self.con.weights)))
-        prior = self.decay_rate * sum(w for w in self.con.weights)
         for i in range(len(self.con.weights)):
-            self.con.weights[i] = max(0, self.con.weights[i] + difference[i] * self.learning_rate - prior)
+            self.con.weights[i] = max(0, self.con.weights[i] + difference[i] * self.learning_rate - self.decay_rate * self.con.weights[i])
 
     def train(self, inputs):
         self.errors = []
@@ -193,7 +192,7 @@ class Learn:
             f.write(''.join(['\n\nErrors in training #', str(i), ': ', str(len(errors)), '\n', '\n\n'.join([error for error in errors])]))
             f.write(''.join(['\n\nConstraints added in training #', str(i), ': ',
                              str(len(constraints_added)), '\n', '\n'.join([str(c) for c in constraints_added])]))
-        return (float(len(errors))/float(len(self.train_input)), len(self.alg.con.constraints))
+        return (float(len(errors))/float(len(self.train_input)), len([c for c in self.alg.con.weights if c > 0]))
 
     def test_HGGLA(self, i):
         """Do one iteration through the testing data."""
@@ -279,7 +278,8 @@ class Learn:
     def prepare_constraints(self):
         constraints = [str(c) for c in self.alg.con.constraints]
         #num_con = len(constraints)
-        constraint_list = zip(self.alg.con.weights, constraints)
+        assert len(self.alg.con.weights) == len(constraints) + 1
+        constraint_list = zip(self.alg.con.weights[1:], constraints)
         constraint_list.sort(reverse = True)
         self.constraint_lines = '\n'.join([str(w) + '\t' + c for (w, c) in constraint_list])
 

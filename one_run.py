@@ -1,4 +1,4 @@
-# usage: python one_run.py 0 0.4 1-0-40
+# usage: python one_run.py 0 0.4 0 1-0-40
 
 import learner, sys, csv
 
@@ -17,7 +17,7 @@ def run_once(stem_val, tier_val, decay, run_id):
                     num_trainings = 5,
                     #num_trainings = 1,
                     gen_type = 'deterministic',
-                    learning_rate = .1,
+                    learning_rate = .2,
                     induction_freq = .5,
                     stem = stem_val,
                     tier_freq = tier_val,
