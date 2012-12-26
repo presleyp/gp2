@@ -12,8 +12,8 @@ def matrix_to_dataframe(filename, i, j, matrix):
 
 def run_once(stem_val, tier_val, decay, run_id):
     l = learner.Learn('TurkishFeaturesWithNA.csv',
-                    'TurkishInput4NoVHExceptions.csv',
-                    #'TurkishSmallInput.csv',
+                    #'TurkishInput4NoVHExceptions.csv',
+                    'TurkishSmallInput.csv',
                     num_trainings = 5,
                     #num_trainings = 1,
                     gen_type = 'deterministic',

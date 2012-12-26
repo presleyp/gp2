@@ -52,7 +52,7 @@ class HGGLA:
         #self.con.weights += difference * self.learning_rate - (self.decay_rate * numpy.absolute(sum(w for w in self.con.weights)))
         prior = self.decay_rate * sum(w for w in self.con.weights)
         for i in range(len(self.con.weights)):
-            self.con.weights[i] = min(0, self.con.weights[i] + difference[i] * self.learning_rate - prior)
+            self.con.weights[i] = max(0, self.con.weights[i] + difference[i] * self.learning_rate - prior)
 
     def train(self, inputs):
         self.errors = []
