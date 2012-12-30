@@ -1,6 +1,6 @@
 import sys, one_run
 
-num = sys.argv[1]
+num = float(sys.argv[1])
 
 if num <= 20:
     stem_val = 0.8
