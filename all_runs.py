@@ -30,4 +30,4 @@ else: # <= 180
     stem_val = 0
     tier_val = 0
 
-one_run.run_once(stem_val, tier_val, 0, run_id = 'cluster1-' + num)
+one_run.run_once(stem_val, tier_val, 0, run_id = 'cluster1-' + str(num))
