@@ -1,7 +1,7 @@
 import sys
 
 num = float(sys.argv[1])
-
+print num
 if num < 2:
    with open('test1.txt', 'w') as f:
        f.write('test 1 worked')
