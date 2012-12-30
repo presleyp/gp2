@@ -1,6 +1,6 @@
 import sys
 
-num = sys.argv[1]
+num = float(sys.argv[1])
 
 if num < 2:
    with open('test1.txt', 'w') as f:
