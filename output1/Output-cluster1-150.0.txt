@@ -1,0 +1,3382 @@
+Feature Chart: TurkishFeaturesWithNA.csv
+Input File: TurkishInput4NoVHExceptions.csv
+Remake Input? False
+# Ungrammatical Candidates Generated: 15
+Max Changes to Candidates: 5
+GEN processes: [self.change_feature_value]
+Epenthetic Segments: ['e', '?']
+Frequency of Stem Constraints: 0
+GEN type: deterministic
+Learning Rate: 0.2
+Decay Rate: 0
+Aligned Markedness Constraints: True
+Frequency of Tier Constraints: 0.4
+Frequency of Induction Upon Error: 0.5
+
+Errors in training #0: 217
+0: True, |kavrug|, |kavruk|, ['change stem +voi']~t~["False, |kavrug|, |kavrwg|, ['change stem +round']", "False, |kavrug|, |gavrwg|, ['change stem -voi', 'change stem +round']", "False, |kavrug|, |gavryg|, ['change stem -voi', 'change stem +back']", "False, |kavrug|, |kafrig|, ['change stem +voi', 'change stem +round', 'change stem +back']", "False, |kavrug|, |kavrik|, ['change  +voi', 'change stem +round', 'change stem +back']", "False, |kavrug|, |kavrwk|, ['change  +voi', 'change stem +round']", "False, |kavrug|, |kavryk|, ['change  +voi', 'change stem +back']", "False, |kavrug|, |kafrug|, ['change stem +voi']", "False, |kavrug|, |gavrig|, ['change stem -voi', 'change stem +round', 'change stem +back']", "False, |kavrug|, |kavryg|, ['change stem +back']", 'False, |kavrug|, |kavrug|, []', "False, |kavrug|, |kafryg|, ['change stem +voi', 'change stem +back']", "False, |kavrug|, |kavrig|, ['change stem +round', 'change stem +back']", "False, |kavrug|, |gavrug|, ['change stem -voi']", "False, |kavrug|, |kafrwg|, ['change stem +voi', 'change stem +round']"]
+
+1: True, |suuret|, |suuret|, []~t~["False, |suuret|, |syured|, ['change stem -voi', 'change stem +back']", "False, |suuret|, |zuurqt|, ['change stem -voi', 'change stem -round']", "False, |suuret|, |suwred|, ['change stem -voi', 'change stem +round']", "False, |suuret|, |suurqt|, ['change stem -round']", "False, |suuret|, |syuret|, ['change stem +back']", "False, |suuret|, |zwuret|, ['change stem -voi', 'change stem +round']", "False, |suuret|, |ziuret|, ['change stem -voi', 'change stem +round', 'change stem +back']", "False, |suuret|, |suired|, ['change stem -voi', 'change stem +round', 'change stem +back']", "False, |suuret|, |siured|, ['change stem -voi', 'change stem +round', 'change stem +back']", "False, |suuret|, |suurod|, ['change stem -voi', 'change stem -back', 'change stem -round']", "False, |suuret|, |zuwret|, ['change stem -voi', 'change stem +round']", "False, |suuret|, |suurot|, ['change stem -back', 'change stem -round']", "False, |suuret|, |suured|, ['change stem -voi']", "False, |suuret|, |swuret|, ['change stem +round']", "False, |suuret|, |zuurot|, ['change stem -voi', 'change stem -back', 'change stem -round']", "False, |suuret|, |suyret|, ['change stem +back']", "False, |suuret|, |zuyret|, ['change stem -voi', 'change stem +back']", "False, |suuret|, |suiret|, ['change stem +round', 'change stem +back']", "False, |suuret|, |suwret|, ['change stem +round']", "False, |suuret|, |zuuret|, ['change stem -voi']", "False, |suuret|, |suurqd|, ['change stem -voi', 'change stem -round']", "False, |suuret|, |zuiret|, ['change stem -voi', 'change stem +round', 'change stem +back']", "False, |suuret|, |zyuret|, ['change stem -voi', 'change stem +back']", "False, |suuret|, |siuret|, ['change stem +round', 'change stem +back']", "False, |suuret|, |suyred|, ['change stem -voi', 'change stem +back']", "False, |suuret|, |swured|, ['change stem -voi', 'change stem +round']"]
+
+2: True, |fizig|, |fizik|, ['change stem +voi']~t~["False, |fizig|, |fwsig|, ['change stem +voi', 'change stem -back']", "False, |fizig|, |fisyg|, ['change stem +voi', 'change stem -round']", "False, |fizig|, |fwzik|, ['change  +voi', 'change stem -back']", "False, |fizig|, |fysig|, ['change stem +voi', 'change stem -round']", "False, |fizig|, |fisig|, ['change stem +voi']", "False, |fizig|, |vizig|, ['change stem -voi']", "False, |fizig|, |vyzig|, ['change stem -voi', 'change stem -round']", 'False, |fizig|, |fizig|, []', "False, |fizig|, |fizwg|, ['change stem -back']", "False, |fizig|, |vuzig|, ['change stem -voi', 'change stem -back', 'change stem -round']", "False, |fizig|, |vwzig|, ['change stem -voi', 'change stem -back']", "False, |fizig|, |vizyg|, ['change stem -voi', 'change stem -round']", "False, |fizig|, |fuzig|, ['change stem -back', 'change stem -round']", "False, |fizig|, |vizwg|, ['change stem -voi', 'change stem -back']", "False, |fizig|, |fizuk|, ['change  +voi', 'change stem -back', 'change stem -round']", "False, |fizig|, |vizug|, ['change stem -voi', 'change stem -back', 'change stem -round']", "False, |fizig|, |fuzik|, ['change  +voi', 'change stem -back', 'change stem -round']", "False, |fizig|, |fizwk|, ['change  +voi', 'change stem -back']", "False, |fizig|, |fizyk|, ['change  +voi', 'change stem -round']", "False, |fizig|, |fyzik|, ['change  +voi', 'change stem -round']", "False, |fizig|, |fizyg|, ['change stem -round']", "False, |fizig|, |fusig|, ['change stem +voi', 'change stem -back', 'change stem -round']", "False, |fizig|, |fizug|, ['change stem -back', 'change stem -round']", "False, |fizig|, |fwzig|, ['change stem -back']", "False, |fizig|, |fisug|, ['change stem +voi', 'change stem -back', 'change stem -round']", "False, |fizig|, |fiswg|, ['change stem +voi', 'change stem -back']", "False, |fizig|, |fyzig|, ['change stem -round']"]
+
+3: True, |mystenid|, |mystenit|, ['change stem +voi']~t~["False, |mystenid|, |mystqnid|, ['change stem -round']", "False, |mystenid|, |myztenyd|, ['change stem -voi', 'change stem -round']", "False, |mystenid|, |miztenid|, ['change stem -voi', 'change stem +round']", "False, |mystenid|, |myztqnid|, ['change stem -voi', 'change stem -round']", "False, |mystenid|, |mistenit|, ['change  +voi', 'change stem +round']", "False, |mystenid|, |mystenyt|, ['change  +voi', 'change stem -round']", "False, |mystenid|, |mistenid|, ['change stem +round']", 'False, |mystenid|, |mystenid|, []', "False, |mystenid|, |mystqnit|, ['change  +voi', 'change stem -round']", "False, |mystenid|, |mysdenyd|, ['change stem -voi', 'change stem -round']", "False, |mystenid|, |mysdenid|, ['change stem -voi']", "False, |mystenid|, |myztenid|, ['change stem -voi']", "False, |mystenid|, |mysdqnid|, ['change stem -voi', 'change stem -round']", "False, |mystenid|, |misdenid|, ['change stem -voi', 'change stem +round']", "False, |mystenid|, |mystenyd|, ['change stem -round']"]
+
+4: True, |ekib|, |ekip|, ['change stem +voi']~t~["False, |ekib|, |egib|, ['change stem -voi']", 'False, |ekib|, |ekib|, []']
+
+6: True, |mySaahid|, |mySaahit|, ['change stem +voi']~t~["False, |mySaahid|, |miSaahid|, ['change stem +round']", 'False, |mySaahid|, |mySaahid|, []', "False, |mySaahid|, |miSaahit|, ['change  +voi', 'change stem +round']"]
+
+7: True, |filqrtim|, |filqrtym|, ['change  -round']~False, |filqrtim|, |filqrtim|, []
+
+8: True, |komandit|, |komandit|, []~t~["False, |komandit|, |komantit|, ['change stem +voi']"]
+
+13: True, |munkalib|, |munkalip|, ['change stem +voi']~False, |munkalib|, |munkalib|, []
+
+17: True, |raiD|, |raiT|, ['change  +voi']~False, |raiD|, |raiD|, []
+
+28: True, |monobwlokim|, |monobwlokum|, ['change  -round', 'change  -back']~False, |monobwlokim|, |monobwlokim|, []
+
+40: True, |redingotim|, |redingotum|, ['change  -round', 'change  -back']~False, |redingotim|, |redingotim|, []
+
+41: True, |paletim|, |paletim|, []~False, |paletim|, |paletwm|, ['change  -back']
+
+43: True, |matim|, |matwm|, ['change  -back']~False, |matim|, |matim|, []
+
+46: True, |iitimad|, |iitimat|, ['change stem +voi']~False, |iitimad|, |iitwmat|, ['change  +voi', 'change stem -back']
+
+62: True, |tevlidim|, |tevlidim|, []~False, |tevlidim|, |tevlidwm|, ['change  -back']
+
+67: True, |dehSetim|, |dehSetim|, []~False, |dehSetim|, |dehSetym|, ['change  -round']
+
+73: True, |revnakim|, |revnakwm|, ['change  -back']~False, |revnakim|, |revnakim|, []
+
+74: True, |sadedim|, |sadedim|, []~False, |sadedim|, |sadedwm|, ['change  -back']
+
+103: True, |nesiDim|, |nesiDim|, []~False, |nesiDim|, |nesiDwm|, ['change  -back']
+
+110: True, |pikim|, |pikim|, []~False, |pikim|, |pikwm|, ['change  -back']
+
+124: True, |twpatwpim|, |twpatwpwm|, ['change  -back']~False, |twpatwpim|, |twpatwpim|, []
+
+138: True, |myntehaabim|, |myntehaabwm|, ['change  -back']~False, |myntehaabim|, |myntehaabym|, ['change  -round']
+
+141: True, |syKuunetim|, |syKuunetim|, []~False, |syKuunetim|, |syKuunetwm|, ['change  -back']
+
+147: True, |orkidim|, |orkidim|, []~False, |orkidim|, |orkwdim|, ['change stem -back']
+
+152: True, |syrTim|, |syrTym|, ['change  -round']~False, |syrTim|, |syrTim|, []
+
+154: True, |iitimaadim|, |iitimaadwm|, ['change  -back']~False, |iitimaadim|, |iitimaadim|, []
+
+157: True, |sinDabim|, |sinDabwm|, ['change  -back']~False, |sinDabim|, |sinDabim|, []
+
+162: True, |tekqrneg|, |tekqrnek|, ['change stem +voi']~False, |tekqrneg|, |tekornek|, ['change  +voi', 'change stem -back']
+
+167: True, |tanzimat|, |tanzimat|, []~False, |tanzimat|, |tanzymat|, ['change stem -round']
+
+172: True, |arakesit|, |arakesit|, []~False, |arakesit|, |arakeswt|, ['change stem -back']
+
+195: True, |safahatim|, |safahatwm|, ['change  -back']~False, |safahatim|, |safahatim|, []
+
+198: True, |saadetim|, |saadetim|, []~False, |saadetim|, |saadetwm|, ['change  -back']
+
+220: True, |taklavatim|, |taklavatwm|, ['change  -back']~False, |taklavatim|, |taklavatim|, []
+
+221: True, |beKaaretim|, |beKaaretim|, []~False, |beKaaretim|, |beKaaretwm|, ['change  -back']
+
+236: True, |satim|, |satwm|, ['change  -back']~False, |satim|, |satim|, []
+
+241: True, |biletim|, |biletim|, []~False, |biletim|, |biletwm|, ['change  -back']
+
+243: True, |istiraabim|, |istiraabwm|, ['change  -back']~False, |istiraabim|, |istiraabim|, []
+
+251: True, |tertibat|, |tertibat|, []~False, |tertibat|, |tertubat|, ['change stem -back', 'change stem -round']
+
+265: True, |tesaubim|, |tesaubum|, ['change  -round', 'change  -back']~False, |tesaubim|, |tesaubim|, []
+
+270: True, |dikim|, |dikim|, []~False, |dikim|, |dikwm|, ['change  -back']
+
+277: True, |haaliharbim|, |haaliharbwm|, ['change  -back']~False, |haaliharbim|, |haaliharbum|, ['change  -back', 'change  -round']
+
+288: True, |vysatim|, |vysatwm|, ['change  -back']~False, |vysatim|, |visatim|, ['change stem +round']
+
+289: True, |gyvenDim|, |gyvenDim|, []~False, |gyvenDim|, |gyvenDwm|, ['change  -back']
+
+297: True, |wslahatim|, |wslahatwm|, ['change  -back']~False, |wslahatim|, |wslahatim|, []
+
+298: True, |taalib|, |taalip|, ['change stem +voi']~False, |taalib|, |taalwp|, ['change  +voi', 'change stem -back']
+
+337: True, |gylynTim|, |gylynTym|, ['change  -round']~False, |gylynTim|, |gylynTwm|, ['change  -back']
+
+338: True, |kistim|, |kistim|, []~False, |kistim|, |kistym|, ['change  -round']
+
+343: True, |swvwSwg|, |swvwSwk|, ['change stem +voi']~False, |swvwSwg|, |swviSwk|, ['change  +voi', 'change stem +back']
+
+351: True, |teldolabim|, |teldolabwm|, ['change  -back']~False, |teldolabim|, |teldolabim|, []
+
+389: True, |filitim|, |filitim|, []~False, |filitim|, |filitwm|, ['change  -back']
+
+398: True, |myntaahabaatim|, |myntaahabaatwm|, ['change  -back']~False, |myntaahabaatim|, |myntaahabaatim|, []
+
+400: True, |zijaafetim|, |zijaafetim|, []~False, |zijaafetim|, |zijaafetwm|, ['change  -back']
+
+406: True, |parkim|, |parkwm|, ['change  -back']~False, |parkim|, |parkim|, []
+
+407: True, |nedretim|, |nedretim|, []~False, |nedretim|, |nedretwm|, ['change  -back']
+
+423: True, |vinTim|, |vinTim|, []~False, |vinTim|, |vinDim|, ['change stem -voi']
+
+436: True, |musallatim|, |musallatwm|, ['change  -back']~False, |musallatim|, |musallatim|, []
+
+437: True, |roketim|, |roketim|, []~False, |roketim|, |roketwm|, ['change  -back']
+
+442: True, |kiremid|, |kiremit|, ['change stem +voi']~False, |kiremid|, |kiremid|, []
+
+447: True, |mamutim|, |mamutum|, ['change  -round', 'change  -back']~False, |mamutim|, |mamydim|, ['change  -voi', 'change stem +back']
+
+450: True, |geTid|, |geTit|, ['change stem +voi']~False, |geTid|, |geTwt|, ['change  +voi', 'change stem -back']
+
+451: True, |myrekkeb|, |myrekkep|, ['change stem +voi']~False, |myrekkeb|, |myrekkop|, ['change  +voi', 'change stem -back', 'change stem -round']
+
+453: True, |hotbehotim|, |hotbehotum|, ['change  -round', 'change  -back']~False, |hotbehotim|, |hotbehotim|, []
+
+460: True, |baabim|, |baabwm|, ['change  -back']~False, |baabim|, |baabum|, ['change  -back', 'change  -round']
+
+465: True, |kesaafetim|, |kesaafetim|, []~False, |kesaafetim|, |kesaafetwm|, ['change  -back']
+
+475: True, |baswnDim|, |baswnDwm|, ['change  -back']~False, |baswnDim|, |baswnDim|, []
+
+482: True, |mestim|, |mestim|, []~False, |mestim|, |mestwm|, ['change  -back']
+
+493: True, |pot|, |pot|, []~False, |pot|, |pqt|, ['change stem +back']
+
+506: True, |swlajdim|, |swlajdwm|, ['change  -back']~False, |swlajdim|, |swlajdim|, []
+
+508: True, |riaajetim|, |riaajetim|, []~False, |riaajetim|, |riaajetwm|, ['change  -back']
+
+517: True, |ajdwnDwlwg|, |ajdwnDwlwk|, ['change stem +voi']~False, |ajdwnDwlwg|, |ajdwnDulwk|, ['change  +voi', 'change stem -round']
+
+520: True, |tibetim|, |tibetim|, []~False, |tibetim|, |tipetim|, ['change stem +voi']
+
+529: True, |muazzeb|, |muazzep|, ['change stem +voi']~False, |muazzeb|, |muazzeb|, []
+
+533: True, |isnaadim|, |isnaadwm|, ['change  -back']~False, |isnaadim|, |isnaadim|, []
+
+534: True, |mynbit|, |mynbit|, []~False, |mynbit|, |mynbwt|, ['change stem -back']
+
+551: True, |fytyristim|, |fytyristim|, []~False, |fytyristim|, |fytyristwm|, ['change  -back']
+
+553: True, |efraadim|, |efraadwm|, ['change  -back']~False, |efraadim|, |efraadim|, []
+
+559: True, |bereketim|, |bereketim|, []~False, |bereketim|, |bereketwm|, ['change  -back']
+
+560: True, |mySirijet|, |mySirijet|, []~False, |mySirijet|, |miSirijet|, ['change stem +round']
+
+565: True, |bulunDim|, |bulunDum|, ['change  -round', 'change  -back']~False, |bulunDim|, |bulunDim|, []
+
+569: True, |tebligatim|, |tebligatwm|, ['change  -back']~False, |tebligatim|, |teblikatum|, ['change stem +voi', 'change  -back', 'change  -round']
+
+584: True, |aportim|, |aportum|, ['change  -round', 'change  -back']~False, |aportim|, |aportwm|, ['change  -back']
+
+586: True, |kwrampim|, |kwrampwm|, ['change  -back']~False, |kwrampim|, |kwrampum|, ['change  -back', 'change  -round']
+
+601: True, |mesKutim|, |mesKutum|, ['change  -round', 'change  -back']~False, |mesKutim|, |mesKutim|, []
+
+604: True, |korvetim|, |korvetim|, []~False, |korvetim|, |korvetwm|, ['change  -back']
+
+609: True, |jwllwg|, |jwllwk|, ['change stem +voi']~False, |jwllwg|, |jwlluk|, ['change  +voi', 'change stem -round']
+
+618: True, |maabaadim|, |maabaadwm|, ['change  -back']~False, |maabaadim|, |maabaadim|, []
+
+620: True, |taahydim|, |taahydym|, ['change  -round']~False, |taahydim|, |taahydwm|, ['change  -back']
+
+625: True, |kesig|, |kesik|, ['change stem +voi']~False, |kesig|, |kesyk|, ['change  +voi', 'change stem -round']
+
+626: True, |zwrtim|, |zwrtwm|, ['change  -back']~False, |zwrtim|, |zwrtim|, []
+
+631: True, |zyyrtim|, |zyyrtym|, ['change  -round']~False, |zyyrtim|, |zyyrtwm|, ['change  -back']
+
+637: True, |mehtabim|, |mehtabwm|, ['change  -back']~False, |mehtabim|, |mehtabum|, ['change  -back', 'change  -round']
+
+641: True, |myndemiTim|, |myndemiTim|, []~False, |myndemiTim|, |myndemiTwm|, ['change  -back']
+
+661: True, |Sapim|, |Sapwm|, ['change  -back']~False, |Sapim|, |Sapim|, []
+
+674: True, |kispetim|, |kispetim|, []~False, |kispetim|, |kispetwm|, ['change  -back']
+
+678: True, |rySdim|, |rySdym|, ['change  -round']~False, |rySdim|, |rySdim|, []
+
+679: True, |suuretim|, |suuretim|, []~False, |suuretim|, |suuretym|, ['change  -round']
+
+681: True, |miiLadim|, |miiLadwm|, ['change  -back']~False, |miiLadim|, |miiLadim|, []
+
+684: True, |ystaadim|, |ystaadwm|, ['change  -back']~False, |ystaadim|, |ysdaadwm|, ['change stem -voi', 'change  -back']
+
+686: True, |hynnab|, |hynnap|, ['change stem +voi']~False, |hynnab|, |hynnab|, []
+
+687: True, |geTidim|, |geTidim|, []~False, |geTidim|, |geTidwm|, ['change  -back']
+
+688: True, |damaadim|, |damaadwm|, ['change  -back']~False, |damaadim|, |damaadim|, []
+
+693: True, |pitoreskim|, |pitoreskim|, []~False, |pitoreskim|, |pitoreskwm|, ['change  -back']
+
+700: True, |lobut|, |lobut|, []~False, |lobut|, |lqbut|, ['change stem +back']
+
+708: True, |kymebulutim|, |kymebulutum|, ['change  -round', 'change  -back']~False, |kymebulutim|, |kymebulutim|, []
+
+709: True, |LaDivert|, |LaDivert|, []~False, |LaDivert|, |LaDivort|, ['change stem -back', 'change stem -round']
+
+715: True, |Sirkim|, |Sirkim|, []~False, |Sirkim|, |Sirkym|, ['change  -round']
+
+724: True, |hqdyg|, |hqdyk|, ['change stem +voi']~False, |hqdyg|, |hedyk|, ['change  +voi', 'change stem +round']
+
+728: True, |TerTqpim|, |TerTqpym|, ['change  -round']~False, |TerTqpim|, |TerTqpim|, []
+
+741: True, |pwnqmatig|, |pwnqmatik|, ['change stem +voi']~False, |pwnqmatig|, |pwnqmatyk|, ['change  +voi', 'change stem -round']
+
+778: True, |feribotim|, |feribotum|, ['change  -round', 'change  -back']~False, |feribotim|, |feribotwm|, ['change  -back']
+
+781: True, |kalafatim|, |kalafatwm|, ['change  -back']~False, |kalafatim|, |kalafatum|, ['change  -back', 'change  -round']
+
+816: True, |tabwldotim|, |tabwldotum|, ['change  -round', 'change  -back']~False, |tabwldotim|, |tabwldotwm|, ['change  -back']
+
+819: True, |ahSabim|, |ahSabwm|, ['change  -back']~False, |ahSabim|, |ahSabum|, ['change  -back', 'change  -round']
+
+821: True, |teressybim|, |teressybym|, ['change  -round']~False, |teressybim|, |teressibim|, ['change stem +round']
+
+822: True, |hasletim|, |hasletim|, []~False, |hasletim|, |hasletym|, ['change  -round']
+
+894: True, |DymbyrDemaat|, |DymbyrDemaat|, []~False, |DymbyrDemaat|, |DymbyrDqmaat|, ['change stem -round']
+
+928: True, |mynaasib|, |mynaasip|, ['change stem +voi']~False, |mynaasib|, |mynaaswp|, ['change  +voi', 'change stem -back']
+
+937: True, |nalbantim|, |nalbantwm|, ['change  -back']~False, |nalbantim|, |nalbantim|, []
+
+942: True, |gambotim|, |gambotum|, ['change  -round', 'change  -back']~False, |gambotim|, |gambotwm|, ['change  -back']
+
+1023: True, |meSrubaatim|, |meSrubaatwm|, ['change  -back']~False, |meSrubaatim|, |meSrupaatwm|, ['change stem +voi', 'change  -back']
+
+1088: True, |istenD|, |istenT|, ['change  +voi']~False, |istenD|, |istenD|, []
+
+1111: True, |raabetim|, |raabetim|, []~False, |raabetim|, |raapetim|, ['change stem +voi']
+
+1127: True, |mesned|, |mesnet|, ['change stem +voi']~False, |mesned|, |mesned|, []
+
+1165: True, |laborantim|, |laborantwm|, ['change  -back']~False, |laborantim|, |laborantum|, ['change  -back', 'change  -round']
+
+1168: True, |aLakokim|, |aLakokum|, ['change  -round', 'change  -back']~False, |aLakokim|, |aLakokwm|, ['change  -back']
+
+1232: True, |twbbim|, |twbbwm|, ['change  -back']~False, |twbbim|, |twpbwm|, ['change stem +voi', 'change  -back']
+
+1262: True, |burDim|, |burDum|, ['change  -round', 'change  -back']~False, |burDim|, |burTum|, ['change  +voi', 'change  -back', 'change  -round']
+
+1264: True, |ibibig|, |ibibik|, ['change stem +voi']~False, |ibibig|, |ibibig|, []
+
+1385: True, |yTim|, |yTym|, ['change  -round']~False, |yTim|, |yTim|, []
+
+1386: True, |mekanig|, |mekanik|, ['change stem +voi']~False, |mekanig|, |mekanyk|, ['change  +voi', 'change stem -round']
+
+1433: True, |selyloit|, |selyloit|, []~False, |selyloit|, |selylqit|, ['change stem +back']
+
+1513: True, |terettybim|, |terettybym|, ['change  -round']~False, |terettybim|, |terettybum|, ['change  -back', 'change  -round']
+
+1525: True, |baabim|, |baabwm|, ['change  -back']~False, |baabim|, |baabim|, []
+
+1530: True, |sebebim|, |sebebim|, []~False, |sebebim|, |sebebwm|, ['change  -back']
+
+1535: True, |borDim|, |borDum|, ['change  -round', 'change  -back']~False, |borDim|, |borDym|, ['change  -round']
+
+1564: True, |nevzadim|, |nevzadwm|, ['change  -back']~False, |nevzadim|, |nevzadum|, ['change  -back', 'change  -round']
+
+1570: True, |kulunDim|, |kulunDum|, ['change  -round', 'change  -back']~False, |kulunDim|, |kulunDwm|, ['change  -back']
+
+1586: True, |mynaaferetim|, |mynaaferetim|, []~False, |mynaaferetim|, |munaaferetim|, ['change stem -back']
+
+1592: True, |SapSapim|, |SapSapwm|, ['change  -back']~False, |SapSapim|, |SapSapim|, []
+
+1597: True, |tabib|, |tabip|, ['change stem +voi']~False, |tabib|, |tabwp|, ['change  +voi', 'change stem -back']
+
+1625: True, |izaaDim|, |izaaDwm|, ['change  -back']~False, |izaaDim|, |izaaDim|, []
+
+1631: True, |haaDetim|, |haaDetim|, []~False, |haaDetim|, |haaDetwm|, ['change  -back']
+
+1640: True, |muraadim|, |muraadwm|, ['change  -back']~False, |muraadim|, |muraadim|, []
+
+1641: True, |sentim|, |sentim|, []~False, |sentim|, |sentwm|, ['change  -back']
+
+1645: True, |imbisatim|, |imbisatwm|, ['change  -back']~False, |imbisatim|, |imbisatim|, []
+
+1650: True, |mesDidim|, |mesDidim|, []~False, |mesDidim|, |mesDidwm|, ['change  -back']
+
+1658: True, |meShutim|, |meShutum|, ['change  -round', 'change  -back']~False, |meShutim|, |meShitim|, ['change stem +round', 'change stem +back']
+
+1659: True, |guduubetim|, |guduubetim|, []~False, |guduubetim|, |guduubetum|, ['change  -back', 'change  -round']
+
+1662: True, |emaanet|, |emaanet|, []~False, |emaanet|, |qmaanet|, ['change stem -round']
+
+1723: True, |hythytim|, |hythytym|, ['change  -round']~False, |hythytim|, |hythytim|, []
+
+1725: True, |Sejhlig|, |Sejhlik|, ['change stem +voi']~False, |Sejhlig|, |Sejhlyk|, ['change  +voi', 'change stem -round']
+
+1809: True, |antartik|, |antartik|, []~False, |antartik|, |antartwk|, ['change stem -back']
+
+1812: True, |mynaDaatim|, |mynaDaatwm|, ['change  -back']~False, |mynaDaatim|, |mynaDaatim|, []
+
+1826: True, |kuvejtim|, |kuvejtim|, []~False, |kuvejtim|, |kuvejtwm|, ['change  -back']
+
+1831: True, |iDraatim|, |iDraatwm|, ['change  -back']~False, |iDraatim|, |iDraatim|, []
+
+1839: True, |kylfetim|, |kylfetim|, []~False, |kylfetim|, |kylfetwm|, ['change  -back']
+
+1847: True, |kaSalotim|, |kaSalotum|, ['change  -round', 'change  -back']~False, |kaSalotim|, |kaSalotim|, []
+
+1849: True, |mutaalebaatim|, |mutaalebaatwm|, ['change  -back']~False, |mutaalebaatim|, |mutaalebaatum|, ['change  -back', 'change  -round']
+
+1851: True, |qdynDim|, |qdynDym|, ['change  -round']~False, |qdynDim|, |qdynDum|, ['change  -back', 'change  -round']
+
+1866: True, |Laakajdim|, |Laakajdwm|, ['change  -back']~False, |Laakajdim|, |Laakajdim|, []
+
+1875: True, |tanzifat|, |tanzifat|, []~False, |tanzifat|, |tanzwfat|, ['change stem -back']
+
+1876: True, |fuhSijat|, |fuhSijat|, []~False, |fuhSijat|, |fyhSijat|, ['change stem +back']
+
+1878: True, |Sakaavetim|, |Sakaavetim|, []~False, |Sakaavetim|, |Sakaavetwm|, ['change  -back']
+
+1882: True, |zevaatim|, |zevaatwm|, ['change  -back']~False, |zevaatim|, |zevaatim|, []
+
+1920: True, |biskyvitim|, |biskyvitim|, []~False, |biskyvitim|, |biskividim|, ['change stem -voi', 'change stem +round']
+
+1922: True, |hemaahenk|, |hemaahenk|, []~False, |hemaahenk|, |hemaahonk|, ['change stem -back', 'change stem -round']
+
+1926: True, |meSKukim|, |meSKukum|, ['change  -round', 'change  -back']~False, |meSKukim|, |meSKukym|, ['change  -round']
+
+1939: True, |kuvvetim|, |kuvvetim|, []~False, |kuvvetim|, |kuvvetwm|, ['change  -back']
+
+1941: True, |temevvyTim|, |temevvyTym|, ['change  -round']~False, |temevvyTim|, |temevvyTim|, []
+
+1942: True, |ispenDim|, |ispenDim|, []~False, |ispenDim|, |ispenDym|, ['change  -round']
+
+1946: True, |rahatim|, |rahatwm|, ['change  -back']~False, |rahatim|, |rahatim|, []
+
+1953: True, |basit|, |basit|, []~False, |basit|, |baswt|, ['change stem -back']
+
+1966: True, |hqrgyTim|, |hqrgyTym|, ['change  -round']~False, |hqrgyTim|, |hqrgyTim|, []
+
+1969: True, |zwt|, |zwt|, []~False, |zwt|, |zut|, ['change stem -round']
+
+1982: True, |dqnemeD|, |dqnemeT|, ['change  +voi']~False, |dqnemeD|, |dqnqmeT|, ['change  +voi', 'change stem -round']
+
+1994: True, |mevDutim|, |mevDutum|, ['change  -round', 'change  -back']~False, |mevDutim|, |mevDitim|, ['change stem +round', 'change stem +back']
+
+1995: True, |gurbetim|, |gurbetim|, []~False, |gurbetim|, |gurbetum|, ['change  -back', 'change  -round']
+
+1997: True, |ylfetim|, |ylfetim|, []~False, |ylfetim|, |ylfetwm|, ['change  -back']
+
+2032: True, |sapim|, |sapwm|, ['change  -back']~False, |sapim|, |sapim|, []
+
+2041: True, |zeametim|, |zeametim|, []~False, |zeametim|, |zeametwm|, ['change  -back']
+
+2044: True, |kwrep|, |kwrep|, []~False, |kwrep|, |kurep|, ['change stem -round']
+
+2056: True, |iTtinaabim|, |iTtinaabwm|, ['change  -back']~False, |iTtinaabim|, |iTtinaabim|, []
+
+2064: True, |muazzebim|, |muazzebim|, []~False, |muazzebim|, |muazzebwm|, ['change  -back']
+
+2067: True, |gwkim|, |gwkwm|, ['change  -back']~False, |gwkim|, |gwkim|, []
+
+2068: True, |nijaabetim|, |nijaabetim|, []~False, |nijaabetim|, |nijaabetwm|, ['change  -back']
+
+2077: True, |rebaabim|, |rebaabwm|, ['change  -back']~False, |rebaabim|, |rebaabim|, []
+
+2088: True, |fijongim|, |fijongum|, ['change  -round', 'change  -back']~False, |fijongim|, |fijongwm|, ['change  -back']
+
+2100: True, |anzarotim|, |anzarotum|, ['change  -round', 'change  -back']~False, |anzarotim|, |anzarotwm|, ['change  -back']
+
+2101: True, |laanet|, |laanet|, []~False, |laanet|, |laanqt|, ['change stem -round']
+
+2103: True, |serbestim|, |serbestim|, []~False, |serbestim|, |serbestum|, ['change  -back', 'change  -round']
+
+2112: True, |popim|, |popum|, ['change  -round', 'change  -back']~False, |popim|, |pepim|, ['change stem +round', 'change stem +back']
+
+2114: True, |wSwtaD|, |wSwtaT|, ['change  +voi']~False, |wSwtaD|, |wSutaT|, ['change  +voi', 'change stem -round']
+
+2116: True, |donkiSotlug|, |donkiSotluk|, ['change stem +voi']~False, |donkiSotlug|, |donkuSotluk|, ['change  +voi', 'change stem -back', 'change stem -round']
+
+2129: True, |maaLubijetim|, |maaLubijetim|, []~False, |maaLubijetim|, |maaLwbijetim|, ['change stem +round']
+
+2134: True, |salisilatim|, |salisilatwm|, ['change  -back']~False, |salisilatim|, |salisilatum|, ['change  -back', 'change  -round']
+
+2147: True, |mensubim|, |mensubum|, ['change  -round', 'change  -back']~False, |mensubim|, |mensubwm|, ['change  -back']
+
+2185: True, |aTim|, |aTwm|, ['change  -back']~False, |aTim|, |aTum|, ['change  -back', 'change  -round']
+
+2203: True, |pingpongim|, |pingpongum|, ['change  -round', 'change  -back']~False, |pingpongim|, |pingpongwm|, ['change  -back']
+
+2218: True, |antim|, |antwm|, ['change  -back']~False, |antim|, |antum|, ['change  -back', 'change  -round']
+
+2221: True, |serKaatib|, |serKaatip|, ['change stem +voi']~False, |serKaatib|, |serKaatwp|, ['change  +voi', 'change stem -back']
+
+2231: True, |zatim|, |zatwm|, ['change  -back']~False, |zatim|, |zatim|, []
+
+2239: True, |derDim|, |derDim|, []~False, |derDim|, |derDwm|, ['change  -back']
+
+2240: True, |nakaratim|, |nakaratwm|, ['change  -back']~False, |nakaratim|, |nakaratim|, []
+
+2243: True, |teSehhydim|, |teSehhydym|, ['change  -round']~False, |teSehhydim|, |teSehhidim|, ['change stem +round']
+
+2249: True, |dioksid|, |dioksit|, ['change stem +voi']~False, |dioksid|, |dioksyt|, ['change  +voi', 'change stem -round']
+
+2255: True, |Dizvitim|, |Dizvitim|, []~False, |Dizvitim|, |Dizvitwm|, ['change  -back']
+
+2262: True, |dujunDim|, |dujunDum|, ['change  -round', 'change  -back']~False, |dujunDim|, |dujunDim|, []
+
+2266: True, |Seametim|, |Seametim|, []~False, |Seametim|, |Seametum|, ['change  -back', 'change  -round']
+
+2276: True, |akordim|, |akordum|, ['change  -round', 'change  -back']~False, |akordim|, |akordim|, []
+
+2279: True, |satwlwg|, |satwlwk|, ['change stem +voi']~False, |satwlwg|, |satwluk|, ['change  +voi', 'change stem -round']
+
+2287: True, |aplig|, |aplik|, ['change stem +voi']~False, |aplig|, |aplwk|, ['change  +voi', 'change stem -back']
+
+2331: True, |paktim|, |paktwm|, ['change  -back']~False, |paktim|, |paktim|, []
+
+2333: True, |mahDubim|, |mahDubum|, ['change  -round', 'change  -back']~False, |mahDubim|, |mahDubwm|, ['change  -back']
+
+2336: True, |mystenidim|, |mystenidim|, []~False, |mystenidim|, |mystenidum|, ['change  -back', 'change  -round']
+
+2381: True, |fosfatim|, |fosfatwm|, ['change  -back']~False, |fosfatim|, |fosfatim|, []
+
+2384: True, |saik|, |saik|, []~False, |saik|, |sawk|, ['change stem -back']
+
+Constraints added in training #0: 129
++{+cons,-lat,+lab}{+cont}{+round,-cons}
++{-son}{+hi,+back,+cont}{+voc,+son,+round,+cont,-word,-lo,+hi,-nas,-cons}
+Ident  back
+Ident  -round
+Ident  -voi
+Ident  round
+Ident  voi
++{-glot,-voi}{+word}
++{-cont}{+back,+son}
++{-son}{+back,-round}{+ant}
++{-hi,-word}{-word,-son}{+round,+cont}
+voc tier -['{+son,+round,+cont,-word,-lo,-nas,-cons}']
+Ident  +round
+voc tier +['{-word}', '{+back,-nas}']
++{+cons,-lat,+ant,-nas,-dr,-cont}{+voc,+son,+cont,-word,-lo,+hi,-nas,-back,-round,-cons}{+cons,-dr}
++{-dor,-dr}{+voc,-back}
+-{+cons}{-back,-round}{-lat}
++{+round,+back}
+Ident  +voi
+-{+back}
+-{-round,-lo}
+-{+voc,+round}
+-{+cont}{+round}{-glot}
+-{+voc,+son,-word,-hi,-nas,-cons}{-glot,-rhot,-nas,+cor,-voc}{-word,-back}
++{+voc}{-glot,-rhot,+cons}{+son,+cont,-word,-lo,+hi,-nas,-back,-round,-cons}
+-{+cor}{-word}{+hi,-round}
++{+round,-word}{+son}
+-{+cont,-round}{-cor}
+-{-word,-back,-lo}
+voc tier -['{-hi}', '{+voc,+back,+cont}', '{+voc,-round}']
+voc tier -['{+son}', '{+voc,+back,+cont,-round}', '{-nas}']
+-{-glot,+rhot}{-rhot,-voc}{+hi,-round}
+-{+back,-lo,-round}
+-{+voc,+back,-round}
++{-glot}{-glot,+cons}{+back,+cont}
+-{+cons,-rhot,-lat,-nas,-cont,-glot,-dor,-voi,-son,-voc}{+voc,+round,+back,+cont,-word,-lo,+hi,-nas}{-lab}
+-{-cons}{+cons}{+son,-word,-round}
+Ident  -back
++{+cont}{-son,-voc}{+voc,+back,+cont,-word,-lo,+hi,-nas,-round}
++{-back,-lo}
+voc tier -['{+voc,+back,+son}']
+-{+ant}{+voc,+son,+back,-word,-lo,-nas,-cons}{-rhot,+voi}
+-{-rhot,-lat,-cont,-dor,-son,-voc}{+back,+son}
+-{+son,-back}{-dor,+son,-dr,-word}
+voc tier +['{+back,-word,-lo}', '{-cons}', '{-word}']
+-{-voi}{+hi,-back,-lo}
+cons tier +['{-glot,+cons}', '{-voi,-ant}']
+voc tier +['{+voc}', '{+cont}', '{+back,+cont}']
+-{+round,+cont}
+voc tier +['{-nas,-round}', '{+hi,-nas,-cons,-round}']
++{+cons}{+back,+cont,-round}{-cont}
+-{+back}{-word}{+word}
+-{+son,-back}{-word}{+word}
+-{-nas}{+cons,+voi,+lab,-word,-rhot,+ant,-nas,-dr,-cont,-dor,-cor,-voc}{+son,-back}
+-{-round,-back,-lo}
+voc tier -['{+hi,-round}']
+voc tier -['{+voc,+back}', '{+voc,-back}']
+-{-voc}{+cont,-back}
+-{-back,-round}{+cons}{+word}
++{+voi,-word}{-back,-cons}
+voc tier -['{-cons}', '{+son,-round}']
+voc tier +['{+lo}', '{+voc,+back,+son,-cons}', '{+voc,+son,+back,-word,+hi,-nas,-round,-cons}']
++{+cont,-back,-round}
++{+voc,+son,+back,+cont,-word,-lo,+hi,-nas,-round}
+-{+back,+cont,-word}
+-{-dor}{-glot,-word}{+round,-back}
+voc tier +['{+hi,+round}']
++{-nas,-round}
+voc tier +['{+voc}', '{+cont}', '{-nas,-back}']
+-{+dr}{+round,+son}
+voc tier +['{+cont,+round,-nas}']
+-{+word}{-lat}{-back,-cons}
+voc tier -['{+voc,-word,-round}']
++{+cons,+voi,+ant,-lat,-nas,-dr,-glot,-dor,-son}{+back,-word}{+son}
+-{-nas,+son,-round}
+-{-back,-lo}{+son,-dr,-word,+nas}
+-{-nas,-back,-lo}{+son}{+word}
++{+cont,-back}
+Ident  +back
++{+voc,-round}
++{+round,+son}{-lat,+cons,+son,+lab,-word,+nas,-rhot,+ant,-dr,-cont,-glot,-dor,-cor,-voc}
++{+voc,+back,-round,-word,-lo}
++{+back,-cons}
++{-round}
++{+son,-back}
++{-glot,-dor,-lat,-voi}{+back,+cont}
+cons tier -['{-lat}', '{-rhot}', '{-nas,-voi}']
+-{-nas}{+son}{-cor,+voi}
+-{-lat}{+round,-word,-cons}
+-{+back,+son}{+cons,+ant,-voc,-cont}{+word}
+voc tier -['{+voc,+back,-nas,-cons,-round}']
+-{-voi}{+back,-round}
++{+hi,-round}{+ant}{+word}
++{-word,-back}
++{-word}{+round,+back,-cons,-lo}
+-{-back,-round}
+-{+hi,+back,+son}{+lab}
+-{+back,+son}{-word}{+word}
+-{+round,+cont,-lo,+hi,-nas,-cons}
+voc tier -['{+round}', '{+hi,-back}']
+voc tier +['{-word}', '{+son,-round}']
++{+word}{+back,-word}{-rhot,+cons,-voi,+lab}
++{+voc,+son,+back,-word,-lo,-nas,-round}
++{-rhot,+ant,-nas,-voi}{+back,-word,-cons}{-glot,+cons,+nas}
+-{+back,-lo}
++{-glot,-rhot,+cont}{+cont,+round,+son,-back,-cons}{-son}
++{-cont}{+son,-cons,-round}
++{+voc,+son,+round,+cont,-word,-lo,-nas,-back,-cons}
+-{+voc,+back,-cons}{+cor,+dr,-word,-rhot,-lat,-cont,-dor,-lab,-son,-voc}{+voc,+cont,-lo,+hi,-nas,-back}
+-{-lat}{+son,-round}
+voc tier -['{+cont}', '{-word}', '{+voc,+back,-cons}']
+-{+hi,-back}
++{+back,+cont,-lo,-nas,-round,-cons}
+-{-lat}{+son,-word,-lo,+hi,-nas,-back,-cons}{-rhot}
+voc tier -['{-hi,-round}', '{+hi,-back}']
+voc tier -['{-hi}', '{+cont,-cons,-back}']
++{-dor}{+round,+back}
+-{+hi,+round,-nas,-word}
+-{+cont,-nas,-back,-round}{-voc}
+-{+cont,-round}{+cons}
+-{+voc,+son,+cont,-word,-lo,-nas,-back,-round,-cons}{+nas}
++{+dr}{-back,-lo}
++{+cons,+son,+cor,+cont,-word,+lat,-rhot,+ant,-nas,-dr,-glot,-dor,-lab,-voc}{+hi,-word,-round}{-son}
++{+cons,+son,-cont}{-cons,-round}
+-{+round}
+voc tier +['{+voc}', '{+back,+son}']
+voc tier +['{-nas}', '{+voc}', '{+voc,+round,+cont,-lo,+hi,-nas,-cons}']
+voc tier -['{+cont}', '{+voc,-word,-back,-lo}']
+voc tier -['{-back}']
+
+Errors in testing #0: 95
+False, |fagotim|, |fagotwm|, ['change  -back']
+
+False, |kynkim|, |kynkum|, ['change  -back', 'change  -round']
+
+False, |obeliskim|, |qbeliskim|, ['change stem +back']
+
+False, |azotim|, |azotwm|, ['change  -back']
+
+False, |termodinamig|, |termodunamik|, ['change  +voi', 'change stem -back', 'change stem -round']
+
+False, |Zeofizig|, |Zeqfizik|, ['change  +voi', 'change stem +back']
+
+False, |hqstim|, |hqstum|, ['change  -back', 'change  -round']
+
+False, |jahutim|, |jahutwm|, ['change  -back']
+
+False, |jqkim|, |jqkim|, []
+
+False, |baasylbaadelmevtim|, |baasulbaadelmevtim|, ['change stem -back']
+
+False, |oruDim|, |oruTum|, ['change  +voi', 'change  -back', 'change  -round']
+
+False, |dqrdim|, |dqrdum|, ['change  -back', 'change  -round']
+
+False, |havuDim|, |havuTwm|, ['change  +voi', 'change  -back']
+
+False, |gavotim|, |gavotwm|, ['change  -back']
+
+False, |taadiLat|, |taadwLat|, ['change stem -back']
+
+False, |Taputim|, |Taputwm|, ['change  -back']
+
+False, |avuDim|, |avuTwm|, ['change  +voi', 'change  -back']
+
+False, |obelisk|, |qbelisk|, ['change stem +back']
+
+False, |kwlwDim|, |kwlwTwm|, ['change  +voi', 'change  -back']
+
+False, |pabuDim|, |pabuTwm|, ['change  +voi', 'change  -back']
+
+False, |harbim|, |harbwm|, ['change  -back']
+
+False, |demagogim|, |demagogwm|, ['change  -back']
+
+False, |anodim|, |anodwm|, ['change  -back']
+
+False, |faarenhajtim|, |faarenhajtum|, ['change  -back', 'change  -round']
+
+False, |trioksit|, |triqksit|, ['change stem +back']
+
+False, |matlubim|, |matlubwm|, ['change  -back']
+
+False, |kamarotim|, |kamarotwm|, ['change  -back']
+
+False, |altyst|, |altust|, ['change stem -back']
+
+False, |mevtim|, |mevtwm|, ['change  -back']
+
+False, |kalbim|, |kalbwm|, ['change  -back']
+
+False, |mabudim|, |mabudwm|, ['change  -back']
+
+False, |Tqpim|, |Tqpum|, ['change  -back', 'change  -round']
+
+False, |tasallutim|, |tasallutwm|, ['change  -back']
+
+False, |zejtim|, |zejtwm|, ['change  -back']
+
+False, |mensuDaatim|, |mensuTaatwm|, ['change stem +voi', 'change  -back']
+
+False, |apsyrd|, |apsurt|, ['change  +voi', 'change stem -back']
+
+False, |autim|, |autwm|, ['change  -back']
+
+False, |maksudim|, |maksudwm|, ['change  -back']
+
+False, |garbim|, |garbwm|, ['change  -back']
+
+False, |bystim|, |bystum|, ['change  -back', 'change  -round']
+
+False, |aLpim|, |aLpwm|, ['change  -back']
+
+False, |trqstim|, |trqstum|, ['change  -back', 'change  -round']
+
+False, |kroket|, |krqket|, ['change stem +back']
+
+False, |haddim|, |haddwm|, ['change  -back']
+
+False, |taassubim|, |taassubwm|, ['change  -back']
+
+False, |neftim|, |neftwm|, ['change  -back']
+
+False, |hydaajinaabitim|, |hydaajwnaabitim|, ['change stem -back']
+
+False, |qDim|, |qDim|, []
+
+False, |tahakkukim|, |tahakkukwm|, ['change  -back']
+
+False, |ahtapotim|, |ahtapotwm|, ['change  -back']
+
+False, |TelwnDim|, |TelwnDum|, ['change  -back', 'change  -round']
+
+False, |holding|, |holdwnk|, ['change  +voi', 'change stem -back']
+
+False, |tavassutim|, |tavassutwm|, ['change  -back']
+
+False, |havutim|, |havutwm|, ['change  -back']
+
+False, |agobim|, |agobwm|, ['change  -back']
+
+False, |peroksid|, |perqksit|, ['change  +voi', 'change stem +back']
+
+False, |huruDim|, |huruTum|, ['change  +voi', 'change  -back', 'change  -round']
+
+False, |hydaajinaabit|, |hydaajwnaabit|, ['change stem -back']
+
+False, |mylkim|, |mylkum|, ['change  -back', 'change  -round']
+
+False, |solenoitim|, |solenqitim|, ['change stem +back']
+
+False, |qdim|, |qdum|, ['change  -back', 'change  -round']
+
+False, |orkid|, |qrkit|, ['change  +voi', 'change stem +back']
+
+False, |mensuDat|, |mensuTat|, ['change stem +voi']
+
+False, |selyloitim|, |selylqitim|, ['change stem +back']
+
+False, |optig|, |qptik|, ['change  +voi', 'change stem +back']
+
+False, |Zestim|, |Zestwm|, ['change  -back']
+
+False, |gqtim|, |gqtum|, ['change  -back', 'change  -round']
+
+False, |tiroitim|, |tirqitim|, ['change stem +back']
+
+False, |sinagogim|, |sinagogwm|, ['change  -back']
+
+False, |gqnTim|, |gqnTum|, ['change  -back', 'change  -round']
+
+False, |minakobim|, |minakobwm|, ['change  -back']
+
+False, |tasallubim|, |tasallubwm|, ['change  -back']
+
+False, |gwrqnlandim|, |gwrqnlandum|, ['change  -back', 'change  -round']
+
+False, |flytim|, |flytim|, []
+
+False, |maskotim|, |maskotwm|, ['change  -back']
+
+False, |kespim|, |kespwm|, ['change  -back']
+
+False, |eSarbim|, |eSarbum|, ['change  -back', 'change  -round']
+
+False, |Zypim|, |Zypim|, []
+
+False, |antimanjetig|, |antwmanjetik|, ['change  +voi', 'change stem -back']
+
+False, |angutim|, |angutwm|, ['change  -back']
+
+False, |lypim|, |lypim|, []
+
+False, |tyrkim|, |tyrkum|, ['change  -back', 'change  -round']
+
+False, |matematig|, |matomatik|, ['change  +voi', 'change stem -back', 'change stem -round']
+
+False, |restim|, |restwm|, ['change  -back']
+
+False, |abwhajat|, |apwhajat|, ['change stem +voi']
+
+False, |semerkantim|, |semerkantum|, ['change  -back', 'change  -round']
+
+False, |grotesk|, |grqtesk|, ['change stem +back']
+
+False, |selyloitim|, |selylqitim|, ['change stem +back']
+
+False, |izbandutim|, |izbandutwm|, ['change  -back']
+
+False, |tybim|, |tybim|, []
+
+False, |Sytim|, |Sytim|, []
+
+False, |malazgirt|, |malazgwrt|, ['change stem -back']
+
+False, |dioksidim|, |diqksidim|, ['change stem +back']
+
+False, |lqkopwlast|, |lqkopulast|, ['change stem -round']
+
+False, |kyrkim|, |kyrkum|, ['change  -back', 'change  -round']
+
+Errors in training #1: 95
+44: True, |ofsajtim|, |ofsajtwm|, ['change  -back']~False, |ofsajtim|, |ofsajtum|, ['change  -back', 'change  -round']
+
+49: True, |taakib|, |taakip|, ['change stem +voi']~False, |taakib|, |taakwp|, ['change  +voi', 'change stem -back']
+
+50: True, |haraDim|, |haraDwm|, ['change  -back']~False, |haraDim|, |haraDim|, []
+
+67: True, |dehSetim|, |dehSetim|, []~False, |dehSetim|, |dehSetwm|, ['change  -back']
+
+88: True, |mijaadim|, |mijaadwm|, ['change  -back']~False, |mijaadim|, |mijaadim|, []
+
+90: True, |nijetim|, |nijetim|, []~False, |nijetim|, |nijetwm|, ['change  -back']
+
+100: True, |mevkutim|, |mevkutum|, ['change  -round', 'change  -back']~False, |mevkutim|, |mevkitim|, ['change stem +round', 'change stem +back']
+
+102: True, |solenoit|, |solenoit|, []~False, |solenoit|, |solonoit|, ['change stem -back', 'change stem -round']
+
+165: True, |ipotetig|, |ipotetik|, ['change stem +voi']~False, |ipotetig|, |ipqtetik|, ['change  +voi', 'change stem +back']
+
+179: True, |baasylbaadelmevt|, |baasylbaadelmevt|, []~False, |baasylbaadelmevt|, |baasulbaadelmevt|, ['change stem -back']
+
+277: True, |haaliharbim|, |haaliharbwm|, ['change  -back']~False, |haaliharbim|, |haaliharbum|, ['change  -back', 'change  -round']
+
+437: True, |roketim|, |roketim|, []~False, |roketim|, |rqketim|, ['change stem +back']
+
+472: True, |Lubijat|, |Lubijat|, []~False, |Lubijat|, |Lubwjat|, ['change stem -back']
+
+501: True, |tenasybim|, |tenasybym|, ['change  -round']~False, |tenasybim|, |tenasybim|, []
+
+515: True, |kwskanDim|, |kwskanDwm|, ['change  -back']~False, |kwskanDim|, |kwskanDim|, []
+
+520: True, |tibetim|, |tibetim|, []~False, |tibetim|, |tibetwm|, ['change  -back']
+
+523: True, |peSiinatim|, |peSiinatwm|, ['change  -back']~False, |peSiinatim|, |peSiinatim|, []
+
+531: True, |mongoloitim|, |mongoloitim|, []~False, |mongoloitim|, |mongoloitwm|, ['change  -back']
+
+545: True, |tortopim|, |tortopum|, ['change  -round', 'change  -back']~False, |tortopim|, |tortopym|, ['change  -round']
+
+556: True, |sikim|, |sikim|, []~False, |sikim|, |sikwm|, ['change  -back']
+
+569: True, |tebligatim|, |tebligatwm|, ['change  -back']~False, |tebligatim|, |tebligatim|, []
+
+576: True, |ibretim|, |ibretim|, []~False, |ibretim|, |ibretum|, ['change  -back', 'change  -round']
+
+583: True, |peroksidim|, |peroksidim|, []~False, |peroksidim|, |pereksidim|, ['change stem +round', 'change stem +back']
+
+620: True, |taahydim|, |taahydym|, ['change  -round']~False, |taahydim|, |taahydim|, []
+
+623: True, |twrag|, |twrak|, ['change stem +voi']~False, |twrag|, |turak|, ['change  +voi', 'change stem -round']
+
+693: True, |pitoreskim|, |pitoreskim|, []~False, |pitoreskim|, |pitoreskym|, ['change  -round']
+
+728: True, |TerTqpim|, |TerTqpym|, ['change  -round']~False, |TerTqpim|, |TerTqpim|, []
+
+741: True, |pwnqmatig|, |pwnqmatik|, ['change stem +voi']~False, |pwnqmatig|, |pwnomatik|, ['change  +voi', 'change stem -back']
+
+743: True, |Denabim|, |Denabwm|, ['change  -back']~False, |Denabim|, |Denabym|, ['change  -round']
+
+748: True, |mesaamat|, |mesaamat|, []~False, |mesaamat|, |mezaamat|, ['change stem -voi']
+
+751: True, |feraasetim|, |feraasetim|, []~False, |feraasetim|, |feraasetwm|, ['change  -back']
+
+756: True, |mytevaafwkim|, |mytevaafwkwm|, ['change  -back']~False, |mytevaafwkim|, |mytevaafwkim|, []
+
+765: True, |muhribim|, |muhribim|, []~False, |muhribim|, |muhribwm|, ['change  -back']
+
+770: True, |ahfaadim|, |ahfaadwm|, ['change  -back']~False, |ahfaadim|, |ahfaadim|, []
+
+776: True, |hemaroit|, |hemaroit|, []~False, |hemaroit|, |hemarowt|, ['change stem -back']
+
+796: True, |loZistig|, |loZistik|, ['change stem +voi']~False, |loZistig|, |lqZistik|, ['change  +voi', 'change stem +back']
+
+805: True, |altystim|, |altystym|, ['change  -round']~False, |altystim|, |altistim|, ['change stem +round']
+
+806: True, |nispet|, |nispet|, []~False, |nispet|, |nispqt|, ['change stem -round']
+
+861: True, |sejidim|, |sejidim|, []~False, |sejidim|, |sejidym|, ['change  -round']
+
+863: True, |tezebzybim|, |tezebzybym|, ['change  -round']~False, |tezebzybim|, |tezebzibim|, ['change stem +round']
+
+877: True, |syetim|, |syetim|, []~False, |syetim|, |syetym|, ['change  -round']
+
+882: True, |fylytim|, |fylytym|, ['change  -round']~False, |fylytim|, |fylytim|, []
+
+885: True, |kampim|, |kampwm|, ['change  -back']~False, |kampim|, |kampum|, ['change  -back', 'change  -round']
+
+888: True, |ymmetim|, |ymmetim|, []~False, |ymmetim|, |ymmetwm|, ['change  -back']
+
+891: True, |dolambaTim|, |dolambaTwm|, ['change  -back']~False, |dolambaTim|, |dolambaTim|, []
+
+908: True, |Dennetim|, |Dennetim|, []~False, |Dennetim|, |Dennetwm|, ['change  -back']
+
+912: True, |bikarbonatim|, |bikarbonatwm|, ['change  -back']~False, |bikarbonatim|, |bikarbonatim|, []
+
+918: True, |katgyt|, |katgyt|, []~False, |katgyt|, |katgut|, ['change stem -back']
+
+942: True, |gambotim|, |gambotum|, ['change  -round', 'change  -back']~False, |gambotim|, |gambotwm|, ['change  -back']
+
+946: True, |terkim|, |terkim|, []~False, |terkim|, |terkym|, ['change  -round']
+
+955: True, |sakim|, |sakwm|, ['change  -back']~False, |sakim|, |sakim|, []
+
+961: True, |briketim|, |briketim|, []~False, |briketim|, |briketwm|, ['change  -back']
+
+975: True, |sakatim|, |sakatwm|, ['change  -back']~False, |sakatim|, |sakatim|, []
+
+989: True, |bergamotim|, |bergamotum|, ['change  -round', 'change  -back']~False, |bergamotim|, |bergamotwm|, ['change  -back']
+
+991: True, |mytehejjiD|, |mytehejjiT|, ['change  +voi']~False, |mytehejjiD|, |mytqhejjiT|, ['change  +voi', 'change stem -round']
+
+1002: True, |LaDivertim|, |LaDivertim|, []~False, |LaDivertim|, |LaDivertum|, ['change  -back', 'change  -round']
+
+1005: True, |aSkim|, |aSkwm|, ['change  -back']~False, |aSkim|, |aSkim|, []
+
+1006: True, |tabutim|, |tabutum|, ['change  -round', 'change  -back']~False, |tabutim|, |tabutwm|, ['change  -back']
+
+1020: True, |Lubijatim|, |Lubijatwm|, ['change  -back']~False, |Lubijatim|, |Lubijatum|, ['change  -back', 'change  -round']
+
+1029: True, |mahsubim|, |mahsubum|, ['change  -round', 'change  -back']~False, |mahsubim|, |mahsubwm|, ['change  -back']
+
+1188: True, |kezzapim|, |kezzapwm|, ['change  -back']~False, |kezzapim|, |kezzapum|, ['change  -back', 'change  -round']
+
+1208: True, |gqTim|, |gqTym|, ['change  -round']~False, |gqTim|, |gqTwm|, ['change  -back']
+
+1212: True, |harabaatim|, |harabaatwm|, ['change  -back']~False, |harabaatim|, |harabaatym|, ['change  -round']
+
+1238: True, |maaLubim|, |maaLubum|, ['change  -round', 'change  -back']~False, |maaLubim|, |maaLubwm|, ['change  -back']
+
+1245: True, |gqrgeT|, |gqrgeT|, []~False, |gqrgeT|, |gqrkeT|, ['change stem +voi']
+
+1282: True, |avunTim|, |avunTum|, ['change  -round', 'change  -back']~False, |avunTim|, |avunTwm|, ['change  -back']
+
+1288: True, |kavraTim|, |kavraTwm|, ['change  -back']~False, |kavraTim|, |kavraTum|, ['change  -back', 'change  -round']
+
+1636: True, |kqkim|, |kqkym|, ['change  -round']~False, |kqkim|, |kqkum|, ['change  -back', 'change  -round']
+
+1658: True, |meShutim|, |meShutum|, ['change  -round', 'change  -back']~False, |meShutim|, |meShutym|, ['change  -round']
+
+1659: True, |guduubetim|, |guduubetim|, []~False, |guduubetim|, |guduubetum|, ['change  -back', 'change  -round']
+
+1660: True, |tyrkijaatim|, |tyrkijaatwm|, ['change  -back']~False, |tyrkijaatim|, |tyrkijaatim|, []
+
+1663: True, |tertibim|, |tertibim|, []~False, |tertibim|, |tertibwm|, ['change  -back']
+
+1668: True, |boDurgatim|, |boDurgatwm|, ['change  -back']~False, |boDurgatim|, |boDurgatim|, []
+
+1675: True, |talebim|, |talebim|, []~False, |talebim|, |talebwm|, ['change  -back']
+
+1684: True, |ystim|, |ystym|, ['change  -round']~False, |ystim|, |ystim|, []
+
+1686: True, |kajwbim|, |kajwbwm|, ['change  -back']~False, |kajwbim|, |kajwbim|, []
+
+1688: True, |sepetim|, |sepetim|, []~False, |sepetim|, |sepetwm|, ['change  -back']
+
+1691: True, |trioksitim|, |trioksitim|, []~False, |trioksitim|, |triqksitim|, ['change stem +back']
+
+1821: True, |vaktim|, |vaktim|, []~False, |vaktim|, |vaktwm|, ['change  -back']
+
+1831: True, |iDraatim|, |iDraatwm|, ['change  -back']~False, |iDraatim|, |iDraatim|, []
+
+1996: True, |zimmet|, |zimmet|, []~False, |zimmet|, |zymmet|, ['change stem -round']
+
+2069: True, |istimbotim|, |istimbotum|, ['change  -round', 'change  -back']~False, |istimbotim|, |istimbotwm|, ['change  -back']
+
+2077: True, |rebaabim|, |rebaabwm|, ['change  -back']~False, |rebaabim|, |rebaabum|, ['change  -back', 'change  -round']
+
+2086: True, |byrytim|, |byrytym|, ['change  -round']~False, |byrytim|, |byrytim|, []
+
+2093: True, |oportynist|, |oportynist|, []~False, |oportynist|, |oportynyst|, ['change stem -round']
+
+2175: True, |sonuDim|, |sonuDum|, ['change  -round', 'change  -back']~False, |sonuDim|, |sonuDwm|, ['change  -back']
+
+2185: True, |aTim|, |aTwm|, ['change  -back']~False, |aTim|, |aTum|, ['change  -back', 'change  -round']
+
+2190: True, |hqtim|, |hqtym|, ['change  -round']~False, |hqtim|, |hetim|, ['change stem +round']
+
+2192: True, |tartaDim|, |tartaDwm|, ['change  -back']~False, |tartaDim|, |tartaDum|, ['change  -back', 'change  -round']
+
+2221: True, |serKaatib|, |serKaatip|, ['change stem +voi']~False, |serKaatib|, |serKaatwp|, ['change  +voi', 'change stem -back']
+
+2233: True, |dutim|, |dutum|, ['change  -round', 'change  -back']~False, |dutim|, |dutym|, ['change  -round']
+
+2276: True, |akordim|, |akordum|, ['change  -round', 'change  -back']~False, |akordim|, |akordwm|, ['change  -back']
+
+2283: True, |markim|, |markwm|, ['change  -back']~False, |markim|, |markum|, ['change  -back', 'change  -round']
+
+2372: True, |zangoTim|, |zangoTum|, ['change  -round', 'change  -back']~False, |zangoTim|, |zangoTwm|, ['change  -back']
+
+2375: True, |ferjaadim|, |ferjaadwm|, ['change  -back']~False, |ferjaadim|, |ferjaadum|, ['change  -back', 'change  -round']
+
+Constraints added in training #1: 70
+voc tier +['{+voc}', '{+back,+son}']
+voc tier +['{-nas}', '{+voc}', '{+voc,+round,+cont,-lo,+hi,-nas,-cons}']
+voc tier -['{+cont}', '{+voc,-word,-back,-lo}']
+voc tier -['{-back}']
++{+cont}{-voc}{+round,-nas,-back}
++{-nas,-back}{+cons}
+voc tier -['{+cont,-back}', '{+voc,+son,+back,+cont,-word,-lo,+hi,-nas,-round,-cons}']
+-{+voc,+son,+cont,-word,-lo,+hi,-nas,-back}
+-{-back,-lo}{-dr}{+word}
+-{-nas,-back}{-dor,-rhot}{+word}
+-{+son,+back,-nas}
+voc tier +['{-word}', '{-back}']
+-{+back,-word}
++{+round,-cons}{-rhot,-lat}{+word}
++{-son}{+hi,-back}
+-{-back,-cons}
+-{-glot,-word,+cor,-voc,-son}{-back}
+-{+voc,-back}{-voc}
++{-cont}{+back,+son,-round}
++{-nas}{-son}{+hi,+son,-back}
+-{+round,-nas}{-cor}
++{+son,+cont,-lo,+hi,-nas,-back,-cons}
++{+back,-lo}{-dor,-lat}{+word}
++{+cor}{+hi,-word,-back}
++{+voc,+round,-lo}{-lat,-cor,-word,-cont}
+-{-rhot,-cont,-voc}{+voc,-round}
+voc tier +['{+voc,+cont,-word,-lo,+hi,-back,-cons}', '{+cont,-back}']
++{-lab,-nas,+cor}{+hi,-round}{+cons,-word,-rhot,-lat,-dr,-cor}
+voc tier -['{+voc,+son,+back,-word,-lo,+hi,-nas,-round,-cons}']
++{+round,-word}
++{-dor,+voi}{+voc,-word,-round}
++{-lat}{+cont,-word,-back}{+son}
+voc tier +['{-hi,-nas,+cont,-word,-lo}', '{-back,-round}']
+-{-glot,-cont}{+son,-back}
++{-lat}{+hi,+round,+back}
+voc tier -['{+back,+son,-lo}']
++{-lat}{-lab,+cons}{-word,-round}
++{+son,-round}{+cons,-cont}
++{-back,-round}{-glot,+son,-cor,+nas}
+-{+voi}{+voc,+round}{-cor}
+voc tier +['{+hi,-back}', '{+son}', '{+cont,-round}']
+voc tier -['{+back}', '{+voc,+round,+cont,-word,-lo,-cons}']
+-{+back,-cons}{-word}{+word}
+-{+back,-word,-round}
++{+back,-lo}{+ant,+son,+nas,-lat,-dr,-dor,-cor,-voc}
++{+hi,+round,+voc,-cons,-lo}
+-{+voc,+son,+round,+cont,-back,-cons}
+-{-voi}{+round,+cont}{-cont}
++{-nas,-back}{-glot}
++{-lat,-voi}
++{-voc}{+son,-back}
++{+cor}{-lat}{-nas,-word,-back,-lo}
++{+dor,-word,-ant,-rhot,-lat,-nas,-dr,-cont,-glot,-lab,-son,-voc}{+cont,-back}
+-{+hi,-round,-cons,-lo}
+-{+round,-back}
+voc tier +['{+voc,-cons}', '{-back,-lo}']
+-{-hi}{+cons}{+voc,+son,+round,+cont,-lo,+hi,-nas}
+-{-nas,-back}
++{+back}{+cons,-lat,-rhot,+ant,-dor,-cor,-voc}
+voc tier -['{-hi}', '{+voc,-back}']
+-{+son,-word,-lo}{-dr}{+cont,-back}
++{-dr}{+voc,+son,+back,+cont,-word,-lo,-cons}
+-{+back,+son}
++{-glot}{+cont,-back}
++{-glot,-dor}{+round,+son}
+voc tier +['{+son,+round,+cont}']
+voc tier -['{+son,+voc,+back,+cont,-round}']
+-{+voc,+son,+cont,-lo,+hi,-nas,-round,-cons}{-word}{+word}
+-{+son,+back,+cont,-word,-lo}{-rhot}{+word}
++{+voc,+son,+back,+cont,-hi,-cons}{-glot,-dor,+cor,-voc,-rhot}{+back,-round}
+
+Errors in testing #1: 40
+False, |fagotim|, |fagotwm|, ['change  -back']
+
+False, |odim|, |odwm|, ['change  -back']
+
+False, |azotim|, |azotwm|, ['change  -back']
+
+False, |hqstim|, |hqstim|, []
+
+False, |jqkim|, |jqkim|, []
+
+False, |dqrdim|, |dqrdim|, []
+
+False, |gugurig|, |guguryk|, ['change  +voi', 'change stem -round']
+
+False, |Kaatib|, |Kaatwp|, ['change  +voi', 'change stem -back']
+
+False, |gavotim|, |gavotwm|, ['change  -back']
+
+False, |harbim|, |harbwm|, ['change  -back']
+
+False, |demagogim|, |demagogwm|, ['change  -back']
+
+False, |anodim|, |anodwm|, ['change  -back']
+
+False, |kaTgqTim|, |kaTgqTim|, []
+
+False, |kamarotim|, |kamarotwm|, ['change  -back']
+
+False, |kalbim|, |kalbwm|, ['change  -back']
+
+False, |Tqpim|, |Tqpim|, []
+
+False, |Daanib|, |Daanwp|, ['change  +voi', 'change stem -back']
+
+False, |apsyrd|, |apsurt|, ['change  +voi', 'change stem -back']
+
+False, |garbim|, |garbwm|, ['change  -back']
+
+False, |aLpim|, |aLpwm|, ['change  -back']
+
+False, |trqstim|, |trqstim|, []
+
+False, |haddim|, |haddwm|, ['change  -back']
+
+False, |meraakib|, |meraakwp|, ['change  +voi', 'change stem -back']
+
+False, |qDim|, |qDim|, []
+
+False, |ahtapotim|, |ahtapotwm|, ['change  -back']
+
+False, |TelwnDim|, |TelinDim|, ['change stem +back']
+
+False, |kontwrpLag|, |konturpLak|, ['change  +voi', 'change stem -round']
+
+False, |agobim|, |agobwm|, ['change  -back']
+
+False, |qdim|, |qdim|, []
+
+False, |gqtim|, |gqtim|, []
+
+False, |sinagogim|, |sinagogwm|, ['change  -back']
+
+False, |gqnTim|, |gqnTim|, []
+
+False, |minakobim|, |minakobwm|, ['change  -back']
+
+False, |maskotim|, |maskotwm|, ['change  -back']
+
+False, |swk|, |suk|, ['change stem -round']
+
+False, |antimanjetig|, |antwmanjetik|, ['change  +voi', 'change stem -back']
+
+False, |matematig|, |matomatik|, ['change  +voi', 'change stem -back', 'change stem -round']
+
+False, |taalimat|, |taalwmat|, ['change stem -back']
+
+False, |malazgirt|, |malazgwrt|, ['change stem -back']
+
+False, |lqkopwlast|, |lqkopulast|, ['change stem -round']
+
+Errors in training #2: 46
+35: True, |swkaT|, |swkaT|, []~False, |swkaT|, |sukaT|, ['change stem -round']
+
+38: True, |anekdotim|, |anekdotum|, ['change  -round', 'change  -back']~False, |anekdotim|, |anekdotwm|, ['change  -back']
+
+49: True, |taakib|, |taakip|, ['change stem +voi']~False, |taakib|, |taakwp|, ['change  +voi', 'change stem -back']
+
+54: True, |pikabim|, |pikabwm|, ['change  -back']~False, |pikabim|, |pikabim|, []
+
+73: True, |revnakim|, |revnakwm|, ['change  -back']~False, |revnakim|, |revnakum|, ['change  -back', 'change  -round']
+
+132: True, |kodim|, |kodum|, ['change  -round', 'change  -back']~False, |kodim|, |kodwm|, ['change  -back']
+
+274: True, |biLaamuuDib|, |biLaamuuDip|, ['change stem +voi']~False, |biLaamuuDib|, |biLaamuuDyp|, ['change  +voi', 'change stem -round']
+
+337: True, |gylynTim|, |gylynTym|, ['change  -round']~False, |gylynTim|, |gylynTim|, []
+
+416: True, |twkanwg|, |twkanwk|, ['change stem +voi']~False, |twkanwg|, |tukanwk|, ['change  +voi', 'change stem -round']
+
+453: True, |hotbehotim|, |hotbehotum|, ['change  -round', 'change  -back']~False, |hotbehotim|, |hotbehotwm|, ['change  -back']
+
+486: True, |mokampim|, |mokampwm|, ['change  -back']~False, |mokampim|, |mokampum|, ['change  -back', 'change  -round']
+
+545: True, |tortopim|, |tortopum|, ['change  -round', 'change  -back']~False, |tortopim|, |tortopwm|, ['change  -back']
+
+547: True, |takjidim|, |takjidim|, []~False, |takjidim|, |takjidym|, ['change  -round']
+
+560: True, |mySirijet|, |mySirijet|, []~False, |mySirijet|, |miSirijet|, ['change stem +round']
+
+741: True, |pwnqmatig|, |pwnqmatik|, ['change stem +voi']~False, |pwnqmatig|, |pwnomatik|, ['change  +voi', 'change stem -back']
+
+747: True, |maaLumaatim|, |maaLumaatwm|, ['change  -back']~False, |maaLumaatim|, |maaLumaatim|, []
+
+761: True, |natyralist|, |natyralist|, []~False, |natyralist|, |naturalist|, ['change stem -back']
+
+777: True, |swtokim|, |swtokum|, ['change  -round', 'change  -back']~False, |swtokim|, |swtokym|, ['change  -round']
+
+778: True, |feribotim|, |feribotum|, ['change  -round', 'change  -back']~False, |feribotim|, |feribotwm|, ['change  -back']
+
+779: True, |takajjyd|, |takajjyt|, ['change stem +voi']~False, |takajjyd|, |takajjut|, ['change  +voi', 'change stem -back']
+
+781: True, |kalafatim|, |kalafatwm|, ['change  -back']~False, |kalafatim|, |kalafatum|, ['change  -back', 'change  -round']
+
+797: True, |Tokim|, |Tokum|, ['change  -round', 'change  -back']~False, |Tokim|, |Tokwm|, ['change  -back']
+
+799: True, |Siltim|, |Siltim|, []~False, |Siltim|, |Siltym|, ['change  -round']
+
+845: True, |zirzobim|, |zirzobum|, ['change  -round', 'change  -back']~False, |zirzobim|, |zirzqbim|, ['change stem +back']
+
+851: True, |myktesebaatim|, |myktesebaatwm|, ['change  -back']~False, |myktesebaatim|, |myktesebaatum|, ['change  -back', 'change  -round']
+
+860: True, |baasybadelmevt|, |baasybadelmevt|, []~False, |baasybadelmevt|, |baasubadelmevt|, ['change stem -back']
+
+861: True, |sejidim|, |sejidim|, []~False, |sejidim|, |sejidwm|, ['change  -back']
+
+866: True, |buketim|, |buketim|, []~False, |buketim|, |byketim|, ['change stem +back']
+
+1636: True, |kqkim|, |kqkym|, ['change  -round']~False, |kqkim|, |kqkum|, ['change  -back', 'change  -round']
+
+1640: True, |muraadim|, |muraadwm|, ['change  -back']~False, |muraadim|, |muraadim|, []
+
+1641: True, |sentim|, |sentim|, []~False, |sentim|, |sentwm|, ['change  -back']
+
+1645: True, |imbisatim|, |imbisatwm|, ['change  -back']~False, |imbisatim|, |imbisatim|, []
+
+1654: True, |mySeddedim|, |mySeddedim|, []~False, |mySeddedim|, |mySeddedwm|, ['change  -back']
+
+1660: True, |tyrkijaatim|, |tyrkijaatwm|, ['change  -back']~False, |tyrkijaatim|, |tyrkijaatim|, []
+
+1672: True, |sirkim|, |sirkim|, []~False, |sirkim|, |sirkwm|, ['change  -back']
+
+1694: True, |linguist|, |linguist|, []~False, |linguist|, |lingyist|, ['change stem +back']
+
+1821: True, |vaktim|, |vaktim|, []~False, |vaktim|, |vaktwm|, ['change  -back']
+
+1847: True, |kaSalotim|, |kaSalotum|, ['change  -round', 'change  -back']~False, |kaSalotim|, |kaSalotim|, []
+
+1853: True, |Dwlk|, |Dwlk|, []~False, |Dwlk|, |Dulk|, ['change stem -round']
+
+2298: True, |monobwlok|, |monobwlok|, []~False, |monobwlok|, |monobulok|, ['change stem -round']
+
+2301: True, |vaaDib|, |vaaDip|, ['change stem +voi']~False, |vaaDib|, |vaaDwp|, ['change  +voi', 'change stem -back']
+
+2304: True, |hinterlandim|, |hinterlandwm|, ['change  -back']~False, |hinterlandim|, |hinterlandim|, []
+
+2312: True, |komutim|, |komutum|, ['change  -round', 'change  -back']~False, |komutim|, |komutwm|, ['change  -back']
+
+2371: True, |vuslatim|, |vuslatwm|, ['change  -back']~False, |vuslatim|, |vuslatum|, ['change  -back', 'change  -round']
+
+2372: True, |zangoTim|, |zangoTum|, ['change  -round', 'change  -back']~False, |zangoTim|, |zangoTwm|, ['change  -back']
+
+2381: True, |fosfatim|, |fosfatwm|, ['change  -back']~False, |fosfatim|, |fosfatum|, ['change  -back', 'change  -round']
+
+Constraints added in training #2: 23
+-{+son,+back,+cont,-word,-lo}{-rhot}{+word}
++{+voc,+son,+back,+cont,-hi,-cons}{-glot,-dor,+cor,-voc,-rhot}{+back,-round}
+-{-word,-round}
+voc tier +['{-cons}', '{-nas}', '{-round,-lo}']
+-{+round,-nas}
++{+voc,-back,-lo}{-lat}{+voc,-nas,-cons,+lo}
++{+cont,-round}
+-{+ant}{+round,+back}{-lat,-word,-voc}
++{+voc,-nas,-back,-cons}{-glot,+son,-word}{+word}
+-{+word}{+cont}{+voc,-back}
+-{+hi,+back}{-son}
+-{-word,+hi,-nas,-back,-round,-cons}{+son}
++{+voc,-back}{-rhot,+ant}
++{+hi,-back,-round}{-dr,-cont}
+voc tier +['{+hi,-cons}', '{+round,-lo}', '{+back,+cont}']
+voc tier -['{-round}', '{-cons}', '{+back}']
+-{+hi,-word,-back}{-glot,-rhot,-word,+lab}
++{+back}{-dr}{-rhot}
+voc tier +['{-hi}', '{+voc,+back}']
++{-cons,-round}
+voc tier +['{+lo,+back}', '{+voc,-word,-hi,+lo,-round,-cons}', '{+voc,+son,+back,+cont,-lo,+hi,-nas,-round,-cons}']
+voc tier +['{+back}', '{-hi,+lo,+voc}', '{+voc,-back}']
+-{+cons}{+round,-word}{+cons,+nas,-rhot,-lat,-cont,-voc}
+
+Errors in testing #2: 206
+False, |fagotim|, |fagotwm|, ['change  -back']
+
+False, |kynkim|, |kynkim|, []
+
+False, |taammydim|, |taammidim|, ['change stem +round']
+
+False, |odim|, |odwm|, ['change  -back']
+
+False, |azotim|, |azotwm|, ['change  -back']
+
+False, |jarwbuTukim|, |jarwbuTukwm|, ['change  -back']
+
+False, |termodinamig|, |termodwnamik|, ['change  +voi', 'change stem -back']
+
+False, |Denubim|, |Denubwm|, ['change  -back']
+
+False, |somutim|, |somutwm|, ['change  -back']
+
+False, |bojkotim|, |bojkotwm|, ['change  -back']
+
+False, |dinT|, |dwnT|, ['change stem -back']
+
+False, |mySrik|, |miSrik|, ['change stem +round']
+
+False, |hqstim|, |hestim|, ['change stem +round']
+
+False, |buutim|, |buutwm|, ['change  -back']
+
+False, |tostim|, |tostwm|, ['change  -back']
+
+False, |dretnotim|, |dretnotwm|, ['change  -back']
+
+False, |timurleng|, |twmurlenk|, ['change  +voi', 'change stem -back']
+
+False, |motopompim|, |motopompwm|, ['change  -back']
+
+False, |tevellydim|, |tevellidim|, ['change stem +round']
+
+False, |tentyrdijotim|, |tentyrdijotwm|, ['change  -back']
+
+False, |jahutim|, |jahutwm|, ['change  -back']
+
+False, |sitreptokokim|, |sitreptokokwm|, ['change  -back']
+
+False, |jqkim|, |jekim|, ['change stem +round']
+
+False, |despotim|, |despotwm|, ['change  -back']
+
+False, |gardwrobim|, |gardwrobwm|, ['change  -back']
+
+False, |gongim|, |gongwm|, ['change  -back']
+
+False, |dyrystim|, |dyrystim|, []
+
+False, |robotim|, |robotwm|, ['change  -back']
+
+False, |iskoTim|, |iskoTwm|, ['change  -back']
+
+False, |hoSnutim|, |hoSnutwm|, ['change  -back']
+
+False, |turunDim|, |turunDwm|, ['change  -back']
+
+False, |oruDim|, |oruDwm|, ['change  -back']
+
+False, |dqrdim|, |derdim|, ['change stem +round']
+
+False, |Kaatib|, |Kaatwp|, ['change  +voi', 'change stem -back']
+
+False, |rokim|, |rokwm|, ['change  -back']
+
+False, |havuDim|, |havuDwm|, ['change  -back']
+
+False, |mysiibet|, |misiibet|, ['change stem +round']
+
+False, |teSeddytim|, |teSedditim|, ['change stem +round']
+
+False, |gavotim|, |gavotwm|, ['change  -back']
+
+False, |gurubim|, |gurubwm|, ['change  -back']
+
+False, |taadiLat|, |taadwLat|, ['change stem -back']
+
+False, |Taputim|, |Taputwm|, ['change  -back']
+
+False, |jourtim|, |jourtwm|, ['change  -back']
+
+False, |avuDim|, |avuDwm|, ['change  -back']
+
+False, |kylotim|, |kylotwm|, ['change  -back']
+
+False, |dipnotim|, |dipnotwm|, ['change  -back']
+
+False, |mektubim|, |mektubwm|, ['change  -back']
+
+False, |suTim|, |suTwm|, ['change  -back']
+
+False, |maaLubijet|, |maaLwbijet|, ['change stem +round']
+
+False, |teDerrydim|, |teDerridim|, ['change stem +round']
+
+False, |kontim|, |kontwm|, ['change  -back']
+
+False, |pabuDim|, |pabuDwm|, ['change  -back']
+
+False, |harbim|, |harbwm|, ['change  -back']
+
+False, |demagogim|, |demagogwm|, ['change  -back']
+
+False, |ejybim|, |ejibim|, ['change stem +round']
+
+False, |kujudim|, |kujudwm|, ['change  -back']
+
+False, |tetevvyDim|, |tetevviDim|, ['change stem +round']
+
+False, |lopim|, |lopwm|, ['change  -back']
+
+False, |puntim|, |puntwm|, ['change  -back']
+
+False, |anodim|, |anodwm|, ['change  -back']
+
+False, |putim|, |putwm|, ['change  -back']
+
+False, |mySfig|, |miSfik|, ['change  +voi', 'change stem +round']
+
+False, |kaTgqTim|, |kaTgeTim|, ['change stem +round']
+
+False, |maaLumijetim|, |maaLwmijetim|, ['change stem +round']
+
+False, |bulutim|, |bulutwm|, ['change  -back']
+
+False, |matlubim|, |matlubwm|, ['change  -back']
+
+False, |sergyzeSt|, |sergizeSt|, ['change stem +round']
+
+False, |kurdim|, |kurdwm|, ['change  -back']
+
+False, |kamarotim|, |kamarotwm|, ['change  -back']
+
+False, |kulybim|, |kulybim|, []
+
+False, |kaledoskopim|, |kaledoskopwm|, ['change  -back']
+
+False, |postim|, |postwm|, ['change  -back']
+
+False, |Dobim|, |Dobwm|, ['change  -back']
+
+False, |dimjat|, |dwmjat|, ['change stem -back']
+
+False, |tesaahybim|, |tesaahibim|, ['change stem +round']
+
+False, |kalbim|, |kalbwm|, ['change  -back']
+
+False, |hortzortim|, |hortzortwm|, ['change  -back']
+
+False, |hoStim|, |hoStwm|, ['change  -back']
+
+False, |mabudim|, |mabudwm|, ['change  -back']
+
+False, |fijongim|, |fijongwm|, ['change  -back']
+
+False, |Tqpim|, |Tqpim|, []
+
+False, |DyrmymeShudim|, |DyrmymeShudwm|, ['change  -back']
+
+False, |anajurdim|, |anajurdwm|, ['change  -back']
+
+False, |teDellydim|, |teDellidim|, ['change stem +round']
+
+False, |tasallutim|, |tasallutwm|, ['change  -back']
+
+False, |rotim|, |rotwm|, ['change  -back']
+
+False, |robim|, |robwm|, ['change  -back']
+
+False, |Daanib|, |Daanwp|, ['change  +voi', 'change stem -back']
+
+False, |Sezlongim|, |Sezlongwm|, ['change  -back']
+
+False, |sopim|, |sopwm|, ['change  -back']
+
+False, |konDim|, |konDwm|, ['change  -back']
+
+False, |autim|, |autwm|, ['change  -back']
+
+False, |maksudim|, |maksudwm|, ['change  -back']
+
+False, |garbim|, |garbwm|, ['change  -back']
+
+False, |folkim|, |folkwm|, ['change  -back']
+
+False, |bystim|, |bistim|, ['change stem +round']
+
+False, |rqmorkim|, |rqmorkwm|, ['change  -back']
+
+False, |Tinekopim|, |Tinekopwm|, ['change  -back']
+
+False, |aLpim|, |aLpwm|, ['change  -back']
+
+False, |kababulutim|, |kababulutwm|, ['change  -back']
+
+False, |hukuukim|, |hukuukwm|, ['change  -back']
+
+False, |trqstim|, |trestim|, ['change stem +round']
+
+False, |jekvyDudim|, |jekvyDudwm|, ['change  -back']
+
+False, |taaDDybim|, |taaDDibim|, ['change stem +round']
+
+False, |tentyrdijot|, |tentirdijot|, ['change stem +round']
+
+False, |okim|, |okwm|, ['change  -back']
+
+False, |jekvyDud|, |jekviDut|, ['change  +voi', 'change stem +round']
+
+False, |paraSytim|, |paraSitim|, ['change stem +round']
+
+False, |haddim|, |haddwm|, ['change  -back']
+
+False, |otim|, |otwm|, ['change  -back']
+
+False, |ebusuudim|, |ebusuudwm|, ['change  -back']
+
+False, |taassubim|, |taassubwm|, ['change  -back']
+
+False, |hydaajinaabitim|, |hydaajwnaabitim|, ['change stem -back']
+
+False, |tezajydim|, |tezajidim|, ['change stem +round']
+
+False, |mySrikim|, |miSrikim|, ['change stem +round']
+
+False, |selylqit|, |selyleit|, ['change stem +round']
+
+False, |myskirat|, |miskirat|, ['change stem +round']
+
+False, |syKutim|, |syKutwm|, ['change  -back']
+
+False, |kokotim|, |kokotwm|, ['change  -back']
+
+False, |qDim|, |eDim|, ['change stem +round']
+
+False, |tahakkukim|, |tahakkukwm|, ['change  -back']
+
+False, |nyyjorkim|, |nyyjorkwm|, ['change  -back']
+
+False, |ahtapotim|, |ahtapotwm|, ['change  -back']
+
+False, |tesejjybim|, |tesejjibim|, ['change stem +round']
+
+False, |pilotim|, |pilotwm|, ['change  -back']
+
+False, |holding|, |holdwnk|, ['change  +voi', 'change stem -back']
+
+False, |tavassutim|, |tavassutwm|, ['change  -back']
+
+False, |fijortim|, |fijortwm|, ['change  -back']
+
+False, |boukim|, |boukwm|, ['change  -back']
+
+False, |havutim|, |havutwm|, ['change  -back']
+
+False, |stopim|, |stopwm|, ['change  -back']
+
+False, |agobim|, |agobwm|, ['change  -back']
+
+False, |mysiibetim|, |misiibetim|, ['change stem +round']
+
+False, |terekkybim|, |terekkibim|, ['change stem +round']
+
+False, |sulbim|, |sulbwm|, ['change  -back']
+
+False, |mijobim|, |mijobwm|, ['change  -back']
+
+False, |huruDim|, |huruDwm|, ['change  -back']
+
+False, |Dukim|, |Dukwm|, ['change  -back']
+
+False, |hydaajinaabit|, |hydaajwnaabit|, ['change stem -back']
+
+False, |dertopim|, |dertopwm|, ['change  -back']
+
+False, |mylkim|, |mylkim|, []
+
+False, |zymrydim|, |zymridim|, ['change stem +round']
+
+False, |zerdyStim|, |zerdiStim|, ['change stem +round']
+
+False, |teDeddydim|, |teDeddidim|, ['change stem +round']
+
+False, |qdim|, |edim|, ['change stem +round']
+
+False, |raundim|, |raundwm|, ['change  -back']
+
+False, |gqtim|, |getim|, ['change stem +round']
+
+False, |sinagogim|, |sinagogwm|, ['change  -back']
+
+False, |potim|, |potwm|, ['change  -back']
+
+False, |gqnTim|, |genTim|, ['change stem +round']
+
+False, |minakobim|, |minakobwm|, ['change  -back']
+
+False, |ysLuubim|, |ysLuubwm|, ['change  -back']
+
+False, |morgim|, |morgwm|, ['change  -back']
+
+False, |sybutim|, |sybutwm|, ['change  -back']
+
+False, |mySirijetim|, |miSirijetim|, ['change stem +round']
+
+False, |sorguDim|, |sorguDwm|, ['change  -back']
+
+False, |antilobim|, |antilobwm|, ['change  -back']
+
+False, |fokim|, |fokwm|, ['change  -back']
+
+False, |nohutim|, |nohutwm|, ['change  -back']
+
+False, |tasallubim|, |tasallubwm|, ['change  -back']
+
+False, |doTim|, |doTwm|, ['change  -back']
+
+False, |kykyrtim|, |kykyrtim|, []
+
+False, |hurDim|, |hurDwm|, ['change  -back']
+
+False, |myziDim|, |miziDim|, ['change stem +round']
+
+False, |kytybim|, |kytybim|, []
+
+False, |vikontim|, |vikontwm|, ['change  -back']
+
+False, |bokim|, |bokwm|, ['change  -back']
+
+False, |flytim|, |flitim|, ['change stem +round']
+
+False, |Surubim|, |Surubwm|, ['change  -back']
+
+False, |sojsobim|, |sojsobwm|, ['change  -back']
+
+False, |maskotim|, |maskotwm|, ['change  -back']
+
+False, |etydim|, |etidim|, ['change stem +round']
+
+False, |Dupim|, |Dupwm|, ['change  -back']
+
+False, |hyvijetim|, |hivijetim|, ['change stem +round']
+
+False, |biskyvit|, |biskivit|, ['change stem +round']
+
+False, |topim|, |topwm|, ['change  -back']
+
+False, |swnobim|, |swnobwm|, ['change  -back']
+
+False, |kotim|, |kotwm|, ['change  -back']
+
+False, |puStim|, |puStwm|, ['change  -back']
+
+False, |Zypim|, |Zypim|, []
+
+False, |antimanjetig|, |antwmanjetik|, ['change  +voi', 'change stem -back']
+
+False, |takajjydim|, |takajjidim|, ['change stem +round']
+
+False, |sojutim|, |sojutwm|, ['change  -back']
+
+False, |angutim|, |angutwm|, ['change  -back']
+
+False, |lypim|, |lypim|, []
+
+False, |konutim|, |konutwm|, ['change  -back']
+
+False, |tyrkim|, |tyrkim|, []
+
+False, |punTim|, |punTwm|, ['change  -back']
+
+False, |tokim|, |tokwm|, ['change  -back']
+
+False, |mensubijetim|, |mensibijetim|, ['change stem +round', 'change stem +back']
+
+False, |meDzubim|, |meDzubwm|, ['change  -back']
+
+False, |qrgytim|, |qrgitim|, ['change stem +round']
+
+False, |zerdySt|, |zerdiSt|, ['change stem +round']
+
+False, |sergyzeStim|, |sergizeStim|, ['change stem +round']
+
+False, |Lutim|, |Lutwm|, ['change  -back']
+
+False, |izbandutim|, |izbandutwm|, ['change  -back']
+
+False, |tybim|, |tybim|, []
+
+False, |taalimat|, |taalwmat|, ['change stem -back']
+
+False, |Sytim|, |Sitim|, ['change stem +round']
+
+False, |malazgirt|, |malazgwrt|, ['change stem -back']
+
+False, |zonkim|, |zonkwm|, ['change  -back']
+
+False, |Syhudim|, |Syhudwm|, ['change  -back']
+
+False, |budist|, |bwdist|, ['change stem +round']
+
+False, |aortim|, |aortwm|, ['change  -back']
+
+False, |turbim|, |turbwm|, ['change  -back']
+
+False, |kyrkim|, |kyrkim|, []
+
+Errors in training #3: 108
+7: True, |filqrtim|, |filqrtym|, ['change  -round']~False, |filqrtim|, |filqrtim|, []
+
+31: True, |Sehvetim|, |Sehvetim|, []~False, |Sehvetim|, |Sehvetym|, ['change  -round']
+
+40: True, |redingotim|, |redingotum|, ['change  -round', 'change  -back']~False, |redingotim|, |redingotwm|, ['change  -back']
+
+76: True, |Swmarwg|, |Swmarwk|, ['change stem +voi']~False, |Swmarwg|, |Sumarwk|, ['change  +voi', 'change stem -round']
+
+100: True, |mevkutim|, |mevkutum|, ['change  -round', 'change  -back']~False, |mevkutim|, |mevkutwm|, ['change  -back']
+
+274: True, |biLaamuuDib|, |biLaamuuDip|, ['change stem +voi']~False, |biLaamuuDib|, |biLaamuuDyp|, ['change  +voi', 'change stem -round']
+
+310: True, |ynsijetim|, |ynsijetim|, []~False, |ynsijetim|, |insijetim|, ['change stem +round']
+
+638: True, |temerrydim|, |temerrydym|, ['change  -round']~False, |temerrydim|, |temerridim|, ['change stem +round']
+
+641: True, |myndemiTim|, |myndemiTim|, []~False, |myndemiTim|, |myndemiTym|, ['change  -round']
+
+648: True, |fwrank|, |fwrank|, []~False, |fwrank|, |furank|, ['change stem -round']
+
+675: True, |mazbutim|, |mazbutum|, ['change  -round', 'change  -back']~False, |mazbutim|, |mazbutwm|, ['change  -back']
+
+676: True, |ordonatim|, |ordonatwm|, ['change  -back']~False, |ordonatim|, |ordonatum|, ['change  -back', 'change  -round']
+
+680: True, |kortim|, |kortum|, ['change  -round', 'change  -back']~False, |kortim|, |kortwm|, ['change  -back']
+
+683: True, |bakalitim|, |bakalitim|, []~False, |bakalitim|, |bakalitym|, ['change  -round']
+
+691: True, |sytim|, |sytym|, ['change  -round']~False, |sytim|, |sytim|, []
+
+694: True, |nihilistim|, |nihilistim|, []~False, |nihilistim|, |nihilistym|, ['change  -round']
+
+728: True, |TerTqpim|, |TerTqpym|, ['change  -round']~False, |TerTqpim|, |TerTqpim|, []
+
+737: True, |Saftim|, |Saftwm|, ['change  -back']~False, |Saftim|, |Saftum|, ['change  -back', 'change  -round']
+
+741: True, |pwnqmatig|, |pwnqmatik|, ['change stem +voi']~False, |pwnqmatig|, |pwnomatik|, ['change  +voi', 'change stem -back']
+
+778: True, |feribotim|, |feribotum|, ['change  -round', 'change  -back']~False, |feribotim|, |feribotym|, ['change  -round']
+
+782: True, |sistitim|, |sistitim|, []~False, |sistitim|, |sistitwm|, ['change  -back']
+
+797: True, |Tokim|, |Tokum|, ['change  -round', 'change  -back']~False, |Tokim|, |Tokim|, []
+
+801: True, |riDatim|, |riDatwm|, ['change  -back']~False, |riDatim|, |riDatum|, ['change  -back', 'change  -round']
+
+822: True, |hasletim|, |hasletim|, []~False, |hasletim|, |hasletwm|, ['change  -back']
+
+826: True, |voltim|, |voltum|, ['change  -round', 'change  -back']~False, |voltim|, |voltim|, []
+
+828: True, |aakwbetim|, |aakwbetim|, []~False, |aakwbetim|, |aakwbetum|, ['change  -back', 'change  -round']
+
+831: True, |teeddybim|, |teeddybym|, ['change  -round']~False, |teeddybim|, |teeddibim|, ['change stem +round']
+
+832: True, |linTim|, |linTim|, []~False, |linTim|, |linTym|, ['change  -round']
+
+841: True, |mytehejjiDim|, |mytehejjiDim|, []~False, |mytehejjiDim|, |mytehejjiDym|, ['change  -round']
+
+844: True, |ardwTim|, |ardwTwm|, ['change  -back']~False, |ardwTim|, |ardiTim|, ['change stem +back']
+
+847: True, |haakiiKat|, |haakiiKat|, []~False, |haakiiKat|, |haakwiKat|, ['change stem -back']
+
+863: True, |tezebzybim|, |tezebzybym|, ['change  -round']~False, |tezebzybim|, |tezebzibim|, ['change stem +round']
+
+865: True, |zaabitim|, |zaabitim|, []~False, |zaabitim|, |zaabitym|, ['change  -round']
+
+893: True, |karpit|, |karpit|, []~False, |karpit|, |karpwt|, ['change stem -back']
+
+912: True, |bikarbonatim|, |bikarbonatwm|, ['change  -back']~False, |bikarbonatim|, |bikarbonatim|, []
+
+918: True, |katgyt|, |katgyt|, []~False, |katgyt|, |katgut|, ['change stem -back']
+
+946: True, |terkim|, |terkim|, []~False, |terkim|, |terkym|, ['change  -round']
+
+978: True, |teKaaydim|, |teKaaydym|, ['change  -round']~False, |teKaaydim|, |teKaaidim|, ['change stem +round']
+
+981: True, |gqrmelig|, |gqrmelik|, ['change stem +voi']~False, |gqrmelig|, |gqrmelyk|, ['change  +voi', 'change stem -round']
+
+1012: True, |tensibim|, |tensibim|, []~False, |tensibim|, |tensibym|, ['change  -round']
+
+1013: True, |mazotim|, |mazotum|, ['change  -round', 'change  -back']~False, |mazotim|, |mazotwm|, ['change  -back']
+
+1029: True, |mahsubim|, |mahsubum|, ['change  -round', 'change  -back']~False, |mahsubim|, |mahsubym|, ['change  -round']
+
+1032: True, |maketim|, |maketim|, []~False, |maketim|, |maketum|, ['change  -back', 'change  -round']
+
+1055: True, |dominantim|, |dominantwm|, ['change  -back']~False, |dominantim|, |dominantim|, []
+
+1059: True, |fingim|, |fingim|, []~False, |fingim|, |fingwm|, ['change  -back']
+
+1086: True, |piirypakim|, |piirypakwm|, ['change  -back']~False, |piirypakim|, |piirypakim|, []
+
+1103: True, |turistim|, |turistim|, []~False, |turistim|, |turistwm|, ['change  -back']
+
+1110: True, |mutavasswtim|, |mutavasswtwm|, ['change  -back']~False, |mutavasswtim|, |mutavasswtim|, []
+
+1115: True, |hajretim|, |hajretim|, []~False, |hajretim|, |hajretwm|, ['change  -back']
+
+1146: True, |Seriatim|, |Seriatwm|, ['change  -back']~False, |Seriatim|, |Seriatim|, []
+
+1160: True, |edebim|, |edebim|, []~False, |edebim|, |edebwm|, ['change  -back']
+
+1165: True, |laborantim|, |laborantwm|, ['change  -back']~False, |laborantim|, |laborantim|, []
+
+1167: True, |hakkanijetim|, |hakkanijetim|, []~False, |hakkanijetim|, |hakkanijetwm|, ['change  -back']
+
+1168: True, |aLakokim|, |aLakokum|, ['change  -round', 'change  -back']~False, |aLakokim|, |aLakokim|, []
+
+1178: True, |mevaitim|, |mevaitim|, []~False, |mevaitim|, |mevaitum|, ['change  -back', 'change  -round']
+
+1180: True, |anwtim|, |anwtwm|, ['change  -back']~False, |anwtim|, |anitim|, ['change stem +back']
+
+1184: True, |metamorfig|, |metamorfik|, ['change stem +voi']~False, |metamorfig|, |metamorfwk|, ['change  +voi', 'change stem -back']
+
+1200: True, |kaputim|, |kaputum|, ['change  -round', 'change  -back']~False, |kaputim|, |kaputwm|, ['change  -back']
+
+1208: True, |gqTim|, |gqTym|, ['change  -round']~False, |gqTim|, |gqTum|, ['change  -back', 'change  -round']
+
+1213: True, |tefevvukim|, |tefevvukum|, ['change  -round', 'change  -back']~False, |tefevvukim|, |tefevvukym|, ['change  -round']
+
+1269: True, |saabekim|, |saabekim|, []~False, |saabekim|, |saabekum|, ['change  -back', 'change  -round']
+
+1281: True, |hasudim|, |hasudum|, ['change  -round', 'change  -back']~False, |hasudim|, |hasidim|, ['change stem +round', 'change stem +back']
+
+1285: True, |eshabim|, |eshabwm|, ['change  -back']~False, |eshabim|, |eshabum|, ['change  -back', 'change  -round']
+
+1287: True, |myejjetim|, |myejjetim|, []~False, |myejjetim|, |myejjetwm|, ['change  -back']
+
+1311: True, |tehalykim|, |tehalykym|, ['change  -round']~False, |tehalykim|, |tehalykim|, []
+
+1312: True, |meskenetim|, |meskenetim|, []~False, |meskenetim|, |meskenetym|, ['change  -round']
+
+1354: True, |kyltim|, |kyltym|, ['change  -round']~False, |kyltim|, |kyltim|, []
+
+1357: True, |erbaabim|, |erbaabwm|, ['change  -back']~False, |erbaabim|, |erbaabum|, ['change  -back', 'change  -round']
+
+1392: True, |taajinat|, |taajinat|, []~False, |taajinat|, |taajwnat|, ['change stem -back']
+
+1393: True, |japwtim|, |japwtwm|, ['change  -back']~False, |japwtim|, |japwtim|, []
+
+1422: True, |tekzibim|, |tekzibim|, []~False, |tekzibim|, |tekzibwm|, ['change  -back']
+
+1434: True, |mytevasswtim|, |mytevasswtwm|, ['change  -back']~False, |mytevasswtim|, |mytevassitim|, ['change stem +back']
+
+1435: True, |maalijetim|, |maalijetim|, []~False, |maalijetim|, |maalijetwm|, ['change  -back']
+
+1497: True, |timurlengim|, |timurlengim|, []~False, |timurlengim|, |twmurlengim|, ['change stem -back']
+
+1500: True, |hapim|, |hapwm|, ['change  -back']~False, |hapim|, |hapim|, []
+
+1514: True, |zartzurtim|, |zartzurtum|, ['change  -round', 'change  -back']~False, |zartzurtim|, |zartzurtwm|, ['change  -back']
+
+1527: True, |sinaritim|, |sinaritim|, []~False, |sinaritim|, |sinaritum|, ['change  -back', 'change  -round']
+
+1562: True, |lordim|, |lordum|, ['change  -round', 'change  -back']~False, |lordim|, |lordim|, []
+
+1563: True, |kemend|, |kement|, ['change stem +voi']~False, |kemend|, |kqment|, ['change  +voi', 'change stem -round']
+
+1565: True, |swrt|, |swrt|, []~False, |swrt|, |surt|, ['change stem -round']
+
+1610: True, |jurdim|, |jurdum|, ['change  -round', 'change  -back']~False, |jurdim|, |jurdwm|, ['change  -back']
+
+1611: True, |kwraDag|, |kwraDak|, ['change stem +voi']~False, |kwraDag|, |kuraDak|, ['change  +voi', 'change stem -round']
+
+1636: True, |kqkim|, |kqkym|, ['change  -round']~False, |kqkim|, |kqkim|, []
+
+1637: True, |mySaahidim|, |mySaahidim|, []~False, |mySaahidim|, |mySaahidym|, ['change  -round']
+
+1657: True, |botim|, |botum|, ['change  -round', 'change  -back']~False, |botim|, |botwm|, ['change  -back']
+
+1665: True, |TeSidim|, |TeSidim|, []~False, |TeSidim|, |TeSidym|, ['change  -round']
+
+1684: True, |ystim|, |ystym|, ['change  -round']~False, |ystim|, |ystum|, ['change  -back', 'change  -round']
+
+1691: True, |trioksitim|, |trioksitim|, []~False, |trioksitim|, |triqksitim|, ['change stem +back']
+
+1697: True, |hwrvatim|, |hwrvatwm|, ['change  -back']~False, |hwrvatim|, |hwrvatim|, []
+
+1705: True, |felDim|, |felDim|, []~False, |felDim|, |felDwm|, ['change  -back']
+
+1756: True, |metodim|, |metodum|, ['change  -round', 'change  -back']~False, |metodim|, |metodim|, []
+
+1760: True, |husuumet|, |husuumet|, []~False, |husuumet|, |husuumot|, ['change stem -back', 'change stem -round']
+
+2190: True, |hqtim|, |hqtym|, ['change  -round']~False, |hqtim|, |hqtum|, ['change  -back', 'change  -round']
+
+2192: True, |tartaDim|, |tartaDwm|, ['change  -back']~False, |tartaDim|, |tartaDim|, []
+
+2221: True, |serKaatib|, |serKaatip|, ['change stem +voi']~False, |serKaatib|, |serKaatwp|, ['change  +voi', 'change stem -back']
+
+2233: True, |dutim|, |dutum|, ['change  -round', 'change  -back']~False, |dutim|, |dutym|, ['change  -round']
+
+2243: True, |teSehhydim|, |teSehhydym|, ['change  -round']~False, |teSehhydim|, |teSehhidim|, ['change stem +round']
+
+2251: True, |hasbelhiiDaabim|, |hasbelhiiDaabwm|, ['change  -back']~False, |hasbelhiiDaabim|, |hasbelhiiDaabum|, ['change  -back', 'change  -round']
+
+2267: True, |garaajib|, |garaajip|, ['change stem +voi']~False, |garaajib|, |garaajwp|, ['change  +voi', 'change stem -back']
+
+2268: True, |kazuratim|, |kazuratwm|, ['change  -back']~False, |kazuratim|, |kazuratym|, ['change  -round']
+
+2282: True, |utim|, |utum|, ['change  -round', 'change  -back']~False, |utim|, |utwm|, ['change  -back']
+
+2283: True, |markim|, |markwm|, ['change  -back']~False, |markim|, |markum|, ['change  -back', 'change  -round']
+
+2290: True, |nisbetim|, |nisbetim|, []~False, |nisbetim|, |nisbetwm|, ['change  -back']
+
+2291: True, |dostim|, |dostum|, ['change  -round', 'change  -back']~False, |dostim|, |dostim|, []
+
+2292: True, |izmaritim|, |izmaritim|, []~False, |izmaritim|, |izmaritum|, ['change  -back', 'change  -round']
+
+2294: True, |pusetim|, |pusetim|, []~False, |pusetim|, |pysetim|, ['change stem +back']
+
+2363: True, |bizmutim|, |bizmutum|, ['change  -round', 'change  -back']~False, |bizmutim|, |bizmutwm|, ['change  -back']
+
+2375: True, |ferjaadim|, |ferjaadwm|, ['change  -back']~False, |ferjaadim|, |ferjaadum|, ['change  -back', 'change  -round']
+
+Constraints added in training #3: 60
++{-cons,-round}
+voc tier +['{+lo,+back}', '{+voc,-word,-hi,+lo,-round,-cons}', '{+voc,+son,+back,+cont,-lo,+hi,-nas,-round,-cons}']
+voc tier +['{+back}', '{-hi,+lo,+voc}', '{+voc,-back}']
+-{+cons}{+round,-word}{+cons,+nas,-rhot,-lat,-cont,-voc}
++{-nas,-round}{-rhot}
+voc tier +['{-hi}', '{+voc,+son,+back,-hi,-nas,-round,-cons}', '{-round}']
+-{+round,-nas}{-rhot}
+voc tier -['{+cont,-cons}', '{-cons}', '{+voc,+son,+round,+cont,-word,-lo,+hi,-nas,-back,-cons}']
+voc tier -['{+cont}', '{-round,-lo}']
+-{-word}{-rhot,-ant}{-back,-lo}
+-{+voc,+back}{+cons,+son,+ant}
+-{+voc,+back}{+lab}{+word}
++{-nas}{+cor}{+son,-back}
++{-voc}{+cor,-word,+ant,-nas,-son,-voc}{-nas,-round}
++{+cons,+voi,+lab,-rhot,-lat,-nas,-cont,-glot,-cor,-son,-voc}{-round,-lo}
++{-nas}{+back,-round}{+ant}
+-{+round,-word,-lo}
+-{+cont,-back,-lo}{-dor}{+word}
++{+round,-word}{-dor,+cons,+ant}{+word}
++{-rhot}{+round}
+-{+voc,-back}{-cor}
+voc tier -['{+cont}', '{+cont,-word,-back}']
++{+voc,+back}{+nas,-word,-lat,-dr,-dor,-cor}
++{+round,+back,+son}{-dr}
+-{+back,-word}{-word}
+voc tier -['{+cont,-word}', '{-hi,+cont}', '{+back,-cons}']
++{+ant}{+hi,-back,-lo}{+nas}
++{+hi,+round,+back,+cont,+voc}
+voc tier -['{-word}', '{+back,-round}']
+-{+round}{-son}{+round,+back}
++{-back,+son,-word,-cons}{-lat}
+voc tier +['{+voc,-cons}', '{-nas,-round}']
++{+round,+cont}{-dor,-dr,+lab}{+word}
+-{+hi}{-lat}{-round}
+-{-nas}{-round,-lo}{-voc}
+-{+hi,-round,-word,-lo}{+son}
+voc tier -['{-round}', '{+round,+cont}']
++{-back,-cons}{-lat}{+word}
+-{-round,+voc,+cont,-back,-nas}
++{+cons,+voi,+cor,+dr,-word,-ant,-rhot,-lat,-nas,-cont,-dor,-lab,-son,-voc}{+back,-cons}
+-{-word,-round}{-voc}
+-{+back,-nas}
++{+cons,+voi,+cor,-word,-ant,-rhot,-lat,-nas,-glot,-dor,-son}{+round}
+voc tier +['{-cons}', '{+back,+cont,-cons}', '{+round,-nas}']
++{+back,-round}{-dor}
+voc tier -['{+son,-nas,-cons,-back,-round}']
++{-voc}{+back,-word}
+-{+cor}{+back,-nas}
++{+ant}{+round,-back}{+dr}
++{-glot}{+round,+cont,-word}
++{+back,-word,-cons}
+-{+son,-back,-round}{-word}{+word}
+-{-dr}{+hi,+round,-nas}{-voi}
+-{+word}{-lat,-dr,-word}{+voc,+son,+round,+cont,-lo,-back}
+-{+voc,+back,+son,+round}
+voc tier +['{-cons}', '{-cons,-round}']
++{-son}{-round}{-lat}
+voc tier -['{-hi}', '{+voc,-word,-lo,+hi,-round,-cons}']
+voc tier -['{+son}', '{+voc}', '{-word,-round}']
++{+voc,+round,+cont,-word,-nas,-cons}
+
+Errors in testing #3: 144
+False, |fagotim|, |fagotwm|, ['change  -back']
+
+False, |taammydim|, |taammidim|, ['change stem +round']
+
+False, |odim|, |odwm|, ['change  -back']
+
+False, |azotim|, |azotwm|, ['change  -back']
+
+False, |bojkotim|, |bojkotwm|, ['change  -back']
+
+False, |hqstim|, |hqstim|, []
+
+False, |menkub|, |menkub|, []
+
+False, |dretnotim|, |dretnotwm|, ['change  -back']
+
+False, |mahsub|, |mahsub|, []
+
+False, |tevellydim|, |tevellidim|, ['change stem +round']
+
+False, |tentyrdijotim|, |tentyrdijotwm|, ['change  -back']
+
+False, |jahutim|, |jahutwm|, ['change  -back']
+
+False, |matlub|, |matlub|, []
+
+False, |jqkim|, |jqkim|, []
+
+False, |despotim|, |despotwm|, ['change  -back']
+
+False, |gardwrobim|, |gardwrobwm|, ['change  -back']
+
+False, |mektub|, |mektub|, []
+
+False, |dyrystim|, |dyrystim|, []
+
+False, |robotim|, |robotwm|, ['change  -back']
+
+False, |iskoTim|, |iskoTwm|, ['change  -back']
+
+False, |dqrdim|, |dqrdim|, []
+
+False, |rokim|, |rokwm|, ['change  -back']
+
+False, |havuDim|, |havuDwm|, ['change  -back']
+
+False, |teSeddytim|, |teSedditim|, ['change stem +round']
+
+False, |gavotim|, |gavotwm|, ['change  -back']
+
+False, |tezebzyb|, |tezebzyb|, []
+
+False, |gurubim|, |gurubwm|, ['change  -back']
+
+False, |Taputim|, |Taputwm|, ['change  -back']
+
+False, |avuDim|, |avuDwm|, ['change  -back']
+
+False, |kylotim|, |kylotwm|, ['change  -back']
+
+False, |dipnotim|, |dipnotwm|, ['change  -back']
+
+False, |ysLub|, |ysLub|, []
+
+False, |suTim|, |suTwm|, ['change  -back']
+
+False, |maaLubijet|, |maaLwbijet|, ['change stem +round']
+
+False, |teDerrydim|, |teDerridim|, ['change stem +round']
+
+False, |pabuDim|, |pabuDwm|, ['change  -back']
+
+False, |harbim|, |harbwm|, ['change  -back']
+
+False, |demagogim|, |demagogwm|, ['change  -back']
+
+False, |teDellyd|, |teDellyd|, []
+
+False, |ejybim|, |ejibim|, ['change stem +round']
+
+False, |kujudim|, |kujudwm|, ['change  -back']
+
+False, |tetevvyDim|, |tetevviDim|, ['change stem +round']
+
+False, |lopim|, |lopwm|, ['change  -back']
+
+False, |Syhud|, |Syhud|, []
+
+False, |anodim|, |anodwm|, ['change  -back']
+
+False, |teressyb|, |teressyb|, []
+
+False, |kaTgqTim|, |kaTgqTim|, []
+
+False, |maksud|, |maksud|, []
+
+False, |lqkopwlastim|, |lqkobwlastwm|, ['change stem -voi', 'change  -back']
+
+False, |matlubim|, |matlubwm|, ['change  -back']
+
+False, |kamarotim|, |kamarotwm|, ['change  -back']
+
+False, |kulybim|, |kulybim|, []
+
+False, |Dobim|, |Dobwm|, ['change  -back']
+
+False, |dimjat|, |dwmjat|, ['change stem -back']
+
+False, |tesaahybim|, |tesaahibim|, ['change stem +round']
+
+False, |kalbim|, |kalbwm|, ['change  -back']
+
+False, |temerryd|, |temerryd|, []
+
+False, |mabudim|, |mabudwm|, ['change  -back']
+
+False, |Tqpim|, |Tqpim|, []
+
+False, |anajurdim|, |anajurdwm|, ['change  -back']
+
+False, |teDellydim|, |teDellidim|, ['change stem +round']
+
+False, |tasallutim|, |tasallutwm|, ['change  -back']
+
+False, |rotim|, |rotwm|, ['change  -back']
+
+False, |robim|, |robwm|, ['change  -back']
+
+False, |apsyrd|, |apsurt|, ['change  +voi', 'change stem -back']
+
+False, |sopim|, |sopwm|, ['change  -back']
+
+False, |autim|, |autwm|, ['change  -back']
+
+False, |maksudim|, |maksudwm|, ['change  -back']
+
+False, |garbim|, |garbwm|, ['change  -back']
+
+False, |aLpim|, |aLpwm|, ['change  -back']
+
+False, |trqstim|, |trqstim|, []
+
+False, |jekvyDudim|, |jekvyDudwm|, ['change  -back']
+
+False, |taaDDybim|, |taaDDibim|, ['change stem +round']
+
+False, |tentyrdijot|, |tentirdijot|, ['change stem +round']
+
+False, |okim|, |okwm|, ['change  -back']
+
+False, |paraSytim|, |paraSitim|, ['change stem +round']
+
+False, |haddim|, |haddwm|, ['change  -back']
+
+False, |otim|, |otwm|, ['change  -back']
+
+False, |ebusuudim|, |ebusuudwm|, ['change  -back']
+
+False, |taassubim|, |taassubwm|, ['change  -back']
+
+False, |tezajydim|, |tezajidim|, ['change stem +round']
+
+False, |kokotim|, |kokotwm|, ['change  -back']
+
+False, |qDim|, |qDim|, []
+
+False, |tahakkukim|, |tahakkukwm|, ['change  -back']
+
+False, |ahtapotim|, |ahtapotwm|, ['change  -back']
+
+False, |TelwnDim|, |TelinDim|, ['change stem +back']
+
+False, |tesejjybim|, |tesejjibim|, ['change stem +round']
+
+False, |pilotim|, |pilotwm|, ['change  -back']
+
+False, |holding|, |holdwnk|, ['change  +voi', 'change stem -back']
+
+False, |tavassutim|, |tavassutwm|, ['change  -back']
+
+False, |havutim|, |havutwm|, ['change  -back']
+
+False, |stopim|, |stopwm|, ['change  -back']
+
+False, |agobim|, |agobwm|, ['change  -back']
+
+False, |terekkybim|, |terekkibim|, ['change stem +round']
+
+False, |kujud|, |kujud|, []
+
+False, |sulbim|, |sulbwm|, ['change  -back']
+
+False, |DyrmymeShud|, |DyrmymeShud|, []
+
+False, |mijobim|, |mijobwm|, ['change  -back']
+
+False, |huruDim|, |huruDwm|, ['change  -back']
+
+False, |zymrydim|, |zymrydim|, []
+
+False, |mevLud|, |mevLud|, []
+
+False, |kytyb|, |kytyb|, []
+
+False, |zerdyStim|, |zerdiStim|, ['change stem +round']
+
+False, |teDeddydim|, |teDeddidim|, ['change stem +round']
+
+False, |qdim|, |qdim|, []
+
+False, |raundim|, |raundwm|, ['change  -back']
+
+False, |gqtim|, |gqtim|, []
+
+False, |sinagogim|, |sinagogwm|, ['change  -back']
+
+False, |potim|, |potwm|, ['change  -back']
+
+False, |gqnTim|, |gqnTim|, []
+
+False, |minakobim|, |minakobwm|, ['change  -back']
+
+False, |ysLuubim|, |ysLuubwm|, ['change  -back']
+
+False, |antilobim|, |antilobwm|, ['change  -back']
+
+False, |fokim|, |fokwm|, ['change  -back']
+
+False, |tasallubim|, |tasallubwm|, ['change  -back']
+
+False, |doTim|, |doTwm|, ['change  -back']
+
+False, |kykyrtim|, |kykyrtim|, []
+
+False, |kytybim|, |kytybim|, []
+
+False, |bokim|, |bokwm|, ['change  -back']
+
+False, |flytim|, |flytim|, []
+
+False, |Surubim|, |Surubwm|, ['change  -back']
+
+False, |meDlub|, |meDlub|, []
+
+False, |sojsobim|, |sojsobwm|, ['change  -back']
+
+False, |maskotim|, |maskotwm|, ['change  -back']
+
+False, |etydim|, |etidim|, ['change stem +round']
+
+False, |topim|, |topwm|, ['change  -back']
+
+False, |swnobim|, |swnobwm|, ['change  -back']
+
+False, |kotim|, |kotwm|, ['change  -back']
+
+False, |Zypim|, |Zypim|, []
+
+False, |antimanjetig|, |antwmanjetik|, ['change  +voi', 'change stem -back']
+
+False, |takajjydim|, |takajjidim|, ['change stem +round']
+
+False, |angutim|, |angutwm|, ['change  -back']
+
+False, |lypim|, |lypim|, []
+
+False, |tokim|, |tokwm|, ['change  -back']
+
+False, |meDzub|, |meDzub|, []
+
+False, |qrgytim|, |qrgytim|, []
+
+False, |tezajyd|, |tezajyd|, []
+
+False, |izbandutim|, |izbandutwm|, ['change  -back']
+
+False, |tybim|, |tybim|, []
+
+False, |kulyb|, |kulyb|, []
+
+False, |Sytim|, |Sytim|, []
+
+False, |malazgirt|, |malazgwrt|, ['change stem -back']
+
+False, |Syhudim|, |Syhudwm|, ['change  -back']
+
+False, |lqkopwlast|, |lqkobwlast|, ['change stem -voi']
+
+Errors in training #4: 67
+7: True, |filqrtim|, |filqrtym|, ['change  -round']~False, |filqrtim|, |filqrtim|, []
+
+23: True, |inTim|, |inTim|, []~False, |inTim|, |inTym|, ['change  -round']
+
+42: True, |Denub|, |Denup|, ['change stem +voi']~False, |Denub|, |Denub|, []
+
+61: True, |pedagogim|, |pedagogum|, ['change  -round', 'change  -back']~False, |pedagogim|, |pedagogwm|, ['change  -back']
+
+64: True, |ilhakim|, |ilhakwm|, ['change  -back']~False, |ilhakim|, |ilhakum|, ['change  -back', 'change  -round']
+
+337: True, |gylynTim|, |gylynTym|, ['change  -round']~False, |gylynTim|, |gylynTim|, []
+
+338: True, |kistim|, |kistim|, []~False, |kistim|, |kistym|, ['change  -round']
+
+638: True, |temerrydim|, |temerrydym|, ['change  -round']~False, |temerrydim|, |temerridim|, ['change stem +round']
+
+647: True, |myejjiD|, |myejjiT|, ['change  +voi']~False, |myejjiD|, |myejjyT|, ['change  +voi', 'change stem -round']
+
+655: True, |borasitim|, |borasitim|, []~False, |borasitim|, |borasitym|, ['change  -round']
+
+671: True, |teejjydim|, |teejjydym|, ['change  -round']~False, |teejjydim|, |teejjidim|, ['change stem +round']
+
+672: True, |identig|, |identik|, ['change stem +voi']~False, |identig|, |ydentik|, ['change  +voi', 'change stem -round']
+
+683: True, |bakalitim|, |bakalitim|, []~False, |bakalitim|, |bakalitym|, ['change  -round']
+
+691: True, |sytim|, |sytym|, ['change  -round']~False, |sytim|, |sytim|, []
+
+698: True, |sanskritim|, |sanskritim|, []~False, |sanskritim|, |sanskritym|, ['change  -round']
+
+728: True, |TerTqpim|, |TerTqpym|, ['change  -round']~False, |TerTqpim|, |TerTqpim|, []
+
+741: True, |pwnqmatig|, |pwnqmatik|, ['change stem +voi']~False, |pwnqmatig|, |punqmatik|, ['change  +voi', 'change stem -round']
+
+778: True, |feribotim|, |feribotum|, ['change  -round', 'change  -back']~False, |feribotim|, |feribotwm|, ['change  -back']
+
+780: True, |delgeTim|, |delgeTim|, []~False, |delgeTim|, |delgeTym|, ['change  -round']
+
+1208: True, |gqTim|, |gqTym|, ['change  -round']~False, |gqTim|, |gqTim|, []
+
+1209: True, |myteakwb|, |myteakwp|, ['change stem +voi']~False, |myteakwb|, |myteakup|, ['change  +voi', 'change stem -round']
+
+1233: True, |pisbwjwg|, |pisbwjwk|, ['change stem +voi']~False, |pisbwjwg|, |pwsbwjwk|, ['change  +voi', 'change stem -back']
+
+1237: True, |kwratim|, |kwratwm|, ['change  -back']~False, |kwratim|, |kwratim|, []
+
+1241: True, |merkebim|, |merkebim|, []~False, |merkebim|, |merkebwm|, ['change  -back']
+
+1277: True, |naamaaLubim|, |naamaaLubum|, ['change  -round', 'change  -back']~False, |naamaaLubim|, |naamaaLubym|, ['change  -round']
+
+1313: True, |meraatib|, |meraatip|, ['change stem +voi']~False, |meraatib|, |meraatwp|, ['change  +voi', 'change stem -back']
+
+1316: True, |iiraadim|, |iiraadwm|, ['change  -back']~False, |iiraadim|, |iiraadim|, []
+
+1513: True, |terettybim|, |terettybym|, ['change  -round']~False, |terettybim|, |terettybum|, ['change  -back', 'change  -round']
+
+1517: True, |kwraftim|, |kwraftwm|, ['change  -back']~False, |kwraftim|, |kwraftim|, []
+
+1519: True, |kemalistim|, |kemalistim|, []~False, |kemalistim|, |kemalistwm|, ['change  -back']
+
+1535: True, |borDim|, |borDum|, ['change  -round', 'change  -back']~False, |borDim|, |borDym|, ['change  -round']
+
+1568: True, |mymaanaat|, |mymaanaat|, []~False, |mymaanaat|, |mumaanaat|, ['change stem -back']
+
+1737: True, |Deberrutim|, |Deberrutum|, ['change  -round', 'change  -back']~False, |Deberrutim|, |Deberrutym|, ['change  -round']
+
+1741: True, |tezaajyd|, |tezaajyt|, ['change stem +voi']~False, |tezaajyd|, |tezaajut|, ['change  +voi', 'change stem -back']
+
+1747: True, |notim|, |notum|, ['change  -round', 'change  -back']~False, |notim|, |notwm|, ['change  -back']
+
+1751: True, |mystehlikim|, |mystehlikim|, []~False, |mystehlikim|, |mystehlikym|, ['change  -round']
+
+1821: True, |vaktim|, |vaktim|, []~False, |vaktim|, |vaktwm|, ['change  -back']
+
+1831: True, |iDraatim|, |iDraatwm|, ['change  -back']~False, |iDraatim|, |iDraatim|, []
+
+1851: True, |qdynDim|, |qdynDym|, ['change  -round']~False, |qdynDim|, |qdynDum|, ['change  -back', 'change  -round']
+
+1858: True, |barbutim|, |barbutum|, ['change  -round', 'change  -back']~False, |barbutim|, |barbutym|, ['change  -round']
+
+1920: True, |biskyvitim|, |biskyvitim|, []~False, |biskyvitim|, |biskivitim|, ['change stem +round']
+
+1921: True, |katgytim|, |katgytym|, ['change  -round']~False, |katgytim|, |katgytum|, ['change  -back', 'change  -round']
+
+1929: True, |ruzvelt|, |ruzvelt|, []~False, |ruzvelt|, |ryzvelt|, ['change stem +back']
+
+1948: True, |mantwg|, |mantwk|, ['change stem +voi']~False, |mantwg|, |mantuk|, ['change  +voi', 'change stem -round']
+
+1994: True, |mevDutim|, |mevDutum|, ['change  -round', 'change  -back']~False, |mevDutim|, |mevDutym|, ['change  -round']
+
+1995: True, |gurbetim|, |gurbetim|, []~False, |gurbetim|, |gurbetwm|, ['change  -back']
+
+2018: True, |berbatim|, |berbatwm|, ['change  -back']~False, |berbatim|, |berbatim|, []
+
+2034: True, |minnetim|, |minnetim|, []~False, |minnetim|, |minnetwm|, ['change  -back']
+
+2039: True, |kybim|, |kybym|, ['change  -round']~False, |kybim|, |kybim|, []
+
+2056: True, |iTtinaabim|, |iTtinaabwm|, ['change  -back']~False, |iTtinaabim|, |iTtinaabum|, ['change  -back', 'change  -round']
+
+2069: True, |istimbotim|, |istimbotum|, ['change  -round', 'change  -back']~False, |istimbotim|, |istimbqtim|, ['change stem +back']
+
+2073: True, |taklidim|, |taklidim|, []~False, |taklidim|, |taklidum|, ['change  -back', 'change  -round']
+
+2086: True, |byrytim|, |byrytym|, ['change  -round']~False, |byrytim|, |byrytim|, []
+
+2092: True, |kasketim|, |kasketim|, []~False, |kasketim|, |kasketum|, ['change  -back', 'change  -round']
+
+2142: True, |mystahaakim|, |mystahaakwm|, ['change  -back']~False, |mystahaakim|, |mystahaakim|, []
+
+2175: True, |sonuDim|, |sonuDum|, ['change  -round', 'change  -back']~False, |sonuDim|, |sonuDwm|, ['change  -back']
+
+2176: True, |bqreg|, |bqrek|, ['change stem +voi']~False, |bqreg|, |bqrqk|, ['change  +voi', 'change stem -round']
+
+2221: True, |serKaatib|, |serKaatip|, ['change stem +voi']~False, |serKaatib|, |serKaatwp|, ['change  +voi', 'change stem -back']
+
+2230: True, |tuLuatim|, |tuLuatwm|, ['change  -back']~False, |tuLuatim|, |tuLuatim|, []
+
+2252: True, |qytim|, |qytym|, ['change  -round']~False, |qytim|, |qytum|, ['change  -back', 'change  -round']
+
+2262: True, |dujunDim|, |dujunDum|, ['change  -round', 'change  -back']~False, |dujunDim|, |dujunDym|, ['change  -round']
+
+2298: True, |monobwlok|, |monobwlok|, []~False, |monobwlok|, |monobulok|, ['change stem -round']
+
+2301: True, |vaaDib|, |vaaDip|, ['change stem +voi']~False, |vaaDib|, |vaaDwp|, ['change  +voi', 'change stem -back']
+
+2328: True, |rybaabim|, |rybaabwm|, ['change  -back']~False, |rybaabim|, |rybaabim|, []
+
+2335: True, |antrasit|, |antrasit|, []~False, |antrasit|, |antraswt|, ['change stem -back']
+
+2340: True, |kokim|, |kokum|, ['change  -round', 'change  -back']~False, |kokim|, |kokim|, []
+
+2392: True, |Dengim|, |Dengim|, []~False, |Dengim|, |Dengum|, ['change  -back', 'change  -round']
+
+Constraints added in training #4: 51
++{+ant}{+round,-back}{+dr}
++{-glot}{+round,+cont,-word}
++{+back,-word,-cons}
+-{+son,-back,-round}{-word}{+word}
+-{-dr}{+hi,+round,-nas}{-voi}
+-{+word}{-lat,-dr,-word}{+voc,+son,+round,+cont,-lo,-back}
+-{+voc,+back,+son,+round}
+voc tier +['{-cons}', '{-cons,-round}']
++{-son}{-round}{-lat}
+voc tier -['{-hi}', '{+voc,-word,-lo,+hi,-round,-cons}']
+voc tier -['{+son}', '{+voc}', '{-word,-round}']
++{+voc,+round,+cont,-word,-nas,-cons}
++{+voc,-cons,+round}{+nas,-word}
++{-lat}{+round,+back,+son,-nas}
+-{-nas}{+voc,+son,+back,-word,-nas,-round}{-cont}
++{-word}{+ant,+lab}{+round,-nas}
++{+round,-word}{-cont}{+hi,+cont,-nas,-back}
+-{-rhot,-ant}{+voc,+son,-word,-lo,-nas,-back,-round}
++{-nas}{+voc,+cont,-word,-lo,+hi,-nas,-round,-cons}
++{+cont,+cor}{-word,-round}
++{-nas,-round}{+cons,-word,+lab,+nas}{-glot,-dor}
++{+voc,+son,+back,-lo,+hi,-round}{-lab,-voc}
++{-dr}{+round}
++{-nas,+cont,-word,-back,-round}{-cor,+lab}
+-{+son,-back}{-rhot}
+-{+voc,+round,+back,+cont,-lo,+hi,-nas}
++{+hi,+cont,-lo}{-lab,-word,-voc}{-back,-word,-cons}
++{-lat,+cons,+lab,-word,-rhot,+ant,-nas,-dr,-cont,-glot,-dor,-voi,-voc}{+hi,-back}{-lat,+ant,-cont,+nas,-word}
+voc tier -['{+back,-round}', '{-word,-lo}', '{-cons}']
++{+voc,+back}
+voc tier +['{+cont}', '{+round,-word}']
+-{+cor}{-nas,+cont,-word,-back,-lo}{-rhot,-cor,-dr,-word,-cont}
++{+hi,+back,+son}
+-{+voc,-cons,+round}{-lab}
+-{+voc,-back}
++{+back,-lo}{-rhot,-lat,-cont,+nas}
++{+cont,+back,-nas}{-dr}{+word}
++{+back,-round}{-rhot}
+-{+round,+son}{+voi,-ant}{+hi,+cont,-back}
+-{+back,+cont}{+lab}
++{-lab}{+hi,+back,+cont,-round}{+son,+cor,+cont,-lat,+rhot,+ant,-nas,-dr,-dor,-lab,-voc}
+-{+ant}{+round,-nas,-cons}
+-{+hi,-round}{-lat}
+-{+cons,+voi,+lab,+cont,-word,-rhot,-nas,-dr,-glot,-dor,-cor,-son,-voc}{-voi}{-back,-round}
+voc tier -['{+cont,-word,-round}']
++{+voc,+son,+round,+back,-word,-lo,+hi,-nas,-cons}{-glot}{+voc,-nas,+round}
+-{-dor}{-word,-back}
++{+cons,+cor,-lat,-nas,-glot,-son,-voc}{+hi,+back}
++{+voc,+round,+back,+hi,-nas,-cons}
+-{+voc,-cons,-round}{-dor,-dr}
+-{+son}{+cons,+voi,+cor,+dr,-word,-ant,-rhot,-lat,-nas,-cont,-glot,-dor,-lab,-son,-voc}{+back,+cont,-word,+hi,-nas,-cons}
+
+Errors in testing #4: 333
+False, |fagotim|, |fagotim|, []
+
+False, |ruhsatim|, |ruhsatim|, []
+
+False, |kynkim|, |kynkim|, []
+
+False, |haltim|, |haltim|, []
+
+False, |taammydim|, |taammidim|, ['change stem +round']
+
+False, |odim|, |edim|, ['change stem +round', 'change stem +back']
+
+False, |perjodig|, |perjedik|, ['change  +voi', 'change stem +round', 'change stem +back']
+
+False, |azotim|, |azotim|, []
+
+False, |jarwbuTukim|, |jarwbuTukim|, []
+
+False, |termodinamig|, |termedinamik|, ['change  +voi', 'change stem +round', 'change stem +back']
+
+False, |Zeofizig|, |Zeefizik|, ['change  +voi', 'change stem +round', 'change stem +back']
+
+False, |Denubim|, |Denibim|, ['change stem +round', 'change stem +back']
+
+False, |somutim|, |somutim|, []
+
+False, |bojkotim|, |bojkotim|, []
+
+False, |ihtijatim|, |ihtijatim|, []
+
+False, |mySrik|, |miSrik|, ['change stem +round']
+
+False, |Sakwrtim|, |Sakwrtim|, []
+
+False, |zwpzwbim|, |zwpzwbim|, []
+
+False, |hqstim|, |hestim|, ['change stem +round']
+
+False, |buutim|, |buutim|, []
+
+False, |mysaaidim|, |myzaaidim|, ['change stem -voi']
+
+False, |tostim|, |tostim|, []
+
+False, |istiabim|, |istiabim|, []
+
+False, |mysaavat|, |myzaavat|, ['change stem -voi']
+
+False, |zwrtzwrtim|, |zwrtzwrtim|, []
+
+False, |dretnotim|, |dretnetim|, ['change stem +round', 'change stem +back']
+
+False, |Twfwtim|, |Twfwtim|, []
+
+False, |fijatim|, |fijatim|, []
+
+False, |altim|, |altim|, []
+
+False, |swrpim|, |swrpim|, []
+
+False, |motopompim|, |motopompim|, []
+
+False, |hartim|, |hartim|, []
+
+False, |tevellydim|, |tevellidim|, ['change stem +round']
+
+False, |tentyrdijotim|, |tentirdijotim|, ['change stem +round']
+
+False, |jahutim|, |jahwtim|, ['change stem +round']
+
+False, |sitreptokokim|, |sitreptokokim|, []
+
+False, |hiDabim|, |hiDabim|, []
+
+False, |jqkim|, |jekim|, ['change stem +round']
+
+False, |despotim|, |despetim|, ['change stem +round', 'change stem +back']
+
+False, |gardwrobim|, |gardwrobim|, []
+
+False, |gongim|, |gongwm|, ['change  -back']
+
+False, |dyrystim|, |dyrystim|, []
+
+False, |robotim|, |robotim|, []
+
+False, |musaahibim|, |muzaahibim|, ['change stem -voi']
+
+False, |iskoTim|, |iskeTim|, ['change stem +round', 'change stem +back']
+
+False, |swhrijet|, |sihrijet|, ['change stem +back']
+
+False, |hoSnutim|, |hoSnutim|, []
+
+False, |turunDim|, |turunDwm|, ['change  -back']
+
+False, |kebabim|, |kebabim|, []
+
+False, |oruDim|, |oruDym|, ['change  -round']
+
+False, |dqrdim|, |derdim|, ['change stem +round']
+
+False, |podisyetim|, |pedisyetim|, ['change stem +round', 'change stem +back']
+
+False, |girdabim|, |girdabim|, []
+
+False, |tevratim|, |tevratim|, []
+
+False, |Sartim|, |Sartim|, []
+
+False, |naamysaid|, |naamisait|, ['change  +voi', 'change stem +round']
+
+False, |rokim|, |rokim|, []
+
+False, |havuDim|, |havwDim|, ['change stem +round']
+
+False, |melbusaatim|, |melbuzaatwm|, ['change stem -voi', 'change  -back']
+
+False, |mysiibet|, |misiibet|, ['change stem +round']
+
+False, |reKatim|, |reKatim|, []
+
+False, |tavassut|, |tavasswt|, ['change stem +round']
+
+False, |teSeddytim|, |teSedditim|, ['change stem +round']
+
+False, |gavotim|, |gavotim|, []
+
+False, |zartim|, |zartim|, []
+
+False, |tezebzyb|, |tezebzip|, ['change  +voi', 'change stem +round']
+
+False, |gurubim|, |gurubwm|, ['change  -back']
+
+False, |Taputim|, |Tapwtim|, ['change stem +round']
+
+False, |dolabim|, |dolabim|, []
+
+False, |jourtim|, |jourtim|, []
+
+False, |avuDim|, |avwDim|, ['change stem +round']
+
+False, |kylotim|, |kylqtim|, ['change stem +back']
+
+False, |hwrtim|, |hwrtim|, []
+
+False, |dipnotim|, |dipnetim|, ['change stem +round', 'change stem +back']
+
+False, |ysLub|, |ysLyp|, ['change  +voi', 'change stem +back']
+
+False, |ajwrtaDim|, |ajwrtaDim|, []
+
+False, |mektubim|, |mektibim|, ['change stem +round', 'change stem +back']
+
+False, |suTim|, |siTim|, ['change stem +round', 'change stem +back']
+
+False, |maaLubijet|, |maaLwbijet|, ['change stem +round']
+
+False, |teDerrydim|, |teDerridim|, ['change stem +round']
+
+False, |kontim|, |kontim|, []
+
+False, |kwlwDim|, |kwliDim|, ['change stem +back']
+
+False, |pabuDim|, |pabwDim|, ['change stem +round']
+
+False, |kwStim|, |kwStim|, []
+
+False, |saltim|, |saltim|, []
+
+False, |niisabim|, |niisabim|, []
+
+False, |harbim|, |harbwm|, ['change  -back']
+
+False, |demagogim|, |demagogwm|, ['change  -back']
+
+False, |teDellyd|, |teDellit|, ['change  +voi', 'change stem +round']
+
+False, |ejybim|, |ejibim|, ['change stem +round']
+
+False, |kujudim|, |kujudim|, []
+
+False, |tetevvyDim|, |tetevviDim|, ['change stem +round']
+
+False, |Deberrut|, |Deberrit|, ['change stem +round', 'change stem +back']
+
+False, |mutaalebat|, |mudaalebat|, ['change stem -voi']
+
+False, |lopim|, |lepim|, ['change stem +round', 'change stem +back']
+
+False, |naamysaaitim|, |naamyzaaitim|, ['change stem -voi']
+
+False, |kwtim|, |kitim|, ['change stem +back']
+
+False, |temevvyT|, |temevviT|, ['change stem +round']
+
+False, |puntim|, |puntim|, []
+
+False, |anodim|, |anodim|, []
+
+False, |faarenhajtim|, |faarenhajtim|, []
+
+False, |trioksit|, |trieksit|, ['change stem +round', 'change stem +back']
+
+False, |swhrijetim|, |sihrijetim|, ['change stem +back']
+
+False, |putim|, |pitim|, ['change stem +round', 'change stem +back']
+
+False, |mySfig|, |miSfik|, ['change  +voi', 'change stem +round']
+
+False, |kaTgqTim|, |kaTgeTim|, ['change stem +round']
+
+False, |maaLumijetim|, |maaLwmijetim|, ['change stem +round']
+
+False, |karSwtim|, |karSwtim|, []
+
+False, |bulutim|, |bulutim|, []
+
+False, |lqkopwlastim|, |lqkobwlastim|, ['change stem -voi']
+
+False, |matlubim|, |matlwbim|, ['change stem +round']
+
+False, |kurdim|, |kurdim|, []
+
+False, |kamarotim|, |kamarotim|, []
+
+False, |kulybim|, |kulybim|, []
+
+False, |kaledoskopim|, |kaledoskopim|, []
+
+False, |postim|, |postim|, []
+
+False, |Dobim|, |Dobim|, []
+
+False, |twkim|, |tikim|, ['change stem +back']
+
+False, |bizzatim|, |bizzatim|, []
+
+False, |tesaahybim|, |tesaahibim|, ['change stem +round']
+
+False, |kalbim|, |kalbwm|, ['change  -back']
+
+False, |hortzortim|, |hortzortim|, []
+
+False, |temerryd|, |temerrit|, ['change  +voi', 'change stem +round']
+
+False, |Tekmekatim|, |Tekmekatim|, []
+
+False, |hoStim|, |hoStim|, []
+
+False, |mabudim|, |mabwdim|, ['change stem +round']
+
+False, |fijongim|, |fijongim|, []
+
+False, |Tqpim|, |Tepim|, ['change stem +round']
+
+False, |DyrmymeShudim|, |DyrmymeShidim|, ['change stem +round', 'change stem +back']
+
+False, |kanwtim|, |kanwtim|, []
+
+False, |zeKatim|, |zeKatim|, []
+
+False, |taSwtim|, |taSwtim|, []
+
+False, |anajurdim|, |anajwrdim|, ['change stem +round']
+
+False, |edatim|, |edatim|, []
+
+False, |teDellydim|, |teDellidim|, ['change stem +round']
+
+False, |Dartim|, |Dartim|, []
+
+False, |tasallutim|, |tasallwtim|, ['change stem +round']
+
+False, |elhakim|, |elhakim|, []
+
+False, |rotim|, |retim|, ['change stem +round', 'change stem +back']
+
+False, |robim|, |robim|, []
+
+False, |Tekoslovakim|, |Tekoslovakim|, []
+
+False, |kopenhagim|, |kopenhagim|, []
+
+False, |Sezlongim|, |Sezlongim|, []
+
+False, |sopim|, |sopim|, []
+
+False, |iltihakim|, |iltihakim|, []
+
+False, |konDim|, |konDim|, []
+
+False, |autim|, |awtim|, ['change stem +round']
+
+False, |maksudim|, |makswdim|, ['change stem +round']
+
+False, |vefijatim|, |vefijatim|, []
+
+False, |sevkim|, |sefkim|, ['change stem +voi']
+
+False, |mysaitim|, |myzaitim|, ['change stem -voi']
+
+False, |garbim|, |garbwm|, ['change  -back']
+
+False, |ajgwtim|, |ajgwtim|, []
+
+False, |bariikadim|, |bariikadim|, []
+
+False, |folkim|, |folkim|, []
+
+False, |miadim|, |miadim|, []
+
+False, |bystim|, |bistim|, ['change stem +round']
+
+False, |rqmorkim|, |rqmorkim|, []
+
+False, |supabim|, |supabim|, []
+
+False, |Tinekopim|, |Tinekepim|, ['change stem +round', 'change stem +back']
+
+False, |aLpim|, |aLpwm|, ['change  -back']
+
+False, |kababulutim|, |kababulutim|, []
+
+False, |hukuukim|, |hukuukim|, []
+
+False, |martim|, |martim|, []
+
+False, |fytuhatim|, |fytuhatim|, []
+
+False, |trqstim|, |trestim|, ['change stem +round']
+
+False, |jekvyDudim|, |jekvyDydim|, ['change stem +back']
+
+False, |taaDDybim|, |taaDDibim|, ['change stem +round']
+
+False, |Sevkim|, |Sefkim|, ['change stem +voi']
+
+False, |naamysaait|, |naamyzaait|, ['change stem -voi']
+
+False, |tentyrdijot|, |tentirdijot|, ['change stem +round']
+
+False, |okim|, |okim|, []
+
+False, |jekvyDud|, |jekvyDyt|, ['change  +voi', 'change stem +back']
+
+False, |zwlgwtim|, |zwlgwtim|, []
+
+False, |paraSytim|, |paraSitim|, ['change stem +round']
+
+False, |kySadim|, |kySadim|, []
+
+False, |otim|, |etim|, ['change stem +round', 'change stem +back']
+
+False, |ebusuudim|, |ebusuudim|, []
+
+False, |haDivatim|, |haDivatim|, []
+
+False, |biLaakajdySartim|, |biLaakajdySartim|, []
+
+False, |taassubim|, |taasswbim|, ['change stem +round']
+
+False, |tamiratim|, |tamiratim|, []
+
+False, |tezajydim|, |tezajidim|, ['change stem +round']
+
+False, |mySrikim|, |miSrikim|, ['change stem +round']
+
+False, |selylqit|, |selyleit|, ['change stem +round']
+
+False, |myskirat|, |miskirat|, ['change stem +round']
+
+False, |syKutim|, |syKytim|, ['change stem +back']
+
+False, |dimjatim|, |dimjatim|, []
+
+False, |avdetim|, |afdetim|, ['change stem +voi']
+
+False, |kokotim|, |kokotim|, []
+
+False, |serabim|, |serabim|, []
+
+False, |kartim|, |kartim|, []
+
+False, |qDim|, |eDim|, ['change stem +round']
+
+False, |tahakkukim|, |tahakkwkim|, ['change stem +round']
+
+False, |suratim|, |suratim|, []
+
+False, |nyyjorkim|, |nyyjorkim|, []
+
+False, |ahtapotim|, |ahtapotim|, []
+
+False, |tetevvyD|, |tetevviT|, ['change  +voi', 'change stem +round']
+
+False, |TelwnDim|, |TelinDim|, ['change stem +back']
+
+False, |tesejjybim|, |tesejjibim|, ['change stem +round']
+
+False, |pilotim|, |piletim|, ['change stem +round', 'change stem +back']
+
+False, |tavassutim|, |tavasswtim|, ['change stem +round']
+
+False, |brovnig|, |brevnik|, ['change  +voi', 'change stem +round', 'change stem +back']
+
+False, |fijortim|, |fijertim|, ['change stem +round', 'change stem +back']
+
+False, |boukim|, |boukym|, ['change  -round']
+
+False, |havutim|, |havwtim|, ['change stem +round']
+
+False, |stopim|, |stepim|, ['change stem +round', 'change stem +back']
+
+False, |Tekabim|, |Tekabim|, []
+
+False, |biatim|, |biatim|, []
+
+False, |agobim|, |agobwm|, ['change  -back']
+
+False, |peroksid|, |pereksit|, ['change  +voi', 'change stem +round', 'change stem +back']
+
+False, |mysiibetim|, |misiibetim|, ['change stem +round']
+
+False, |keTapim|, |keTapim|, []
+
+False, |terekkybim|, |terekkibim|, ['change stem +round']
+
+False, |sulbim|, |sulbwm|, ['change  -back']
+
+False, |avradim|, |afradwm|, ['change stem +voi', 'change  -back']
+
+False, |fwrtim|, |fwrtim|, []
+
+False, |mijobim|, |mijqbim|, ['change stem +back']
+
+False, |Torabim|, |Torabim|, []
+
+False, |huruDim|, |huruDim|, []
+
+False, |sihatim|, |sihatim|, []
+
+False, |Dukim|, |Dukwm|, ['change  -back']
+
+False, |dertopim|, |dertepim|, ['change stem +round', 'change stem +back']
+
+False, |kaldwraDim|, |kaldwraDim|, []
+
+False, |mylkim|, |mylkim|, []
+
+False, |solenoitim|, |soleneitim|, ['change stem +round', 'change stem +back']
+
+False, |zymrydim|, |zymrydim|, []
+
+False, |pomadim|, |pomadim|, []
+
+False, |zerdyStim|, |zerdiStim|, ['change stem +round']
+
+False, |SwpSwbim|, |SwpSwbim|, []
+
+False, |teDeddydim|, |teDeddidim|, ['change stem +round']
+
+False, |qdim|, |edim|, ['change stem +round']
+
+False, |selyloitim|, |selyleitim|, ['change stem +round', 'change stem +back']
+
+False, |raundim|, |rawndim|, ['change stem +round']
+
+False, |Swkim|, |Sikim|, ['change stem +back']
+
+False, |rastim|, |rastim|, []
+
+False, |gqtim|, |getim|, ['change stem +round']
+
+False, |tiroitim|, |tireitim|, ['change stem +round', 'change stem +back']
+
+False, |bidatim|, |bidatim|, []
+
+False, |sinagogim|, |sinagogwm|, ['change  -back']
+
+False, |potim|, |petim|, ['change stem +round', 'change stem +back']
+
+False, |gqnTim|, |genTim|, ['change stem +round']
+
+False, |minakobim|, |minakobwm|, ['change  -back']
+
+False, |ysLuubim|, |ysLuubwm|, ['change  -back']
+
+False, |fwratim|, |fwratim|, []
+
+False, |morgim|, |morgim|, []
+
+False, |sybutim|, |sybytim|, ['change stem +back']
+
+False, |mySirijetim|, |miSirijetim|, ['change stem +round']
+
+False, |sorguDim|, |sorguDym|, ['change  -round']
+
+False, |hejhatim|, |hejhatim|, []
+
+False, |antilobim|, |antilebim|, ['change stem +round', 'change stem +back']
+
+False, |mysaavaatim|, |myzaavaatwm|, ['change stem -voi', 'change  -back']
+
+False, |fokim|, |fokim|, []
+
+False, |miKabim|, |miKabim|, []
+
+False, |nohutim|, |nohutim|, []
+
+False, |ihtilatim|, |ihtilatim|, []
+
+False, |tasallubim|, |tasallwbim|, ['change stem +round']
+
+False, |doTim|, |deTim|, ['change stem +round', 'change stem +back']
+
+False, |rijaazijatim|, |rijaazijatim|, []
+
+False, |gwrqnlandim|, |gwrqnlandim|, []
+
+False, |usanDim|, |usanDim|, []
+
+False, |kykyrtim|, |kykyrtim|, []
+
+False, |nwsfet|, |nisfet|, ['change stem +back']
+
+False, |hurDim|, |hurDym|, ['change  -round']
+
+False, |kytybim|, |kytybim|, []
+
+False, |vikontim|, |vikontim|, []
+
+False, |bokim|, |bokim|, []
+
+False, |flytim|, |flitim|, ['change stem +round']
+
+False, |Surubim|, |Surubwm|, ['change  -back']
+
+False, |sojsobim|, |sojsobim|, []
+
+False, |maskotim|, |maskotim|, []
+
+False, |wSwtaDim|, |wSwtaDim|, []
+
+False, |avkatim|, |afkatwm|, ['change stem +voi', 'change  -back']
+
+False, |marmeladim|, |marmeladim|, []
+
+False, |etydim|, |etidim|, ['change stem +round']
+
+False, |Dupim|, |Dupim|, []
+
+False, |biskyvit|, |biskivit|, ['change stem +round']
+
+False, |topim|, |topim|, []
+
+False, |swnobim|, |swnobim|, []
+
+False, |eSarbim|, |eSarbim|, []
+
+False, |iStijakim|, |iStijakim|, []
+
+False, |kotim|, |kotim|, []
+
+False, |puStim|, |puStim|, []
+
+False, |Zypim|, |Zypim|, []
+
+False, |barbituratim|, |barbituratim|, []
+
+False, |kwTim|, |kiTim|, ['change stem +back']
+
+False, |takajjydim|, |takajjidim|, ['change stem +round']
+
+False, |isKatim|, |isKatim|, []
+
+False, |sojutim|, |sojutim|, []
+
+False, |saakwtim|, |saakwtim|, []
+
+False, |angutim|, |angwtim|, ['change stem +round']
+
+False, |lypim|, |lypim|, []
+
+False, |kwvanDim|, |kwvanDim|, []
+
+False, |konutim|, |konutim|, []
+
+False, |tyrkim|, |tyrkim|, []
+
+False, |kobaltim|, |kobaltim|, []
+
+False, |punTim|, |punTwm|, ['change  -back']
+
+False, |tokim|, |tokim|, []
+
+False, |maaLuumatim|, |maaLuumatim|, []
+
+False, |mensubijetim|, |mensibijetim|, ['change stem +round', 'change stem +back']
+
+False, |zuhuratim|, |zuhuratim|, []
+
+False, |ajwrtim|, |ajwrtim|, []
+
+False, |lyGatim|, |lyGatim|, []
+
+False, |meDzubim|, |meDzibim|, ['change stem +round', 'change stem +back']
+
+False, |semerkantim|, |semerkantim|, []
+
+False, |tektyg|, |tektik|, ['change  +voi', 'change stem +round']
+
+False, |menkubijetim|, |menkibijetim|, ['change stem +round', 'change stem +back']
+
+False, |kwrbaDim|, |kwrbaDim|, []
+
+False, |qrgytim|, |qrgytim|, []
+
+False, |wrgatim|, |wrgatim|, []
+
+False, |grotesk|, |grqtesk|, ['change stem +back']
+
+False, |zerdySt|, |zerdiSt|, ['change stem +round']
+
+False, |swratim|, |swratim|, []
+
+False, |Lutim|, |Lytim|, ['change stem +back']
+
+False, |selyloitim|, |selyleitim|, ['change stem +round', 'change stem +back']
+
+False, |nebatim|, |nebatim|, []
+
+False, |Subatim|, |Subatim|, []
+
+False, |izbandutim|, |izbandwtim|, ['change stem +round']
+
+False, |tybim|, |tybim|, []
+
+False, |Sytim|, |Sitim|, ['change stem +round']
+
+False, |inadim|, |inadim|, []
+
+False, |dioksidim|, |dieksidim|, ['change stem +round', 'change stem +back']
+
+False, |zonkim|, |zonkwm|, ['change  -back']
+
+False, |Syhudim|, |Syhydim|, ['change stem +back']
+
+False, |kitabim|, |kitabim|, []
+
+False, |budist|, |bidist|, ['change stem +round', 'change stem +back']
+
+False, |aortim|, |aortim|, []
+
+False, |lqkopwlast|, |lqkobwlast|, ['change stem -voi']
+
+False, |astigmatim|, |astigmatim|, []
+
+False, |swrtim|, |swrtim|, []
+
+False, |turbim|, |turbwm|, ['change  -back']
+
+False, |kyrkim|, |kyrkim|, []
+
+False, |feldispatim|, |feldispatim|, []
+
+Total Constraints, Sorted by Weight
+11.8983362104	voc tier +['{-nas,-round}', '{+hi,-nas,-cons,-round}']
+11.2805548951	Ident  back
+10.8660216299	Ident  round
+10.6536539257	voc tier -['{+voc,+back}', '{+voc,-back}']
+7.19922401633	voc tier -['{+cont,-back}', '{+voc,+son,+back,+cont,-word,-lo,+hi,-nas,-round,-cons}']
+5.93575305598	Ident  +round
+5.71137438278	Ident  -back
+5.68568254796	Ident  -round
+5.06411722279	-{-nas,-back,-lo}{+son}{+word}
+5.03400404478	Ident  +back
+4.34958012325	voc tier -['{-round}', '{+round,+cont}']
+3.5526112252	voc tier +['{+lo}', '{+voc,+back,+son,-cons}', '{+voc,+son,+back,-word,+hi,-nas,-round,-cons}']
+3.16095190342	voc tier +['{-hi,-nas,+cont,-word,-lo}', '{-back,-round}']
+2.89742541628	voc tier -['{-cons}', '{+son,-round}']
+2.69523897094	-{+son,-back}{-dor,+son,-dr,-word}
+2.66071037423	+{+round,+son}{-lat,+cons,+son,+lab,-word,+nas,-rhot,+ant,-dr,-cont,-glot,-dor,-cor,-voc}
+2.53062816649	-{-back,-lo}{+son,-dr,-word,+nas}
+2.23357580146	-{+voc,+son,+cont,-word,-lo,-nas,-back,-round,-cons}{+nas}
+2.20505246182	+{+back,-lo}{+ant,+son,+nas,-lat,-dr,-dor,-cor,-voc}
+2.17064690848	voc tier +['{+voc,+cont,-word,-lo,+hi,-back,-cons}', '{+cont,-back}']
+2.0270319661	voc tier -['{+hi,-round}']
+2.00060826579	-{+cont,-round}{-cor}
+2.0	-{+cor}{-word}{+hi,-round}
+1.92672516749	+{-glot,-voi}{+word}
+1.88657406902	voc tier +['{+hi,+round}']
+1.84831041601	-{+hi,+back}{-son}
+1.84390939379	+{+voc,+son,+back,+cont,-hi,-cons}{-glot,-dor,+cor,-voc,-rhot}{+back,-round}
+1.79578685811	-{-word,+hi,-nas,-back,-round,-cons}{+son}
+1.76335596607	-{+back}{-word}{+word}
+1.62240449522	+{+cons,+voi,+ant,-lat,-nas,-dr,-glot,-dor,-son}{+back,-word}{+son}
+1.62158049962	+{+voc,-back,-lo}{-lat}{+voc,-nas,-cons,+lo}
+1.56955536213	voc tier +['{-hi}', '{+voc,+son,+back,-hi,-nas,-round,-cons}', '{-round}']
+1.50150008202	-{+back,+son}{-word}{+word}
+1.44134929905	+{+cons,+voi,+lab,-rhot,-lat,-nas,-cont,-glot,-cor,-son,-voc}{-round,-lo}
+1.40690338166	-{+ant}{+round,-nas,-cons}
+1.4	voc tier -['{-hi}', '{+voc,+back,+cont}', '{+voc,-round}']
+1.37462073124	+{+voc,+round,-lo}{-lat,-cor,-word,-cont}
+1.34578390691	+{+voc,+back}{+nas,-word,-lat,-dr,-dor,-cor}
+1.34288906793	-{+word}{-lat}{-back,-cons}
+1.332921149	+{+back,-lo}{-rhot,-lat,-cont,+nas}
+1.31111560635	voc tier -['{+cont,-word}', '{-hi,+cont}', '{+back,-cons}']
+1.28337264719	-{+round}
+1.22809558004	+{-back,-cons}{-lat}{+word}
+1.22222060495	voc tier -['{-word}', '{+back,-round}']
+1.2	+{-cont}{+back,+son}
+1.2	voc tier +['{-cons}', '{-nas}', '{-round,-lo}']
+1.2	+{-rhot,+ant,-nas,-voi}{+back,-word,-cons}{-glot,+cons,+nas}
+1.19664813663	+{-cons,-round}
+1.19330455949	-{+cons,-rhot,-lat,-nas,-cont,-glot,-dor,-voi,-son,-voc}{+voc,+round,+back,+cont,-word,-lo,+hi,-nas}{-lab}
+1.17747554679	-{+back,-nas}
+1.17433226048	Ident  voi
+1.15507888034	+{+cont,-back,-round}
+1.15441165609	-{-word,-back,-lo}
+1.15305392189	+{+hi,+round,+voc,-cons,-lo}
+1.15294220699	voc tier -['{+cont}', '{-round,-lo}']
+1.15021174766	-{+round,-nas}
+1.14301308334	+{+cons,+voi,+cor,-word,-ant,-rhot,-lat,-nas,-glot,-dor,-son}{+round}
+1.11675509406	+{+son,+cont,-lo,+hi,-nas,-back,-cons}
+1.10853977018	-{+back,-cons}{-word}{+word}
+1.04896565005	voc tier +['{-hi}', '{+voc,+back}']
+1.04075909267	+{+cons,+son,-cont}{-cons,-round}
+1.03361024486	Ident  -voi
+1.02974326142	+{-round}
+1.02425397153	+{+cor}{+hi,-word,-back}
+1.0	-{-hi}{+cons}{+voc,+son,+round,+cont,-lo,+hi,-nas}
+1.0	-{+son,+back,+cont,-word,-lo}{-rhot}{+word}
+1.0	+{-nas}{+cor}{+son,-back}
+1.0	+{-dor,-dr}{+voc,-back}
+0.998328414737	-{+back,+cont,-word}
+0.995153039156	+{+voc,-cons,+round}{+nas,-word}
+0.990111643796	voc tier -['{+son,+voc,+back,+cont,-round}']
+0.977209068884	+{+round,+cont}{-dor,-dr,+lab}{+word}
+0.965276531041	+{+voc,-round}
+0.963306499837	voc tier +['{-word}', '{-back}']
+0.961146210454	+{+cont,+cor}{-word,-round}
+0.955455731216	-{+round,+son}{+voi,-ant}{+hi,+cont,-back}
+0.954748981417	voc tier -['{+cont}', '{-word}', '{+voc,+back,-cons}']
+0.946666326779	+{-word}{+round,+back,-cons,-lo}
+0.942382772119	-{+back,-lo}
+0.929267950177	-{-glot,-word,+cor,-voc,-son}{-back}
+0.927451825939	voc tier -['{+voc,+son,+back,-word,-lo,+hi,-nas,-round,-cons}']
+0.926347595151	-{+son,+back,-nas}
+0.924333541196	-{+voc,+round,+back,+cont,-lo,+hi,-nas}
+0.918396529526	+{+cont,-round}
+0.917606612588	+{+cons,+son,+cor,+cont,-word,+lat,-rhot,+ant,-nas,-dr,-glot,-dor,-lab,-voc}{+hi,-word,-round}{-son}
+0.911344944462	-{+hi,-word,-back}{-glot,-rhot,-word,+lab}
+0.903740135398	-{-lat}{+son,-word,-lo,+hi,-nas,-back,-cons}{-rhot}
+0.892492906851	+{-cont}{+back,+son,-round}
+0.891489120852	+{-son}{+back,-round}{+ant}
+0.891367584276	-{+voc,+son,+round,+cont,-back,-cons}
+0.876984886835	-{-nas,-back}
+0.876328771553	+{+son,-back}
+0.874653772933	-{+voc,+round}
+0.873541491704	+{+word}{+back,-word}{-rhot,+cons,-voi,+lab}
+0.870398332703	-{+voc,-cons,+round}{-lab}
+0.869028449431	+{+back}{-dr}{-rhot}
+0.866315429104	voc tier +['{-nas}', '{+voc}', '{+voc,+round,+cont,-lo,+hi,-nas,-cons}']
+0.859578192508	+{-nas,-back}{-glot}
+0.854624613257	-{+hi,-round}{-lat}
+0.853474529932	-{-dr}{+hi,+round,-nas}{-voi}
+0.84696655691	-{+word}{-lat,-dr,-word}{+voc,+son,+round,+cont,-lo,-back}
+0.83095047878	+{-lat,-voi}
+0.829463379791	voc tier -['{+back,-round}', '{-word,-lo}', '{-cons}']
+0.82737055555	voc tier -['{+cont}', '{+cont,-word,-back}']
+0.821517158803	-{-dor}{-word,-back}
+0.821013655382	+{-back,-lo}
+0.818029136853	+{+back}{+cons,-lat,-rhot,+ant,-dor,-cor,-voc}
+0.814573397289	+{-nas,+cont,-word,-back,-round}{-cor,+lab}
+0.809368956385	voc tier -['{+voc,+back,-nas,-cons,-round}']
+0.801575122767	-{+cont,-round}{+cons}
+0.8	-{-glot,+rhot}{-rhot,-voc}{+hi,-round}
+0.8	-{+round,-back}
+0.8	-{+dr}{+round,+son}
+0.8	-{+cor}{+back,-nas}
+0.8	-{+back,+son}{+cons,+ant,-voc,-cont}{+word}
+0.8	+{-cont}{+son,-cons,-round}
+0.8	+{+cont}{-voc}{+round,-nas,-back}
+0.794727123359	+{+back,-word,-cons}
+0.791491404346	voc tier +['{+voc}', '{+cont}', '{+back,+cont}']
+0.787208085597	-{+hi,-round,-cons,-lo}
+0.784694740784	-{+back,+cont}{+lab}
+0.780003938246	+{-son}{-round}{-lat}
+0.778126132102	-{+cont}{+round}{-glot}
+0.769024184097	-{-glot,-cont}{+son,-back}
+0.765597114649	-{-nas,+son,-round}
+0.750566800726	+{-nas}{-son}{+hi,+son,-back}
+0.739942939138	-{-round,-lo}
+0.738509199832	voc tier +['{+lo,+back}', '{+voc,-word,-hi,+lo,-round,-cons}', '{+voc,+son,+back,+cont,-lo,+hi,-nas,-round,-cons}']
+0.736244064443	-{-rhot,-ant}{+voc,+son,-word,-lo,-nas,-back,-round}
+0.704891622833	+{-nas}{+voc,+cont,-word,-lo,+hi,-nas,-round,-cons}
+0.699784071454	+{+voc,+round,+cont,-word,-nas,-cons}
+0.696718412419	-{-voi}{+round,+cont}{-cont}
+0.681086120165	voc tier -['{+son,+round,+cont,-word,-lo,-nas,-cons}']
+0.675583940925	+{-voc}{+son,-back}
+0.672997920348	-{-nas}{-round,-lo}{-voc}
+0.664943453382	+{+round,-word}{-dor,+cons,+ant}{+word}
+0.661515373605	-{+back,-word}
+0.658059880214	-{+cons,+voi,+lab,+cont,-word,-rhot,-nas,-dr,-glot,-dor,-cor,-son,-voc}{-voi}{-back,-round}
+0.655210763945	-{+voc,+back,-round}
+0.638270189552	+{+voc,+son,+back,-word,-lo,-nas,-round}
+0.637660913173	+{+round,-word}{-cont}{+hi,+cont,-nas,-back}
+0.629021692672	voc tier +['{+voc}', '{+cont}', '{-nas,-back}']
+0.626465553497	+{+voc,+back,-round,-word,-lo}
+0.623083872739	+{+voc,+son,+back,+cont,-word,-lo,+hi,-nas,-round}
+0.610102001456	+{+cor}{-lat}{-nas,-word,-back,-lo}
+0.602770618191	+{-voc}{+back,-word}
+0.600763868781	+{-nas,-round}{+cons,-word,+lab,+nas}{-glot,-dor}
+0.6	voc tier -['{-round}', '{-cons}', '{+back}']
+0.6	voc tier -['{+round}', '{+hi,-back}']
+0.6	voc tier -['{+cont,-cons}', '{-cons}', '{+voc,+son,+round,+cont,-word,-lo,+hi,-nas,-back,-cons}']
+0.6	-{-voi}{+back,-round}
+0.6	-{+round,-word,-lo}
+0.6	-{+round,-nas}{-rhot}
+0.6	-{+round,+cont}
+0.6	-{+hi}{-lat}{-round}
+0.6	-{+ant}{+round,+back}{-lat,-word,-voc}
+0.6	+{-nas,-round}{-rhot}
+0.6	+{-nas,-round}
+0.6	+{-glot}{+cont,-back}
+0.6	+{-glot,-rhot,+cont}{+cont,+round,+son,-back,-cons}{-son}
+0.6	+{+voc,-back}{-rhot,+ant}
+0.6	+{+son,-round}{+cons,-cont}
+0.585784300435	+{+cont,-back}
+0.5846944111	voc tier +['{+hi,-cons}', '{+round,-lo}', '{+back,+cont}']
+0.584504289431	-{-lat}{+round,-word,-cons}
+0.584313626941	-{-back,-round}
+0.580771855384	+{+voc,+round,+back,+hi,-nas,-cons}
+0.579556703432	voc tier -['{+voc,-word,-round}']
+0.579536589517	+{-word}{+ant,+lab}{+round,-nas}
+0.578374420587	+{-back,+son,-word,-cons}{-lat}
+0.560222735555	-{+voc,+back}{+lab}{+word}
+0.556370364142	+{+voc,+back}
+0.548724058667	-{-voc}{+cont,-back}
+0.548000650008	-{+voc,+son,+cont,-lo,+hi,-nas,-round,-cons}{-word}{+word}
+0.546873225217	+{+round,-word}{+son}
+0.535776342319	-{+voc,+back,-cons}{+cor,+dr,-word,-rhot,-lat,-cont,-dor,-lab,-son,-voc}{+voc,+cont,-lo,+hi,-nas,-back}
+0.534885938269	-{+voc,+back,+son,+round}
+0.523841212419	-{-word,-round}
+0.52272513218	+{+cons,-lat,+lab}{+cont}{+round,-cons}
+0.522710839819	+{-word,-back}
+0.520418951506	-{+voc,-back}{-voc}
+0.515671099305	+{+back,+cont,-lo,-nas,-round,-cons}
+0.509401296145	-{-lat}{+son,-round}
+0.487350833717	-{-word,-round}{-voc}
+0.486178233208	voc tier +['{-cons}', '{+back,+cont,-cons}', '{+round,-nas}']
+0.47259686859	-{-nas,-back}{-dor,-rhot}{+word}
+0.470552603568	-{+cons}{-back,-round}{-lat}
+0.462152077771	-{+cons}{+round,-word}{+cons,+nas,-rhot,-lat,-cont,-voc}
+0.462022755922	voc tier +['{+voc,-cons}', '{-back,-lo}']
+0.457721446604	+{+back,-cons}
+0.455607026646	-{+round,-nas}{-cor}
+0.450499179239	+{+ant}{+round,-back}{+dr}
+0.446967282379	-{+back,-word,-round}
+0.444252863103	+{+back,-round}{-dor}
+0.441941634496	cons tier +['{-glot,+cons}', '{-voi,-ant}']
+0.438934346868	-{-word}{-rhot,-ant}{-back,-lo}
+0.437342703399	+{-lat}{+hi,+round,+back}
+0.432121850044	+{-lat,+cons,+lab,-word,-rhot,+ant,-nas,-dr,-cont,-glot,-dor,-voi,-voc}{+hi,-back}{-lat,+ant,-cont,+nas,-word}
+0.424977770921	-{+back}
+0.42087787379	+{-nas,-back}{+cons}
+0.415325922861	+{+hi,+cont,-lo}{-lab,-word,-voc}{-back,-word,-cons}
+0.413863714867	-{-rhot,-cont,-voc}{+voc,-round}
+0.410974914181	voc tier -['{+cont,-word,-round}']
+0.407928176876	+{+dor,-word,-ant,-rhot,-lat,-nas,-dr,-cont,-glot,-lab,-son,-voc}{+cont,-back}
+0.406460700955	-{+back,-lo,-round}
+0.402967260072	+{+dr}{-back,-lo}
+0.401373692023	-{+word}{+cont}{+voc,-back}
+0.400914937395	-{+voc,-back}{-cor}
+0.4	-{+cont,-nas,-back,-round}{-voc}
+0.4	voc tier -['{-hi}', '{+voc,-back}']
+0.4	voc tier -['{-hi}', '{+cont,-cons,-back}']
+0.4	voc tier -['{+voc,+back,+son}']
+0.4	voc tier -['{+back,+son,-lo}']
+0.4	-{-voi}{+hi,-back,-lo}
+0.4	-{-rhot,-lat,-cont,-dor,-son,-voc}{+back,+son}
+0.4	-{-nas}{+voc,+son,+back,-word,-nas,-round}{-cont}
+0.4	-{-nas}{+cons,+voi,+lab,-word,-rhot,+ant,-nas,-dr,-cont,-dor,-cor,-voc}{+son,-back}
+0.4	-{-cons}{+cons}{+son,-word,-round}
+0.4	-{+hi,+back,+son}{+lab}
+0.4	-{+back,-word}{-word}
+0.4	-{+back,+son}
+0.4	+{-glot}{-glot,+cons}{+back,+cont}
+0.4	+{-glot,-dor}{+round,+son}
+0.4	+{-dr}{+voc,+son,+back,+cont,-word,-lo,-cons}
+0.4	+{-dor}{+round,+back}
+0.4	+{+round,-cons}{-rhot,-lat}{+word}
+0.4	+{+round,+back}
+0.4	+{+hi,-back,-round}{-dr,-cont}
+0.4	+{+cons,-lat,+ant,-nas,-dr,-cont}{+voc,+son,+cont,-word,-lo,+hi,-nas,-back,-round,-cons}{+cons,-dr}
+0.4	voc tier +['{-word}', '{+son,-round}']
+0.4	voc tier +['{-cons}', '{-cons,-round}']
+0.4	voc tier +['{+voc,-cons}', '{-nas,-round}']
+0.4	-{-dor}{-glot,-word}{+round,-back}
+0.4	-{+voi}{+voc,+round}{-cor}
+0.4	-{+round,+cont,-lo,+hi,-nas,-cons}
+0.4	-{+hi,+round,-nas,-word}
+0.4	+{-voc}{+cor,-word,+ant,-nas,-son,-voc}{-nas,-round}
+0.4	+{-son}{+hi,-back}
+0.4	+{-lat}{-lab,+cons}{-word,-round}
+0.4	+{-dor,+voi}{+voc,-word,-round}
+0.396352109922	voc tier -['{-back}']
+0.393203674567	voc tier -['{+son}', '{+voc,+back,+cont,-round}', '{-nas}']
+0.373224807555	+{+voc,+son,+round,+back,-word,-lo,+hi,-nas,-cons}{-glot}{+voc,-nas,+round}
+0.344941642098	-{+son,-back,-round}{-word}{+word}
+0.341423448558	Ident  +voi
+0.339665532116	-{+hi,-round,-word,-lo}{+son}
+0.338710839593	-{+son}{+cons,+voi,+cor,+dr,-word,-ant,-rhot,-lat,-nas,-cont,-glot,-dor,-lab,-son,-voc}{+back,+cont,-word,+hi,-nas,-cons}
+0.333204686493	+{+voc,+son,+back,-lo,+hi,-round}{-lab,-voc}
+0.301854830473	-{-back,-lo}{-dr}{+word}
+0.281897845548	+{+ant}{+hi,-back,-lo}{+nas}
+0.267534018115	voc tier +['{+back}', '{-hi,+lo,+voc}', '{+voc,-back}']
+0.254741223418	-{+son,-back}{-rhot}
+0.250249210116	+{-glot}{+round,+cont,-word}
+0.237421901373	voc tier +['{+cont}', '{+round,-word}']
+0.228085652148	+{+cons,+cor,-lat,-nas,-glot,-son,-voc}{+hi,+back}
+0.22398879122	+{+back,-round}{-rhot}
+0.2	voc tier -['{-hi}', '{+voc,-word,-lo,+hi,-round,-cons}']
+0.2	voc tier -['{+son,-nas,-cons,-back,-round}']
+0.2	voc tier -['{+cont}', '{+voc,-word,-back,-lo}']
+0.2	voc tier -['{+back}', '{+voc,+round,+cont,-word,-lo,-cons}']
+0.2	voc tier +['{-word}', '{+back,-nas}']
+0.2	voc tier +['{+voc}', '{+back,+son}']
+0.2	voc tier +['{+hi,-back}', '{+son}', '{+cont,-round}']
+0.2	voc tier +['{+cont,+round,-nas}']
+0.2	-{-round,-back,-lo}
+0.2	-{-round,+voc,+cont,-back,-nas}
+0.2	-{-back,-cons}
+0.2	-{+voc,-back}
+0.2	+{-hi,-word}{-word,-son}{+round,+cont}
+0.2	+{+voc}{-glot,-rhot,+cons}{+son,+cont,-word,-lo,+hi,-nas,-back,-round,-cons}
+0.2	+{+voc,+son,+round,+cont,-word,-lo,-nas,-back,-cons}
+0.2	+{+cont}{-son,-voc}{+voc,+back,+cont,-word,-lo,+hi,-nas,-round}
+0.2	+{+cons}{+back,+cont,-round}{-cont}
+0.2	-{+voc,+back}{+cons,+son,+ant}
+0.2	-{+son,-word,-lo}{-dr}{+cont,-back}
+0.2	-{+round}{-son}{+round,+back}
+0.2	+{-rhot}{+round}
+0.2	+{-nas}{+back,-round}{+ant}
+0.2	+{-lat}{+cont,-word,-back}{+son}
+0.2	+{-back,-round}{-glot,+son,-cor,+nas}
+0.2	+{+voi,-word}{-back,-cons}
+0.2	+{+voc,-nas,-back,-cons}{-glot,+son,-word}{+word}
+0.2	+{+hi,-round}{+ant}{+word}
+0.2	+{+cons,+voi,+cor,+dr,-word,-ant,-rhot,-lat,-nas,-cont,-dor,-lab,-son,-voc}{+back,-cons}
+0.196253225559	+{-lab}{+hi,+back,+cont,-round}{+son,+cor,+cont,-lat,+rhot,+ant,-nas,-dr,-dor,-lab,-voc}
+0.18209243388	voc tier -['{+son}', '{+voc}', '{-word,-round}']
+0.148860142012	+{+hi,+round,+back,+cont,+voc}
+0.118813000918	-{+voc,+son,+cont,-word,-lo,+hi,-nas,-back}
+0.113106565932	+{+round,-word}
+0.112671747919	-{-nas}{+son}{-cor,+voi}
+0.0873281786708	+{+hi,+back,+son}
+0.0828137408838	+{+round,+back,+son}{-dr}
+0.0633292310085	-{+voc,-cons,-round}{-dor,-dr}
+0.0530615405607	voc tier +['{+son,+round,+cont}']
+0.011245935612	+{-son}{+hi,+back,+cont}{+voc,+son,+round,+cont,-word,-lo,+hi,-nas,-cons}
+5.55111512313e-17	-{+hi,-back}
+5.55111512313e-17	+{-glot,-dor,-lat,-voi}{+back,+cont}
+0.0	voc tier -['{-hi,-round}', '{+hi,-back}']
+0.0	voc tier +['{+back,-word,-lo}', '{-cons}', '{-word}']
+0.0	cons tier -['{-lat}', '{-rhot}', '{-nas,-voi}']
+0.0	-{-back,-round}{+cons}{+word}
+0.0	-{+voc,+son,-word,-hi,-nas,-cons}{-glot,-rhot,-nas,+cor,-voc}{-word,-back}
+0.0	-{+son,-back}{-word}{+word}
+0.0	-{+cor}{-nas,+cont,-word,-back,-lo}{-rhot,-cor,-dr,-word,-cont}
+0.0	-{+cont,-back,-lo}{-dor}{+word}
+0.0	-{+ant}{+voc,+son,+back,-word,-lo,-nas,-cons}{-rhot,+voi}
+0.0	+{-lat}{+round,+back,+son,-nas}
+0.0	+{-lab,-nas,+cor}{+hi,-round}{+cons,-word,-rhot,-lat,-dr,-cor}
+0.0	+{-dr}{+round}
+0.0	+{+cont,+back,-nas}{-dr}{+word}
+0.0	+{+back,-lo}{-dor,-lat}{+word}
